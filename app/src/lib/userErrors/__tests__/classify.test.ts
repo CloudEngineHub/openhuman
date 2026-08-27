@@ -115,14 +115,12 @@ describe('classifyUserActionableError', () => {
     // Token-only on purpose: "database disk image is malformed" appears in
     // raw logs other domains relay, and a relayed log line must not become a
     // "your memory was quarantined" panel entry.
-    expect(
-      classifyUserActionableError({ message: 'database disk image is malformed' }),
-    ).toBeNull();
+    expect(classifyUserActionableError({ message: 'database disk image is malformed' })).toBeNull();
     expect(
       classifyUserActionableError({
         message: 'sync failed: file is not a database',
         scope: 'memory',
-      }),
+      })
     ).toBeNull();
   });
 

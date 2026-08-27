@@ -143,7 +143,7 @@ describe('<SyncAuditPanel />', () => {
     render(<SyncAuditPanel />);
 
     const partialGlyph = await screen.findByTitle(
-      '250 item(s) fetched but not ingested into the memory tree',
+      '250 item(s) fetched but not ingested into the memory tree'
     );
     expect(partialGlyph).toHaveTextContent('⚠');
   });
