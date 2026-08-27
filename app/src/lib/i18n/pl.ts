@@ -579,6 +579,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': '{n} dni temu',
   'sync.status.success': 'Sukces',
   'sync.status.failed': 'Niepowodzenie',
+  'sync.status.partial': 'Pobrano, zapis do pamięci nie powiódł się',
   'common.error': 'Błąd',
   'common.success': 'Sukces',
   'common.back': 'Wstecz',
@@ -6840,6 +6841,10 @@ const messages: TranslationMap = {
   'userErrors.localModelUnavailable.title': 'Model lokalny niedostępny',
   'userErrors.localModelUnavailable.body':
     'Ollama jest nieosiągalna pod skonfigurowanym punktem końcowym albo wymagany model nie jest tam zainstalowany. Uruchom Ollamę i pobierz model w tym punkcie końcowym lub przenieś tę pracę do dostawcy w chmurze.',
+  'userErrors.memoryStoreCorrupt.title': 'Indeks pamięci był uszkodzony',
+  'userErrors.memoryStoreCorrupt.body':
+    'Baza danych drzewa pamięci była uszkodzona. Uszkodzony plik zachowano obok danych pamięci i odbudowano pusty indeks. Zsynchronizuj ponownie źródła pamięci, aby go wypełnić.',
+  'userErrors.action.openMemorySync': 'Zsynchronizuj pamięć ponownie',
   'userErrors.scope.chat': 'Czat',
   'userErrors.scope.cron': 'Zaplanowane zadanie',
   'userErrors.scope.workspace': 'Obszar roboczy',

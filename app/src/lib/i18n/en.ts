@@ -285,6 +285,7 @@ const en: TranslationMap = {
   'sync.timeAgo.days': '{n}d ago',
   'sync.status.success': 'Success',
   'sync.status.failed': 'Failed',
+  'sync.status.partial': 'Fetched, memory ingest failed',
   'common.error': 'Error',
   'common.success': 'Success',
   'common.back': 'Back',
@@ -7153,6 +7154,10 @@ const en: TranslationMap = {
   'userErrors.localModelUnavailable.title': 'Local model unavailable',
   'userErrors.localModelUnavailable.body':
     'Ollama is not reachable at the configured endpoint, or the required model is not installed there. Start Ollama and pull the model at that endpoint, or switch this workload to a cloud provider.',
+  'userErrors.memoryStoreCorrupt.title': 'Memory index was corrupted',
+  'userErrors.memoryStoreCorrupt.body':
+    'The database behind your memory tree was damaged. The damaged file was preserved next to your memory data, and an empty index was rebuilt. Re-sync your memory sources to fill it again.',
+  'userErrors.action.openMemorySync': 'Re-sync memory',
   'userErrors.scope.chat': 'Chat',
   'userErrors.scope.cron': 'Scheduled job',
   'userErrors.scope.workspace': 'Workspace',

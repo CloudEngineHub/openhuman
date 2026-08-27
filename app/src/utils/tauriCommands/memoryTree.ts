@@ -990,6 +990,15 @@ export interface SyncAuditEntry {
   duration_ms: number;
   success: boolean;
   error?: string;
+  /**
+   * Items fetched-and-stored whose memory-tree ingest failed
+   * (openhuman#5820). Absent on rows written before the field existed and on
+   * fully-healthy rows; a non-zero count with `success: false` is the
+   * "fetched, not tree-ingested" partial verdict the panel renders as ⚠.
+   */
+  tree_ingest_failures?: number;
+  /** Why the tree half failed, when it did. Never memory content. */
+  tree_error?: string;
 }
 
 export async function memorySyncAuditLog(): Promise<SyncAuditEntry[]> {

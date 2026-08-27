@@ -584,6 +584,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': '{n} g fa',
   'sync.status.success': 'Riuscito',
   'sync.status.failed': 'Non riuscito',
+  'sync.status.partial': 'Recuperato, indicizzazione in memoria non riuscita',
   'common.error': 'Errore',
   'common.success': 'Successo',
   'common.back': 'Indietro',
@@ -6870,6 +6871,10 @@ const messages: TranslationMap = {
   'userErrors.localModelUnavailable.body':
     "Ollama non è raggiungibile sull'endpoint configurato, oppure il modello necessario non è installato lì. Avvia Ollama e scarica il modello su quell'endpoint, oppure sposta questo lavoro su un provider cloud.",
   'userErrors.scope.chat': 'Chat',
+  'userErrors.memoryStoreCorrupt.title': 'L’indice della memoria era corrotto',
+  'userErrors.memoryStoreCorrupt.body':
+    'Il database dell’albero della memoria era danneggiato. Il file danneggiato è stato conservato accanto ai tuoi dati di memoria ed è stato ricostruito un indice vuoto. Risincronizza le tue fonti di memoria per riempirlo di nuovo.',
+  'userErrors.action.openMemorySync': 'Risincronizza la memoria',
   'userErrors.scope.cron': 'Attività pianificata',
   'userErrors.scope.workspace': 'Spazio di lavoro',
   'userErrors.memoryBudgetExhausted.title': 'La memoria ha smesso di crescere',

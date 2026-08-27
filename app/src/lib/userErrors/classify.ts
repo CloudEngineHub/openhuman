@@ -193,6 +193,28 @@ export function classifyUserActionableError(
     };
   }
 
+  // The memory-tree store was corrupt and has been quarantined + rebuilt
+  // empty (openhuman#5820). Token-only on purpose: the only producer is the
+  // core's `STORE_CORRUPT_KIND` broadcast, and the underlying SQLite prose
+  // ("database disk image is malformed") also appears in raw logs other
+  // domains relay — promoting prose here could turn an unrelated relay into
+  // a "your memory was quarantined" panel entry.
+  if (text.includes('memory_store_corrupt')) {
+    return {
+      id: userErrorId('memory_store_corrupt', scope, signal.provider),
+      kind: 'memory_store_corrupt',
+      severity: 'error',
+      scope,
+      sourceDomain: signal.sourceDomain,
+      provider: signal.provider,
+      titleKey: 'userErrors.memoryStoreCorrupt.title',
+      bodyKey: 'userErrors.memoryStoreCorrupt.body',
+      // Re-syncing sources is the remediation — the rebuilt store is empty
+      // and repopulates from there.
+      action: 'open_memory_sync',
+    };
+  }
+
   // The local model runtime a workload depends on is unusable — Ollama is not
   // running, or the configured model was never pulled (#5354). Emitted by core
   // as the stable `local_model_unavailable` kind token (memory embedder health

@@ -253,6 +253,16 @@ Quick reference for anyone starting with Claude on this project. Updated by the 
 
 - **`tauri-cef` and `tauri-plugin-notification` are git submodules** — When upstream/main updates them, fix with `git submodule update --remote --checkout`, not by manually patching the vendored crate.
 
+## Memory Corruption Handling (Issue #5820)
+
+- **`tinymemory-core::corruption` is the one SQLITE_CORRUPT policy** — `is_sqlite_corrupt` / `escalate_or_count` / `report_and_recover` / `startup_integrity_check`. Every detector (queue worker, both tree-ingest sinks, reconcile, boot quick_check) escalates through it; do not add a local `warn!`-and-continue arm for corruption again.
+- **Type forks to remember** — two `SyncOutcome`s (core `sync::pipelines::traits` vs tinycortex) and three `SyncAuditEntry` copies (core `sync::audit`, `tinymemory-bus`, tinycortex's engine writer). Only the core one carries `tree_ingest_failures`; `engine::run_source_pipeline_core` is the boundary that keeps it, `run_source_pipeline` drops it. New audit fields must be `skip_serializing_if` so the engine writer's rows stay byte-identical (`audit_line_format_is_pinned`).
+- **Garbage-file corruption fixtures self-heal** — tinycortex's cold-open path (`connection.rs`) auto-quarantines a file that fails to open, so a garbage `chunks.db` makes `store()` succeed, not fail. Test the classification arm directly (`escalate_or_count`) instead of the full stack.
+- **Module-side degraded statics never reach the host** — the pinned TinyMemory cdylib has its own `tree::health` statics; host visibility comes only from `MemoryEvent` (host arms in `memory/host.rs` + `modules/memory_host.rs` → `user_error` web channel). A new variant is release-gated (tinymemory release + registry re-pin) before the product sees it.
+- **Worktree submodules can be half-initialised** — a timed-out `git submodule update --init --recursive` leaves `vendor/<x>/` holding only a `.git` file while `git submodule status` shows a clean SHA. Detect with `ls vendor/<x>/Cargo.toml`; fix with `git submodule update --force --recursive <path>`. tinymemory has its own nested `vendor/tinycortex` that must be initialised from inside `vendor/tinymemory`.
+- **Never trust `cmd | tail` / `cmd | grep` exit codes in background checks** — the pipeline reports the filter's status, so a failed `cargo check` (disk full, missing submodule) read as green twice this session. Use `${PIPESTATUS[0]}` or grep for `Finished`.
+- **Disk full (APFS) shows up as `could not compile syn` / `No space left on device`** — reclaim by deleting other checkouts' `target/` dirs (openhuman-1's shell target alone was 27 GB), never the active worktree's.
+
 ## Pre-existing Test Failures
 
 - **`composio::action_tool::tests::factory_routes_through_direct_when_mode_is_direct` fails in `cargo test -p openhuman`** — Pre-existing failure unrelated to WhatsApp or any recent branch work. Do not attempt to fix unless explicitly tasked. Also intermittently flaky when run as part of the full suite — see "Pre-existing Flaky Tests" section.

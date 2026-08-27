@@ -71,6 +71,9 @@ const ACTION_ROUTE: Record<Exclude<UserErrorAction, 'dismiss'>, string> = {
   // Opening this screen also restarts the integration health poll, so it is
   // both the explanation and the retry.
   open_connections: '/connections?tab=skills',
+  // openhuman#5820: after a corrupt-store quarantine the rebuilt tree is
+  // empty; re-syncing sources from Brain's sync tab is the remediation.
+  open_memory_sync: '/brain?tab=sync',
 };
 
 const ACTION_LABEL_KEY: Record<Exclude<UserErrorAction, 'dismiss'>, string> = {
@@ -78,6 +81,7 @@ const ACTION_LABEL_KEY: Record<Exclude<UserErrorAction, 'dismiss'>, string> = {
   open_provider_settings: 'userErrors.action.openProviderSettings',
   open_embeddings_settings: 'userErrors.action.openEmbeddingsSettings',
   open_connections: 'userErrors.action.openConnections',
+  open_memory_sync: 'userErrors.action.openMemorySync',
 };
 
 const SEVERITY_RANK: Record<NoticeSeverity, number> = { error: 0, warning: 1, info: 2 };

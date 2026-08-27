@@ -538,6 +538,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': '{n}天前',
   'sync.status.success': '成功',
   'sync.status.failed': '失败',
+  'sync.status.partial': '已获取，记忆写入失败',
   'common.error': '错误',
   'common.success': '成功',
   'common.back': '返回',
@@ -6377,6 +6378,10 @@ const messages: TranslationMap = {
   'userErrors.localModelUnavailable.title': '本地模型不可用',
   'userErrors.localModelUnavailable.body':
     '无法在配置的端点连接 Ollama，或所需模型未安装在该端点。请启动 Ollama 并在该端点拉取模型，或将此工作切换到云端提供商。',
+  'userErrors.memoryStoreCorrupt.title': '记忆索引已损坏',
+  'userErrors.memoryStoreCorrupt.body':
+    '记忆树使用的数据库已损坏。受损文件已保留在记忆数据旁边，并已重建一个空索引。请重新同步记忆来源以重新填充。',
+  'userErrors.action.openMemorySync': '重新同步记忆',
   'userErrors.scope.chat': '聊天',
   'userErrors.scope.cron': '定时任务',
   'userErrors.scope.workspace': '工作区',

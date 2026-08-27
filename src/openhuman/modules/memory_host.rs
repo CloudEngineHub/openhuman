@@ -554,6 +554,20 @@ fn into_domain_event(event: MemoryEvent) -> Option<crate::core::events::DomainEv
             crate::openhuman::memory::tree::health::user_error::publish_local_model_unavailable_user_error(&origin);
             return None;
         }
+        // Web-channel-only (openhuman#5820): the module's engine already
+        // quarantined and rebuilt its store; the host's job is to make sure
+        // the user durably hears it — this is the arm the incident lacked,
+        // where a module-side quarantine was invisible to every host surface.
+        MemoryEvent::StoreCorruptQuarantined {
+            origin,
+            quarantined_path,
+        } => {
+            crate::openhuman::memory::tree::health::user_error::publish_store_corrupt_user_error(
+                &origin,
+                quarantined_path.as_deref(),
+            );
+            return None;
+        }
     })
 }
 

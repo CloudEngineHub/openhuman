@@ -554,6 +554,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': 'قبل {n} ي',
   'sync.status.success': 'نجاح',
   'sync.status.failed': 'فشل',
+  'sync.status.partial': 'تم الجلب، وفشل الإدراج في الذاكرة',
   'common.error': 'خطأ',
   'common.success': 'نجاح',
   'common.back': 'رجوع',
@@ -6591,6 +6592,10 @@ const messages: TranslationMap = {
   'userErrors.localModelUnavailable.title': 'النموذج المحلي غير متاح',
   'userErrors.localModelUnavailable.body':
     'لا يمكن الوصول إلى Ollama على النقطة الطرفية المُهيأة، أو أن النموذج المطلوب غير مثبّت عليها. شغّل Ollama ونزّل النموذج على تلك النقطة الطرفية، أو حوّل هذا العمل إلى مزوّد سحابي.',
+  'userErrors.memoryStoreCorrupt.title': 'تلف فهرس الذاكرة',
+  'userErrors.memoryStoreCorrupt.body':
+    'كانت قاعدة بيانات شجرة الذاكرة تالفة. تم الاحتفاظ بالملف التالف بجوار بيانات الذاكرة وأعيد إنشاء فهرس فارغ. أعد مزامنة مصادر الذاكرة لإعادة تعبئته.',
+  'userErrors.action.openMemorySync': 'إعادة مزامنة الذاكرة',
   'userErrors.scope.chat': 'الدردشة',
   'userErrors.scope.cron': 'مهمة مجدوَلة',
   'userErrors.scope.workspace': 'مساحة العمل',

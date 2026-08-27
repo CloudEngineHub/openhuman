@@ -570,6 +570,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': '{n} दि. पहले',
   'sync.status.success': 'सफल',
   'sync.status.failed': 'विफल',
+  'sync.status.partial': 'प्राप्त हुआ, मेमोरी में दर्ज नहीं हुआ',
   'common.error': 'एरर',
   'common.success': 'सफल',
   'common.back': 'वापस',
@@ -6741,6 +6742,10 @@ const messages: TranslationMap = {
   'userErrors.localModelUnavailable.title': 'लोकल मॉडल उपलब्ध नहीं है',
   'userErrors.localModelUnavailable.body':
     'कॉन्फ़िगर किए गए एंडपॉइंट पर Ollama तक पहुँच नहीं है, या ज़रूरी मॉडल वहाँ इंस्टॉल नहीं है। Ollama शुरू करके उसी एंडपॉइंट पर मॉडल पुल करें, या इस काम को किसी क्लाउड प्रोवाइडर पर ले जाएँ।',
+  'userErrors.memoryStoreCorrupt.title': 'मेमोरी इंडेक्स खराब हो गया',
+  'userErrors.memoryStoreCorrupt.body':
+    'आपकी मेमोरी ट्री का डेटाबेस खराब हो गया था। खराब फाइल आपके मेमोरी डेटा के पास सुरक्षित रखी गई है, और एक खाली इंडेक्स फिर से बनाया गया है। इसे दोबारा भरने के लिए अपने मेमोरी स्रोतों को फिर से सिंक करें।',
+  'userErrors.action.openMemorySync': 'मेमोरी फिर से सिंक करें',
   'userErrors.scope.chat': 'चैट',
   'userErrors.scope.cron': 'निर्धारित कार्य',
   'userErrors.scope.workspace': 'वर्कस्पेस',

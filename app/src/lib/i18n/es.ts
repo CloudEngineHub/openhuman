@@ -580,6 +580,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': 'hace {n} d',
   'sync.status.success': 'Correcto',
   'sync.status.failed': 'Fallido',
+  'sync.status.partial': 'Obtenido, fallo al indexar en memoria',
   'common.error': 'error',
   'common.success': 'Éxito',
   'common.back': 'Atrás',
@@ -6886,6 +6887,10 @@ const messages: TranslationMap = {
   'userErrors.localModelUnavailable.title': 'Modelo local no disponible',
   'userErrors.localModelUnavailable.body':
     'No se puede acceder a Ollama en el punto de conexión configurado, o el modelo necesario no está instalado allí. Inicia Ollama y descarga el modelo en ese punto de conexión, o cambia este trabajo a un proveedor en la nube.',
+  'userErrors.memoryStoreCorrupt.title': 'El índice de memoria se dañó',
+  'userErrors.memoryStoreCorrupt.body':
+    'La base de datos del árbol de memoria estaba dañada. El archivo dañado se conservó junto a tus datos de memoria y se reconstruyó un índice vacío. Vuelve a sincronizar tus fuentes de memoria para rellenarlo.',
+  'userErrors.action.openMemorySync': 'Resincronizar memoria',
   'userErrors.scope.chat': 'Chat',
   'userErrors.scope.cron': 'Tarea programada',
   'userErrors.scope.workspace': 'Espacio de trabajo',
