@@ -181,9 +181,14 @@ impl ArchivistHook {
                 // worker quarantines + rebuilds within one poll interval);
                 // this side's job is to escalate visibility — log at ERROR and
                 // put a durable notice in front of the user, once per process
-                // rather than once per segment. The episodic write above is
-                // still the source of truth either way, so the turn itself is
-                // never failed from here.
+                // rather than once per segment. The engine's own quarantine
+                // publishes the same `memory_store_corrupt` kind afterwards;
+                // that is not a second entry, because the notice store keys on
+                // the descriptor id (kind + scope) and refreshes the existing
+                // one. This early notice is what covers damage the queue worker
+                // never walks. The episodic write above is still the source of
+                // truth either way, so the turn itself is never failed from
+                // here.
                 let rendered = e.to_string();
                 if crate::openhuman::memory::tree::health::user_error::is_corrupt_store_error(
                     &rendered,

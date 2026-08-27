@@ -580,7 +580,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': 'hace {n} d',
   'sync.status.success': 'Correcto',
   'sync.status.failed': 'Fallido',
-  'sync.status.partial': 'Obtenido, fallo al indexar en memoria',
+  'sync.status.partial': 'Obtenido, pero no se pudo indexar en memoria',
   'common.error': 'error',
   'common.success': 'Éxito',
   'common.back': 'Atrás',

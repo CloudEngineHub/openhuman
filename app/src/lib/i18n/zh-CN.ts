@@ -538,7 +538,7 @@ const messages: TranslationMap = {
   'sync.timeAgo.days': '{n}天前',
   'sync.status.success': '成功',
   'sync.status.failed': '失败',
-  'sync.status.partial': '已获取，记忆写入失败',
+  'sync.status.partial': '已获取，但记忆摄取失败',
   'common.error': '错误',
   'common.success': '成功',
   'common.back': '返回',
