@@ -223,7 +223,14 @@ const ThreadRoot: FC<{
       <ThreadPrimitive.Viewport
         turnAnchor="top"
         data-slot="aui_thread-viewport"
-        className="relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth">
+        // `border-line-strong`, not `border-line`: this is the top of the token
+        // ladder in `styles/tokens.css` (`line-subtle` < `line` < `line-strong`,
+        // stone-300 in light / neutral-700 in dark), so the transcript column
+        // reads as a deliberately delineated region rather than the hairline
+        // used for incidental dividers. Note this encloses the sticky
+        // `ViewportFooter` too — the composer lives inside the viewport — so the
+        // box is "the chat column", not "the scrollback".
+        className="border-line-strong relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth border">
         <div
           className={cn(
             'mx-auto flex w-full max-w-(--thread-max-width) flex-1 flex-col px-4 pt-4',
