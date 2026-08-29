@@ -273,7 +273,7 @@ export default function SuggestedWorkflows() {
       </div>
 
       {error && (
-        <p className="mt-2 text-xs text-coral" data-testid="flow-suggestions-error">
+        <p className="mt-2 text-xs text-coral-600 dark:text-coral-400" data-testid="flow-suggestions-error">
           {error}
         </p>
       )}
