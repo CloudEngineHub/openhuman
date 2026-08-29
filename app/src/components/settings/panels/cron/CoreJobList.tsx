@@ -102,8 +102,11 @@ const CoreJobList = ({
                     {job.schedule.kind === 'cron'
                       ? job.schedule.expr
                       : job.schedule.kind === 'every'
-                        ? `every ${job.schedule.every_ms}ms`
-                        : `at ${job.schedule.at}`}
+                        ? t('settings.cron.jobs.scheduleEvery').replace(
+                            '{ms}',
+                            String(job.schedule.every_ms)
+                          )
+                        : t('settings.cron.jobs.scheduleAt').replace('{time}', job.schedule.at)}
                   </span>
                 </div>
                 <div>
