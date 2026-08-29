@@ -347,7 +347,7 @@ const UsageLogTable = ({ records, currency }: { records: CostUsageRecord[]; curr
                 </div>
               </Td>
               <Td>
-                <span className="inline-flex rounded-full bg-surface-subtle px-2 py-0.5 text-[10px] font-medium text-content-secondary ring-1 ring-inset ring-neutral-200 dark:ring-neutral-700">
+                <span className="inline-flex rounded-full bg-surface-subtle px-2 py-0.5 text-[10px] font-medium text-content-secondary ring-1 ring-inset ring-line-strong">
                   {record.category}
                 </span>
               </Td>
