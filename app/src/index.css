@@ -267,9 +267,19 @@
      card, brighter against a dark one), which is what actually buys contrast
      rather than opacity does. `--line-chrome` itself is deliberately left
      alone: `Sidebar`'s rail drag indicator paints with it too, and that rail
-     wants to stay a hairline. */
+     wants to stay a hairline.
+
+     The alphas then pull back to roughly halfway between the old edge and a
+     full-strength `content-faint` one, which turned out to be the same number
+     in both themes. Composited over the card, the ring read ~216 (light) /
+     ~60 (dark) before and ~172 / ~106 at 0.9; the midpoints of those pairs
+     both solve to α≈0.65, because `content-faint` sits a similar distance from
+     the card surface in either direction. 0.75 on the bottom edge keeps it the
+     stronger of the two, which is what makes the card read as resting on the
+     chrome rather than floating in it. */
   --shadow-content-edge:
-    inset 0 0 0 1px rgb(var(--content-faint) / 0.9), inset 0 -1px 0 rgb(var(--content-faint));
+    inset 0 0 0 1px rgb(var(--content-faint) / 0.65),
+    inset 0 -1px 0 rgb(var(--content-faint) / 0.75);
 
   --animate-fade-in: fadeIn 0.2s ease-out forwards;
   --animate-fade-up: fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
