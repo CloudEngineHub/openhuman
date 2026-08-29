@@ -293,7 +293,7 @@ export function ProviderModelPickerDialog({
             <div className="mt-3 max-h-56 space-y-1 overflow-y-auto">
               {source?.kind === 'claude-code' ? (
                 <p className="text-sm text-content-muted">
-                  Use a Claude Code model alias or model ID.
+                  {t('settings.ai.picker.claudeCodeHint')}
                 </p>
               ) : (
                 catalog.map(candidate => (
