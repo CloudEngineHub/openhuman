@@ -788,7 +788,7 @@ function MicComposer({
           aria-label={isRecording ? t('mic.stopRecording') : t('mic.startRecording')}
           onClick={() => (isRecording ? stopRecording() : void startRecording())}
           disabled={buttonDisabled}
-          className={`relative w-14 h-14 flex items-center justify-center rounded-full text-white shadow-soft transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+          className={`relative w-14 h-14 flex items-center justify-center rounded-full text-content-inverted shadow-soft transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
             isRecording ? 'bg-coral-500 hover:bg-coral-400' : 'bg-primary-500 hover:bg-primary-600'
           }`}>
           {isRecording && (
