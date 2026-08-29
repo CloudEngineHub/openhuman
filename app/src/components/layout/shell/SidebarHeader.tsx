@@ -39,20 +39,29 @@ export default function SidebarHeader() {
     // pulling it up to the window's edge to chase a platform control would bend
     // the app's own spacing around one OS's chrome. The lights are moved to
     // this line instead, via `trafficLightPosition` in `tauri.conf.json`. That
-    // file is JSON and cannot hold a comment, so the arithmetic lives here,
-    // beside the row it has to agree with:
+    // file is JSON and cannot hold a comment, so the reasoning lives here,
+    // beside the row it has to agree with.
     //
-    //   this row's centre = pt-3 (12px) + half of ICON_BTN's h-7 (14px) = 26px
-    //   tao positions the lights by INSET, not by centre: `y` becomes the gap
-    //   above the buttons (`inset_traffic_lights` sets the title-bar container
-    //   to buttonHeight + y and pins it to the window top), and `x` is the
-    //   close button's left edge.
-    //   so y = 26 − buttonHeight/2 ≈ 26 − 6 = 20 for macOS's 12px buttons.
+    // The target is fixed and computable: this row's centre is pt-3 (12px) plus
+    // half of ICON_BTN's h-7 (14px) = 26px from the window top, and the sidebar
+    // starts flush at that top — `SidebarProvider`/`Sidebar` add no inset.
     //
-    // `x: 20` keeps the conventional macOS left inset. If the buttons look a
-    // pixel or two off, `y` is the dial — and it is worth re-deriving rather
-    // than nudging, because it is pinned to this row's padding: change `pt-3`
-    // or `ICON_BTN`'s height and the lights stop agreeing with the icons.
+    // `y` is NOT that centre, and is not a simple gap either. tao positions the
+    // lights by resizing the title-bar container: `inset_traffic_lights`
+    // (tao `platform_impl/macos/view.rs`) sets the container's height to
+    // buttonHeight + y and pins it to the window top, but only rewrites each
+    // button's origin.x — origin.y is left alone. So the space above a button
+    // works out as `y − b`, where `b` is whatever offset the button already had
+    // inside that container. `b` is AppKit's and is not knowable from here,
+    // which is why `y` is tuned by looking at the window rather than solved:
+    // 20 sat visibly high, 28 is the correction.
+    //
+    // `x: 20` is the conventional macOS left inset. Supplying it is unavoidable
+    // — the config takes a position, so `y` cannot be set alone without moving
+    // this into Rust and reading the existing frame.
+    //
+    // Re-check this if `pt-3` or `ICON_BTN`'s height ever changes: the target
+    // moves with them, and nothing fails loudly when the two disagree.
     //
     // `data-tauri-drag-region` lives directly on the primitive (rather than a
     // wrapping div in `AppSidebar`) so the header band is draggable window
