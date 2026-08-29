@@ -171,10 +171,7 @@ const themeSlice = createSlice({
     /** Patch the backdrop (mesh/solid/image); auto-forks a preset. */
     setThemeBackdrop(
       state,
-      action: PayloadAction<{
-        kind?: 'mesh' | 'solid' | 'image';
-        imageUrl?: string;
-      }>
+      action: PayloadAction<{ kind?: 'mesh' | 'solid' | 'image'; imageUrl?: string }>
     ) {
       const theme = ensureEditableCustom(state);
       const prev = theme.backdrop ?? { kind: 'solid' as const };

@@ -33,7 +33,7 @@ import {
   type ThemeVariant,
   upsertCustomTheme,
 } from '../../../store/themeSlice';
-import { Button, Checkbox, TextArea, TextField, ToggleGroupItem, ToggleGroupRoot } from '../../ui';
+import { Button, TextArea, TextField, ToggleGroupItem, ToggleGroupRoot } from '../../ui';
 import { SettingsSection, SettingsSelect } from '../controls';
 import SettingsPanel from '../layout/SettingsPanel';
 import ColorTokenField from './theme/ColorTokenField';
