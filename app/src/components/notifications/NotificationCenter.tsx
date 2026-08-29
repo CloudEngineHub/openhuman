@@ -165,31 +165,27 @@ const NotificationCenter = () => {
         )}
       </div>
 
-      {/* Provider filter pills */}
+      {/* Provider filter pills — the same `ChipTabs` grammar as the category
+          row two levels up the page, which is visible on screen at the same
+          time and used to be painted differently.
+
+          `ALL_PROVIDERS` is a sentinel: `ChipTabs` is single-select over a
+          non-optional value, while `selectedProvider` is `string | undefined`
+          (undefined = unfiltered, and the value the fetch effect keys on).
+          The one behaviour this drops is re-click-to-clear on the active
+          provider chip; the explicit "All" chip still clears the filter. */}
       {allProviders.length > 1 && (
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-line-subtle overflow-x-auto">
-          <button
-            onClick={() => setSelectedProvider(undefined)}
-            className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-              selectedProvider === undefined
-                ? 'bg-primary-500 text-content-inverted'
-                : 'bg-surface-subtle text-content-secondary hover:bg-surface-strong dark:hover:bg-surface-muted/60'
-            }`}>
-            {t('notifications.center.filterAll')}
-          </button>
-          {allProviders.map(p => (
-            <button
-              key={p}
-              onClick={() => setSelectedProvider(p === selectedProvider ? undefined : p)}
-              className={`shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                selectedProvider === p
-                  ? 'bg-primary-500 text-content-inverted'
-                  : 'bg-surface-subtle text-content-secondary hover:bg-surface-strong dark:hover:bg-surface-muted/60'
-              }`}>
-              {p}
-            </button>
-          ))}
-        </div>
+        <ChipTabs
+          as="tab"
+          ariaLabel={t('notifications.center.filterAll')}
+          className="flex items-center gap-1.5 overflow-x-auto border-b border-line-subtle px-4 py-2"
+          items={[
+            { id: ALL_PROVIDERS, label: t('notifications.center.filterAll') },
+            ...allProviders.map(p => ({ id: p, label: p })),
+          ]}
+          value={selectedProvider ?? ALL_PROVIDERS}
+          onChange={id => setSelectedProvider(id === ALL_PROVIDERS ? undefined : id)}
+        />
       )}
 
       {/* Content */}
