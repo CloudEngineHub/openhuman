@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -25,7 +25,10 @@ import { ACCENT_FAMILIES, ACCENT_SHADES, COLOR_GROUPS } from './tokens';
  * header says so), so adding a token there and forgetting the registry is what
  * this must catch.
  */
-const TOKENS_CSS = fileURLToPath(new URL('../../styles/tokens.css', import.meta.url));
+// Resolved from the Vitest root (`app/`), not from `import.meta.url`: the
+// stylesheet is an asset rather than a module, so it has no module URL to hang
+// a relative path off in this transform.
+const TOKENS_CSS = resolve(process.cwd(), 'src/styles/tokens.css');
 
 /** `--foo-bar: 12 34 56;` → `foo-bar`, scanning the light `:root` block only. */
 function lightRootColorTokens(): string[] {
