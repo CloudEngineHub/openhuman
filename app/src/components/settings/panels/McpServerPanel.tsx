@@ -208,11 +208,13 @@ const McpServerPanel = ({ embedded = false }: McpServerPanelProps = {}) => {
             }}
           />
 
-          {/* Binary path error banner */}
+          {/* Binary path error banner — resolved on mount, present before
+              the reader has done anything, so it must not interrupt with an
+              assertive announcement. */}
           {binaryError && (
-            <div className="mx-4 mt-3 px-3 py-2 rounded-lg border border-coral-300 dark:border-coral-500/40 bg-coral-50 dark:bg-coral-500/10 text-xs text-coral-900 dark:text-coral-300">
-              {t('settings.mcpServer.binaryPathNotFound')}
-            </div>
+            <Alert variant="destructive" density="compact" role={undefined} className="mx-4 mt-3">
+              <AlertDescription>{t('settings.mcpServer.binaryPathNotFound')}</AlertDescription>
+            </Alert>
           )}
 
           {/* Config file path */}
