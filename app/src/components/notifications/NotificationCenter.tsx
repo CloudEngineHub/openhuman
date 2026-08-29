@@ -18,6 +18,7 @@ import {
   setIntegrationLoading,
   setIntegrationNotifications,
 } from '../../store/notificationSlice';
+import ChipTabs from '../layout/ChipTabs';
 import { Alert, AlertDescription } from '../ui';
 import Button from '../ui/Button';
 import CoreNotificationCard from './CoreNotificationCard';
@@ -28,6 +29,14 @@ import NotificationCard from './NotificationCard';
 // ─────────────────────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Chip id standing in for "no provider filter". `selectedProvider` is
+ * `string | undefined` (undefined is what the fetch effect sends as "all"),
+ * but `ChipTabs` is single-select over a non-optional value — so the sentinel
+ * lives in the row and never reaches the state or the request.
+ */
+const ALL_PROVIDERS = '__all__';
 
 /**
  * A paused `tinyflows` run's approval prompt (issue B3a) — id set by
