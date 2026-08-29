@@ -1737,11 +1737,6 @@ const en: TranslationMap = {
   'settings.search.accessBlockAllHint':
     'All web access is blocked: the assistant cannot open or read any website.',
   // ─── Settings global search bar ────────────────────────────
-  'settings.settingsSearch.placeholder': 'Search settings…',
-  'settings.settingsSearch.ariaLabel': 'Search settings',
-  'settings.settingsSearch.clear': 'Clear search',
-  'settings.settingsSearch.resultsLabel': 'Search results',
-  'settings.settingsSearch.noResults': 'No settings found for “{query}”',
   // ─── Embeddings settings ───────────────────────────────────
   'settings.embeddings.title': 'Embeddings',
   'settings.embeddings.description':
