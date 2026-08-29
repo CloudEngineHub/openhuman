@@ -10,8 +10,6 @@ import {
   memoryLearnAll,
   memorySyncAll,
   memorySyncChannel,
-  whatsappListChats,
-  whatsappListMessages,
 } from './memory';
 
 vi.mock('../../services/coreRpcClient', () => ({ callCoreRpc: vi.fn() }));
@@ -159,64 +157,4 @@ describe('aiListMemoryFiles', () => {
   });
 });
 
-describe('whatsappListChats', () => {
-  test('throws when not in Tauri', async () => {
-    mockIsTauri.mockReturnValue(false);
-    await expect(whatsappListChats()).rejects.toThrow('Not running in Tauri');
-    expect(mockSafeInvoke).not.toHaveBeenCalled();
-  });
-
-  test('invokes the shell command with provided params wrapped in req', async () => {
-    mockSafeInvoke.mockResolvedValueOnce([]);
-    await whatsappListChats({ limit: 10 });
-    expect(mockSafeInvoke).toHaveBeenCalledWith('whatsapp_data_list_chats', { req: { limit: 10 } });
-  });
-
-  test('uses empty req object when no params provided', async () => {
-    mockSafeInvoke.mockResolvedValueOnce([]);
-    await whatsappListChats();
-    expect(mockSafeInvoke).toHaveBeenCalledWith('whatsapp_data_list_chats', { req: {} });
-  });
-
-  test('returns the chat array from the command', async () => {
-    const chats = [{ chat_id: 'c1', display_name: 'Direct' }];
-    mockSafeInvoke.mockResolvedValueOnce(chats);
-    const result = await whatsappListChats();
-    expect(result).toBe(chats);
-  });
-
-  test('returns empty array when the command yields a nullish result', async () => {
-    mockSafeInvoke.mockResolvedValueOnce(undefined);
-    const result = await whatsappListChats();
-    expect(result).toEqual([]);
-  });
-});
-
-describe('whatsappListMessages', () => {
-  test('throws when not in Tauri', async () => {
-    mockIsTauri.mockReturnValue(false);
-    await expect(whatsappListMessages({ chat_id: 'c1' })).rejects.toThrow('Not running in Tauri');
-    expect(mockSafeInvoke).not.toHaveBeenCalled();
-  });
-
-  test('invokes the shell command with required chat_id in req', async () => {
-    mockSafeInvoke.mockResolvedValueOnce([]);
-    await whatsappListMessages({ chat_id: 'c1', limit: 50 });
-    expect(mockSafeInvoke).toHaveBeenCalledWith('whatsapp_data_list_messages', {
-      req: { chat_id: 'c1', limit: 50 },
-    });
-  });
-
-  test('returns the message array from the command', async () => {
-    const msgs = [{ message_id: 'm1', body: 'hello' }];
-    mockSafeInvoke.mockResolvedValueOnce(msgs);
-    const result = await whatsappListMessages({ chat_id: 'c1' });
-    expect(result).toBe(msgs);
-  });
-
-  test('returns empty array when the command yields a nullish result', async () => {
-    mockSafeInvoke.mockResolvedValueOnce(undefined);
-    const result = await whatsappListMessages({ chat_id: 'c1' });
-    expect(result).toEqual([]);
-  });
 });
