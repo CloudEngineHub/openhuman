@@ -307,7 +307,10 @@ export function ProviderModelPickerDialog({
                     variant="tertiary"
                     size="sm"
                     onClick={() => setModel(candidate.id)}
-                    className={`w-full justify-start font-mono ${model === candidate.id ? 'bg-surface-muted' : ''}`}>
+                    className={cn(
+                      'w-full justify-start font-mono',
+                      model === candidate.id && 'bg-surface-muted'
+                    )}>
                     {candidate.id}
                   </Button>
                 ))
