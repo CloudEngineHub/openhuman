@@ -573,6 +573,6 @@ export function MemorySourcesRegistry({
       {allInModalOpen && (
         <ConfirmationModal modal={allInModal} onClose={() => setAllInModalOpen(false)} />
       )}
-    </section>
+    </Card>
   );
 }
