@@ -62,12 +62,11 @@ export function MemoryControls({
       const resp = await memoryTreeWipeAll();
       onToast?.({
         type: 'success',
-        title: 'Memory wiped',
-        message:
-          `Removed ${resp.rows_deleted.toLocaleString()} row(s) and ` +
-          `${resp.dirs_removed.length} folder(s); cleared ` +
-          `${resp.sync_state_cleared.toLocaleString()} sync-state cursor(s). ` +
-          `Click Sync on a connected source to repopulate.`,
+        title: t('workspace.wipeSuccessTitle'),
+        message: t('workspace.wipeSuccessMessage')
+          .replace('{rows}', resp.rows_deleted.toLocaleString())
+          .replace('{dirs}', String(resp.dirs_removed.length))
+          .replace('{cursors}', resp.sync_state_cleared.toLocaleString()),
       });
       // Re-pull immediately so the canvas reflects the wipe.
       onRefresh();
@@ -75,7 +74,7 @@ export function MemoryControls({
       console.error('[ui-flow][memory-controls] wipe_all failed', err);
       onToast?.({
         type: 'error',
-        title: 'Reset failed',
+        title: t('workspace.wipeFailedTitle'),
         message: err instanceof Error ? err.message : String(err),
       });
     } finally {
