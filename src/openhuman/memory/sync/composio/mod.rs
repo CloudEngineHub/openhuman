@@ -89,7 +89,7 @@
 //! indistinguishable from a user who has none, so a half-removed loop looks
 //! like a working one until someone notices their mail stopped being indexed.
 
-pub use tinymemory_core::sync::composio::*;
+// XPROBE
 
 pub mod providers;
 

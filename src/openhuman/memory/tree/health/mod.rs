@@ -62,6 +62,6 @@ pub use tinycortex::memory::health::{
 // **not yet**: neither `ModuleMemoryProvider` nor `GuardedMaintenance` overrides
 // it, so a call today falls through to the trait's default and answers
 // `Unsupported` at run time. See `tree::tree::rpc::doctor_rpc`.
-pub use tinymemory_core::tree::health::*;
+// XPROBE
 
 pub(crate) mod user_error;

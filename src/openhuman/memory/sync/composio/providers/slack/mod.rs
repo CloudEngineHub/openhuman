@@ -18,7 +18,7 @@
 //! `cargo test --lib` does not compile `tests/`, so that break would land in
 //! CI rather than locally. Grep both trees before narrowing any shim here.
 
-pub use tinymemory_core::sync::composio::providers::slack::*;
+// XPROBE
 
 pub mod rpc;
 pub mod schemas;

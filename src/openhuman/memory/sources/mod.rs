@@ -63,7 +63,7 @@
 //! `Capability::Sources`: there is no `MemorySources` family in the contract,
 //! so a listing member is an upstream ask, not a call site nobody routed.
 
-pub use tinymemory_core::sources::*;
+// XPROBE
 
 pub mod rpc;
 pub mod schemas;

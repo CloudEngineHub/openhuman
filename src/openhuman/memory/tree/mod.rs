@@ -57,7 +57,7 @@ pub use tinycortex::memory::tree::{
 // is the summary-node vocabulary — not an embedder and not an entity extractor
 // — so there is nothing on the contract to route these at. This shim goes when
 // scoring and summarisation move behind the bus, not before.
-pub use tinymemory_core::tree::*;
+// XPROBE pub use tinymemory_core::tree::*;
 
 pub mod health;
 pub mod retrieval;
