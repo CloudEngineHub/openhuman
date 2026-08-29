@@ -18,6 +18,7 @@ import {
   setIntegrationLoading,
   setIntegrationNotifications,
 } from '../../store/notificationSlice';
+import { Alert, AlertDescription } from '../ui';
 import Button from '../ui/Button';
 import CoreNotificationCard from './CoreNotificationCard';
 import FlowApprovalCard from './FlowApprovalCard';
