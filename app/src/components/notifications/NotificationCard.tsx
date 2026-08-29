@@ -104,26 +104,21 @@ const NotificationCard = ({ notification: n, onMarkRead, onNavigate, onDismiss }
           className="flex-1 min-w-0 text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1 rounded-sm">
           {/* Header row: provider badge + timestamp */}
           <div className="flex items-center gap-2 mb-1">
-            <span
-              className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${providerBadgeClass(n.provider)}`}>
-              {n.provider}
-            </span>
+            <Badge className={providerBadgeClass(n.provider)}>{n.provider}</Badge>
 
             {n.importance_score !== undefined && (
-              <span
-                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border ${scoreBadgeClass(n.importance_score)}`}
+              <Badge
+                className={scoreBadgeClass(n.importance_score)}
                 title={t('notifications.card.importanceTitle').replace(
                   '{pct}',
                   (n.importance_score * 100).toFixed(0)
                 )}>
                 {(n.importance_score * 100).toFixed(0)}%
-              </span>
+              </Badge>
             )}
 
             {n.triage_action && n.triage_action !== 'drop' && n.triage_action !== 'acknowledge' && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium border bg-amber-100 text-amber-700 border-amber-200">
-                {n.triage_action}
-              </span>
+              <Badge variant="warning">{n.triage_action}</Badge>
             )}
 
             <span className="ml-auto text-[11px] text-content-faint shrink-0">
