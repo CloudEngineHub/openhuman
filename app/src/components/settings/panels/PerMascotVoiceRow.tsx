@@ -211,7 +211,7 @@ const PerMascotVoiceRow = ({ mascotId, label, testIdPrefix }: PerMascotVoiceRowP
             data-testid={`${testIdPrefix}-preview`}
             onClick={() => void onVoicePreview()}
             disabled={isPreviewingVoice}
-            className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500">
+            className="bg-sage-600 hover:bg-sage-700 dark:bg-sage-600 dark:hover:bg-sage-500">
             {isPreviewingVoice
               ? t('settings.mascot.voice.previewing')
               : t('settings.mascot.voice.preview')}
