@@ -23,8 +23,7 @@ import {
   useRunsPendingApprovalSet,
 } from '../../hooks/useRunsPendingApprovalSet';
 import { useT } from '../../lib/i18n/I18nContext';
-import Button from '../ui/Button';
-import { CenteredLoadingState, ErrorBanner } from '../ui/LoadingState';
+import { Button, CenteredLoadingState, ErrorBanner } from '../ui';
 import { type FlowRepairRequest, FlowRunInspectorDrawer } from './FlowRunInspectorDrawer';
 import { FlowRunStatus, flowRunStatusLabel } from './FlowRunStatus';
 
