@@ -76,10 +76,7 @@ const CoreJobList = ({
         coreJobs.map(job => {
           const runs = coreRunsByJob[job.id] ?? [];
           return (
-            <div
-              key={job.id}
-              data-testid={`cron-job-row-${job.id}`}
-              className="space-y-3 py-3">
+            <div key={job.id} data-testid={`cron-job-row-${job.id}`} className="space-y-3 py-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-content">{job.name || job.id}</div>

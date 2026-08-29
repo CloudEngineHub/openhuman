@@ -266,9 +266,7 @@ const McpServerPanel = ({ embedded = false }: McpServerPanelProps = {}) => {
   );
 
   if (embedded) {
-    return (
-      <PanelPage className="z-10">{body}</PanelPage>
-    );
+    return <PanelPage className="z-10">{body}</PanelPage>;
   }
 
   return (
