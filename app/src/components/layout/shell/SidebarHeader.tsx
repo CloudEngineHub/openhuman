@@ -1,5 +1,5 @@
-import { LuKeyboard, LuMegaphone, LuPanelLeftClose, LuSettings } from 'react-icons/lu';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { LuKeyboard, LuPanelLeftClose, LuSearch, LuSettings } from 'react-icons/lu';
+import { useNavigate } from 'react-router-dom';
 
 import { registry } from '../../../lib/commands/registry';
 import { useT } from '../../../lib/i18n/I18nContext';
@@ -24,9 +24,7 @@ const ICON_BTN = 'h-7 w-7 flex-none rounded-md text-content-muted hover:text-con
 export default function SidebarHeader() {
   const { t } = useT();
   const navigate = useNavigate();
-  const location = useLocation();
   const { hide } = useRootSidebar();
-  const feedbackActive = location.pathname === '/feedback';
 
   return (
     // The primitive's header slot supplies the px-3/pb-2/pt-3 band; this only
@@ -81,20 +79,25 @@ export default function SidebarHeader() {
           </Button>
         </Tooltip>
 
-        {/* Share feedback — a utility action, so it sits with the other three
-            rather than occupying a nav row. `aria-current` marks it while the
-            route is open, matching how the nav rows signal the active page. */}
-        <Tooltip label={t('nav.feedback')}>
+        {/* Global search — opens the ⌘K command palette. Goes through the
+            command registry rather than a local handler so this button and the
+            keyboard shortcut are literally the same action: one definition
+            (`meta.command-palette` in `lib/commands/globalActions.ts`) owns the
+            label, the shortcut and the handler, and the palette cannot end up
+            opening one way and not the other.
+
+            This slot held Share Feedback, which navigated to `/feedback`. That
+            page is a settings panel now (`/settings/feedback`), reachable from
+            the settings sidebar — and from this palette. */}
+        <Tooltip label={t('shortcuts.action.commandPalette')}>
           <Button
             variant="tertiary"
             iconOnly
-            onClick={() => navigate('/feedback')}
+            onClick={() => registry.runAction('meta.command-palette')}
             className={ICON_BTN}
-            analyticsId="sidebar-header-feedback"
-            data-walkthrough="tab-feedback"
-            aria-current={feedbackActive ? 'page' : undefined}
-            aria-label={t('nav.feedback')}>
-            <LuMegaphone className="h-4 w-4" />
+            analyticsId="sidebar-header-command-palette"
+            aria-label={t('shortcuts.action.commandPalette')}>
+            <LuSearch className="h-4 w-4" />
           </Button>
         </Tooltip>
 
