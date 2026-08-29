@@ -203,7 +203,7 @@ export function CodingSessionsCard({ onToast }: CodingSessionsCardProps) {
         {sources.map(source => (
           <div
             key={source.kind}
-            className="rounded-md border border-line-subtle bg-surface-secondary px-3 py-2"
+            className="rounded-md border border-line-subtle bg-surface-muted px-3 py-2"
             data-testid={`coding-session-source-${source.kind}`}>
             <div className="text-xs font-medium text-content">
               {t(SOURCE_LABEL_KEYS[source.kind])}
