@@ -160,7 +160,7 @@ const Invites = () => {
             {/* Redeem Section — shown only if user hasn't redeemed yet */}
             {!hasBeenInvited && (
               <div className="bg-surface rounded-2xl shadow-soft border border-line p-6 animate-fade-up">
-                <h2 className="text-lg font-bold mb-1">{t('rewards.referralCode')}</h2>
+                <h2 className="text-lg font-bold mb-1">{t('invites.redeemHeading')}</h2>
                 <p className="text-xs opacity-70 mb-4">{t('rewards.share')}</p>
                 <div className="flex gap-2">
                   <input
@@ -168,7 +168,7 @@ const Invites = () => {
                     value={redeemInput}
                     onChange={e => setRedeemInput(e.target.value.toUpperCase())}
                     onKeyDown={e => e.key === 'Enter' && handleRedeem()}
-                    placeholder={t('common.search')}
+                    placeholder={t('invites.redeemPlaceholder')}
                     className="flex-1 px-4 py-2.5 bg-surface/5 border border-line-strong rounded-xl font-mono text-sm tracking-wider placeholder:text-content-faint placeholder:tracking-normal placeholder:font-sans focus:outline-hidden focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
                     disabled={redeemStatus === 'loading'}
                   />
@@ -177,7 +177,7 @@ const Invites = () => {
                     onClick={handleRedeem}
                     disabled={redeemStatus === 'loading' || !redeemInput.trim()}
                     className="whitespace-nowrap">
-                    {redeemStatus === 'loading' ? '...' : t('rewards.referrals')}
+                    {redeemStatus === 'loading' ? '...' : t('invites.redeemSubmit')}
                   </Button>
                 </div>
                 {redeemStatus === 'success' && (
