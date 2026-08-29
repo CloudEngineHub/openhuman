@@ -26,7 +26,7 @@ export const badgeVariants = cva(
 export type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>;
 
 export interface BadgeProps
-  extends Omit<HTMLAttributes<HTMLSpanElement>, 'children' | 'color'>,
+  extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'>,
     VariantProps<typeof badgeVariants> {
   children: ReactNode;
   className?: string;
