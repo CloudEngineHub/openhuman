@@ -205,7 +205,7 @@ export const PairScreen: FC = () => {
         {state.kind === 'idle' && (
           <button
             onClick={() => void startScan()}
-            className="w-full py-4 rounded-xl bg-[#4A83DD] text-white font-medium text-base
+            className="w-full py-4 rounded-xl bg-[#4A83DD] text-content-inverted font-medium text-base
                        active:opacity-80 transition-opacity shadow-md">
             {t('iosPair.scanQrCode')}
           </button>
