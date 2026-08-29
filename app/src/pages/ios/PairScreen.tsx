@@ -212,13 +212,13 @@ export const PairScreen: FC = () => {
         )}
 
         {state.kind === 'scanning' && (
-          <p className="text-white/60 text-sm text-center animate-pulse">
+          <p className="text-content-inverted/60 text-sm text-center animate-pulse">
             {t('iosPair.scannerOpening')}
           </p>
         )}
 
         {state.kind === 'connecting' && (
-          <p className="text-white/60 text-sm text-center animate-pulse">
+          <p className="text-content-inverted/60 text-sm text-center animate-pulse">
             {t('iosPair.connecting')}
           </p>
         )}
