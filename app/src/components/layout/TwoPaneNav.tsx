@@ -75,7 +75,13 @@ export default function TwoPaneNav({
         {groups.map((group, groupIndex) => (
           <div key={group.label ?? `__group-${groupIndex}`} data-testid={group.testId}>
             {group.label && (
-              <div className="px-2 pb-0.5 pt-2.5">
+              // `pt-2.5` is the rhythm BETWEEN groups — it separates a heading
+              // from the rows of the group above it. The first group has no
+              // group above it, so on that one it is not rhythm, just a top
+              // inset, and it stacked on the separator that already spaces this
+              // pane. `ThreadList`'s equivalent heading is `pt-0` for the same
+              // reason; this makes the two sidebars start on the same line.
+              <div className={`px-2 pb-0.5 ${groupIndex === 0 ? 'pt-0' : 'pt-2.5'}`}>
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-content-muted">
                   {group.label}
                 </span>
