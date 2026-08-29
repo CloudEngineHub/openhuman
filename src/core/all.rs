@@ -969,11 +969,6 @@ fn build_registered_controllers() -> Vec<GroupedController> {
         DomainGroup::Desktop,
         crate::openhuman::desktop::notifications::all_notifications_registered_controllers(),
     );
-    // Structured WhatsApp Web data has NO core RPC controllers: the SQLite
-    // store + ingest + list/search moved to the Tauri shell
-    // (`app/src-tauri/src/whatsapp_data/`). The agent's read-only query tools
-    // live in `openhuman::channels::whatsapp_data::tools` and reach the shell store via
-    // the in-process native request bus, not the controller registry.
     // Mobile device pairing and management
     push(
         &mut controllers,
@@ -1031,8 +1026,6 @@ fn build_registered_controllers() -> Vec<GroupedController> {
 /// (e.g. the Tauri scanner ingest path) that should not appear in agent tool listings.
 fn build_internal_only_controllers() -> Vec<GroupedController> {
     let mut controllers = Vec::new();
-    // (whatsapp_data ingest is no longer a core RPC path — the scanner writes
-    // the shell-side store directly over the in-process native request bus.)
     // MCP write audit list: internal-only so the desktop UI/CLI can inspect
     // local write history without exposing cross-client history as an MCP tool.
     push(

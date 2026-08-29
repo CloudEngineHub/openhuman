@@ -1153,9 +1153,8 @@ fn channels_controllers_registered_when_feature_on() {
 /// namespace) stays present, pinning the #5002 decoupling: turning off external
 /// messaging must NOT take down core in-app chat.
 ///
-/// This is the half that proves the gate does something. The 3 `whatsapp_data`
-/// agent tools are pinned separately in `tools::ops_tests` (that module has the
-/// full-tool-list machinery); here we assert the controller surface.
+/// This is the half that proves the gate does something: here we assert the
+/// controller surface.
 #[cfg(not(feature = "channels"))]
 #[test]
 fn channels_controllers_absent_when_feature_off() {
