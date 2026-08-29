@@ -357,12 +357,11 @@ export function FlowRunInspectorDrawer({ runId, onClose, onFixWithAgent }: Props
 
               {/* Error banner */}
               {run.error && (
-                <div
-                  role="alert"
-                  data-testid="flow-run-error-banner"
-                  className="rounded-xl border border-coral-200 bg-coral-50 px-3 py-2 text-xs text-coral-700 dark:border-coral-500/30 dark:bg-coral-500/10 dark:text-coral-300">
-                  {t('flowRuns.inspector.error')}: {run.error}
-                </div>
+                <Alert variant="destructive" density="compact" data-testid="flow-run-error-banner">
+                  <AlertDescription>
+                    {t('flowRuns.inspector.error')}: {run.error}
+                  </AlertDescription>
+                </Alert>
               )}
 
               {/* Repair entry point (Phase 5c): open the canvas copilot preloaded
