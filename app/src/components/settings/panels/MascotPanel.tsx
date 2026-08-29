@@ -416,13 +416,14 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
               })}
             </div>
           )}
-        </div>
+        </Card>
         {activeColor === 'custom' && (
-          <div className="mt-3 bg-surface rounded-xl border border-line p-4 space-y-3">
-            <label className="flex items-center gap-3">
-              <input
-                type="color"
-                value={customPrimary}
+          <Card padded divided={false} className="mt-3">
+            <div className="space-y-3">
+              <label className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={customPrimary}
                 onChange={e => dispatch(setCustomPrimaryColor(e.target.value))}
                 className="w-8 h-8 rounded-md border border-line dark:border-line-strong cursor-pointer p-0"
               />
