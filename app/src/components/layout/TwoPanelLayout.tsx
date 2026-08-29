@@ -279,12 +279,13 @@ export default function TwoPanelLayout({
                  centered vertically. When the handle is hidden it stays
                  transparent at rest and only surfaces on hover/focus. */
               <span
-                className={`h-10 w-1 rounded-full transition-colors group-hover:bg-primary-400 group-focus:bg-primary-500 ${
+                className={cn(
+                  'h-10 w-1 rounded-full transition-colors group-hover:bg-primary-400 group-focus:bg-primary-500',
                   // `line-strong` rather than a raw grey pair: the token
                   // already carries the per-theme value the two palette classes
                   // were hand-picking, so the handle tracks the theme.
                   showDividerHandle ? 'bg-line-strong' : 'bg-transparent'
-                }`}
+                )}
               />
             )}
           </div>
