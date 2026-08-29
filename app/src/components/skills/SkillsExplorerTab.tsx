@@ -80,7 +80,7 @@ function isCatalogEntryInstalled(entry: CatalogEntry, installedKeys: Set<string>
  * remote rows take the neutral fallback this table already defines instead of
  * reaching for unthemeable ramps. See `gitbooks/developing/theming.md`.
  */
-const SOURCE_NEUTRAL = 'bg-surface-muted text-content-secondary border-line';
+const BADGE_NEUTRAL_TONE = 'bg-surface-muted text-content-secondary border-line';
 
 function SourceBadge({ source }: { source: string }) {
   const SOURCE_COLORS: Record<string, string> = {
@@ -89,7 +89,7 @@ function SourceBadge({ source }: { source: string }) {
     optional:
       'bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-500/10 dark:text-primary-300 dark:border-primary-500/30',
   };
-  const colors = SOURCE_COLORS[source] ?? SOURCE_NEUTRAL;
+  const colors = SOURCE_COLORS[source] ?? BADGE_NEUTRAL_TONE;
   return (
     <span
       className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${colors}`}>
@@ -124,7 +124,7 @@ function SkillFormatBadge({ format }: { format: string }) {
   };
   const entry = FORMAT_MAP[lower] ?? {
     label: format || 'Skill',
-    colors: SOURCE_NEUTRAL,
+    colors: BADGE_NEUTRAL_TONE,
   };
   return (
     <span
