@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
-import Badge, { badgeVariants, type BadgeVariant } from './Badge';
+import Badge, { type BadgeVariant, badgeVariants } from './Badge';
 
 const VARIANTS: BadgeVariant[] = ['neutral', 'primary', 'success', 'warning', 'danger'];
 
@@ -18,15 +18,14 @@ describe('Badge', () => {
     // The class list is the variant recipe verbatim — no extra utilities crept in.
     expect(badge.getAttribute('class')).toBe(badgeVariants({ variant: undefined }));
     // Nothing beyond the four attributes the component has always emitted.
-    expect(Array.from(badge.attributes).map((attr) => attr.name).sort()).toEqual([
-      'class',
-      'data-slot',
-      'data-testid',
-      'data-variant',
-    ]);
+    expect(
+      Array.from(badge.attributes)
+        .map(attr => attr.name)
+        .sort()
+    ).toEqual(['class', 'data-slot', 'data-testid', 'data-variant']);
   });
 
-  it.each(VARIANTS)('keeps the %s variant class list unchanged', (variant) => {
+  it.each(VARIANTS)('keeps the %s variant class list unchanged', variant => {
     render(
       <Badge data-testid="badge" variant={variant}>
         Label

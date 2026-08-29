@@ -26,8 +26,7 @@ export const badgeVariants = cva(
 export type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>;
 
 export interface BadgeProps
-  extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'>,
-    VariantProps<typeof badgeVariants> {
+  extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'>, VariantProps<typeof badgeVariants> {
   children: ReactNode;
   className?: string;
   'data-testid'?: string;
@@ -40,13 +39,7 @@ export interface BadgeProps
  * component-owned attributes are applied after `...rest` so the default render
  * is identical whether or not extra props are passed.
  */
-const Badge = ({
-  variant,
-  children,
-  className,
-  'data-testid': testId,
-  ...rest
-}: BadgeProps) => (
+const Badge = ({ variant, children, className, 'data-testid': testId, ...rest }: BadgeProps) => (
   <span
     {...rest}
     data-slot="badge"
