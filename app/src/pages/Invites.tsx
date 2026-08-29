@@ -215,7 +215,7 @@ const Invites = () => {
               ) : (
                 <EmptyState label={t('invites.noInvites')} className="text-center" />
               )}
-            </div>
+            </Card>
           </div>
         </div>
       </div>
