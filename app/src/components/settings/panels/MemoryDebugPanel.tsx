@@ -282,8 +282,9 @@ const MemoryDebugPanel = () => {
                 variant="secondary"
                 size="xs"
                 onClick={() => void loadNamespaces()}
-                disabled={namespacesLoading}>
-                {namespacesLoading ? '...' : t('memory.refresh')}
+                disabled={namespacesLoading}
+                leadingIcon={namespacesLoading ? <Spinner className="h-3 w-3" /> : undefined}>
+                {t('memory.refresh')}
               </Button>
             </div>
             <SettingsStatusLine saving={false} error={namespacesError} savingLabel="" />
