@@ -200,11 +200,7 @@ const Invites = () => {
               {loadError && <p className="text-coral-500 text-xs text-center py-2">{loadError}</p>}
 
               {isLoading ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="h-12 bg-surface/5 rounded-xl animate-pulse" />
-                  ))}
-                </div>
+                <CenteredLoadingState label={t('common.loading')} />
               ) : codes.length > 0 ? (
                 <div className="space-y-2">
                   {codes.map(invite => (
@@ -212,9 +208,7 @@ const Invites = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-content-muted text-center py-6">
-                  {t('invites.noInvites')}
-                </p>
+                <EmptyState label={t('invites.noInvites')} className="text-center" />
               )}
             </div>
           </div>
