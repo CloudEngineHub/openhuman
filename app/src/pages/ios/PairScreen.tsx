@@ -264,8 +264,8 @@ export const PairScreen: FC = () => {
               t('iosPair.step.openSettings'),
               t('iosPair.step.showQr'),
             ].map((step, i) => (
-              <div key={step} className="flex items-center gap-3 text-white/50 text-xs">
-                <span className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] shrink-0">
+              <div key={step} className="flex items-center gap-3 text-content-inverted/50 text-xs">
+                <span className="w-5 h-5 rounded-full border border-content-inverted/20 flex items-center justify-center text-[10px] shrink-0">
                   {i + 1}
                 </span>
                 {step}
