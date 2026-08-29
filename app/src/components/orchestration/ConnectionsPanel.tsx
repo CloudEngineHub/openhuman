@@ -409,11 +409,9 @@ export default function ConnectionsPanel({
 
   if (state.status === 'loading') {
     return (
-      <p
-        className="py-8 text-center text-sm text-content-muted"
-        data-testid="orch-connections-loading">
-        {t('tinyplaceOrchestration.loading')}
-      </p>
+      <div data-testid="orch-connections-loading">
+        <CenteredLoadingState label={t('tinyplaceOrchestration.loading')} />
+      </div>
     );
   }
   if (state.status === 'payment_required') {
