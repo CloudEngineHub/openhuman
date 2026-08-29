@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/i18n/I18nContext';
 import { channelConnectionsApi } from '../../services/api/channelConnectionsApi';
 import type { BotPermissionCheck, DiscordGuild, DiscordTextChannel } from '../../types/channels';
+import { Spinner } from '../ui';
 import NativeSelect from '../ui/NativeSelect';
 
 const log = debug('channels:discord:picker');
