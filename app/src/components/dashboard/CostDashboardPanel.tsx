@@ -250,7 +250,7 @@ const CATEGORY_COLORS = [
   'bg-sage-500',
   'bg-amber-500',
   'bg-coral-500',
-  'bg-neutral-500 dark:bg-neutral-400',
+  'bg-content-faint',
 ];
 
 const CategoryDistribution = ({
