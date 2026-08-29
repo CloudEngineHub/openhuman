@@ -233,11 +233,11 @@ const PerMascotVoiceRow = ({ mascotId, label, testIdPrefix }: PerMascotVoiceRowP
       </div>
 
       {voicePreviewError && (
-        <div
-          data-testid={`${testIdPrefix}-preview-error`}
-          className="rounded-md border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
-          {t('settings.mascot.voice.previewError')}: {voicePreviewError}
-        </div>
+        <Alert variant="warning" density="compact" data-testid={`${testIdPrefix}-preview-error`}>
+          <AlertDescription>
+            {t('settings.mascot.voice.previewError')}: {voicePreviewError}
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   );
