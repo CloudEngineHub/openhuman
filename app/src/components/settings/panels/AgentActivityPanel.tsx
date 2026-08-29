@@ -100,13 +100,12 @@ export default function AgentActivityPanel() {
     }
   }, []);
 
-  if (status === 'loading' && !settings) {
-    return <div className="p-4 text-sm text-content-muted">{t('common.loading')}</div>;
-  }
-
   return (
     <SettingsPanel description={t('activityLevel.description')}>
-      <div className="flex flex-col gap-4">
+      {status === 'loading' && !settings ? (
+        <CenteredLoadingState label={t('common.loading')} className="py-12" />
+      ) : (
+        <div className="flex flex-col gap-4">
         {monthlyCost && monthlyCost.total_cost_usd > 0 && (
           <div className="px-3 py-2 rounded-md bg-surface-subtle text-sm">
             <span className="font-medium text-content">
