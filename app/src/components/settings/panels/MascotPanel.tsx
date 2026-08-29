@@ -616,7 +616,8 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
         </h3>
 
         {/* Custom GIF input */}
-        <div className="mb-3 bg-surface rounded-xl border border-line p-4 space-y-3">
+        <Card padded divided={false} className="mb-3">
+          <div className="space-y-3">
           <label className="block space-y-1">
             <span className="text-xs font-medium text-content-muted dark:text-content-secondary">
               {t('settings.mascot.customGifHeading')}
