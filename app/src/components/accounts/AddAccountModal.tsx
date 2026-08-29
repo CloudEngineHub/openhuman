@@ -34,7 +34,7 @@ const AddAccountModal = ({ open, onClose, onPick, connectedProviders }: AddAccou
   return (
     <div
       data-testid="add-account-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-surface-overlay/40 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-account-modal-title"
