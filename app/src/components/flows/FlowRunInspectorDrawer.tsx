@@ -330,12 +330,11 @@ export function FlowRunInspectorDrawer({ runId, onClose, onFixWithAgent }: Props
           )}
 
           {error && (
-            <div
-              role="alert"
-              data-testid="flow-run-inspector-error"
-              className="rounded-xl border border-coral-200 bg-coral-50 px-3 py-2 text-xs text-coral-700 dark:border-coral-500/30 dark:bg-coral-500/10 dark:text-coral-300">
-              {t('flowRuns.inspector.loadError')}: {error}
-            </div>
+            <Alert variant="destructive" density="compact" data-testid="flow-run-inspector-error">
+              <AlertDescription>
+                {t('flowRuns.inspector.loadError')}: {error}
+              </AlertDescription>
+            </Alert>
           )}
 
           {run && (
