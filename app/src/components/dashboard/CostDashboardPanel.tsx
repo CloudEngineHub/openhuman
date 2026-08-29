@@ -135,19 +135,19 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
               alertThreshold={data.alert_threshold}
             />
           </Card>
-          <section
+          <Card
             data-testid="cost-dashboard-token-chart"
-            className="rounded-2xl border border-line p-4 bg-surface/40">
-            <header className="mb-2 flex items-baseline justify-between">
-              <h2 className="text-sm font-semibold text-content">
-                {t('settings.costDashboard.sevenDayTokens')}
-              </h2>
+            padded
+            divided={false}
+            className="bg-surface/40"
+            title={t('settings.costDashboard.sevenDayTokens')}
+            headerRight={
               <span className="text-[11px] text-content-muted">
                 {t('settings.costDashboard.stackedNote')}
               </span>
-            </header>
+            }>
             <TokenUsageChart days={data.days} />
-          </section>
+          </Card>
           <section
             data-testid="cost-dashboard-model-table"
             className="rounded-2xl border border-line p-4 bg-surface/40">
