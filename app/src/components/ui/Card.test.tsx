@@ -136,7 +136,10 @@ describe('Card', () => {
 
     it('baseline-aligns the slot opposite the title', () => {
       render(
-        <Card title="Seven-day cost" description="UTC days." headerRight={<span>times in UTC</span>}>
+        <Card
+          title="Seven-day cost"
+          description="UTC days."
+          headerRight={<span>times in UTC</span>}>
           <span data-testid="body">Contents</span>
         </Card>
       );

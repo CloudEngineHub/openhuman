@@ -84,7 +84,9 @@ const Card = ({
       {/* `divide-line-subtle` flips with the theme on its own, so the historical
           hardcoded dark-mode companion is gone: a raw palette scale would not
           follow a user's custom theme. */}
-      <div className={cn(divided && 'divide-y divide-line-subtle', padded && 'p-4')}>{children}</div>
+      <div className={cn(divided && 'divide-y divide-line-subtle', padded && 'p-4')}>
+        {children}
+      </div>
     </div>
   );
 };
