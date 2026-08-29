@@ -38,8 +38,21 @@ export default function SidebarHeader() {
     // vertical rhythm is the sidebar's, shared with `SidebarNav` below it, and
     // pulling it up to the window's edge to chase a platform control would bend
     // the app's own spacing around one OS's chrome. The lights are moved to
-    // this line instead, via `trafficLightPosition` in `tauri.conf.json` — see
-    // the comment there for the arithmetic that ties the two together.
+    // this line instead, via `trafficLightPosition` in `tauri.conf.json`. That
+    // file is JSON and cannot hold a comment, so the arithmetic lives here,
+    // beside the row it has to agree with:
+    //
+    //   this row's centre = pt-3 (12px) + half of ICON_BTN's h-7 (14px) = 26px
+    //   tao positions the lights by INSET, not by centre: `y` becomes the gap
+    //   above the buttons (`inset_traffic_lights` sets the title-bar container
+    //   to buttonHeight + y and pins it to the window top), and `x` is the
+    //   close button's left edge.
+    //   so y = 26 − buttonHeight/2 ≈ 26 − 6 = 20 for macOS's 12px buttons.
+    //
+    // `x: 20` keeps the conventional macOS left inset. If the buttons look a
+    // pixel or two off, `y` is the dial — and it is worth re-deriving rather
+    // than nudging, because it is pinned to this row's padding: change `pt-3`
+    // or `ICON_BTN`'s height and the lights stop agreeing with the icons.
     //
     // `data-tauri-drag-region` lives directly on the primitive (rather than a
     // wrapping div in `AppSidebar`) so the header band is draggable window
