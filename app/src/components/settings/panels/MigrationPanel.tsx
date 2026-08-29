@@ -202,11 +202,9 @@ const MigrationPanel = ({ embedded = false }: MigrationPanelProps = {}) => {
       </SettingsSection>
 
       {error != null && (
-        <div
-          data-testid="migration-error"
-          className="rounded-md border border-coral-200 dark:border-coral-500/30 bg-coral-50 dark:bg-coral-500/10 px-3 py-2 text-xs text-coral-700 dark:text-coral-300">
-          {error}
-        </div>
+        <Alert variant="destructive" density="compact" data-testid="migration-error">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {reportToRender != null && (
