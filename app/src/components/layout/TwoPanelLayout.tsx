@@ -259,10 +259,11 @@ export default function TwoPanelLayout({
                 ? // Flush hairline seam: 1px visible line, wider invisible hit
                   // area, highlights on hover/focus.
                   'group relative w-px shrink-0 cursor-col-resize select-none self-stretch bg-surface-strong focus:outline-hidden'
-                : `group relative flex shrink-0 cursor-col-resize select-none items-center justify-center self-stretch focus:outline-hidden ${
+                : cn(
+                    'group relative flex shrink-0 cursor-col-resize select-none items-center justify-center self-stretch focus:outline-hidden',
                     // Tighter gutter between panes when there's no visible handle.
                     showDividerHandle ? 'mx-1 w-3' : 'mx-0 w-1.5'
-                  }`
+                  )
             }
             title={t('layout.resizeSidebar')}>
             {seamless ? (
