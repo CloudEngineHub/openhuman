@@ -440,9 +440,12 @@ const AgentAccessPanel = () => {
                     aria-label={t('settings.agentAccess.timeout.label')}
                   />
                   {timeoutEnvOverride && (
-                    <p className="rounded border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300">
-                      {t('settings.agentAccess.timeout.envOverride')}
-                    </p>
+                    // Reflects a resolved config value, not a user action —
+                    // opt out of the assertive default for the same reason
+                    // as the auto-approve-all warning above.
+                    <Alert variant="warning" density="compact" role={undefined}>
+                      <AlertDescription>{t('settings.agentAccess.timeout.envOverride')}</AlertDescription>
+                    </Alert>
                   )}
                   <SettingsStatusLine
                     saving={false}
