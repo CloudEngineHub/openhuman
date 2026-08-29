@@ -297,7 +297,7 @@ const ReferralRewardsSection = () => {
       ) : null}
 
       {stats ? (
-        <div className="bg-surface rounded-2xl shadow-soft border border-line p-6">
+        <Card divided={false} className="shadow-soft p-6">
           <div>
             <h3 className="text-sm font-semibold text-content mb-2">
               {t('rewards.referralSection.activity')}
