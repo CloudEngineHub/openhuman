@@ -26,7 +26,7 @@
 import { useT } from '../../lib/i18n/I18nContext';
 import type { Flow } from '../../services/api/flowsApi';
 import SettingsSwitch from '../settings/controls/SettingsSwitch';
-import Button from '../ui/Button';
+import { Button } from '../ui';
 import FlowRowMenu from './FlowRowMenu';
 
 function PlayIcon() {
