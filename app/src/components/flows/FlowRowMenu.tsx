@@ -11,13 +11,13 @@
  * `FlowListRow`, which routes to `FlowsPage`'s handlers.
  */
 import { useT } from '../../lib/i18n/I18nContext';
-import Button from '../ui/Button';
 import {
+  Button,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuRoot,
   DropdownMenuTrigger,
-} from '../ui/DropdownMenu';
+} from '../ui';
 
 interface FlowRowMenuItem {
   key: string;
