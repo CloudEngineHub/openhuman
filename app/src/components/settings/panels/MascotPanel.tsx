@@ -461,7 +461,8 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-content-faint mb-2 px-1">
           {t('settings.mascot.voice.heading')}
         </h3>
-        <div className="bg-surface rounded-xl border border-line p-4 space-y-4">
+        <Card padded divided={false}>
+          <div className="space-y-4">
           {/* Gender radio buttons — intentional bespoke pill UI */}
           <div
             role="radiogroup"
