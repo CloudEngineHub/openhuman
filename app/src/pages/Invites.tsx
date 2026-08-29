@@ -1,6 +1,7 @@
 import debugFactory from 'debug';
 import { useEffect, useRef, useState } from 'react';
 
+import PageSectionHeader from '../components/layout/PageSectionHeader';
 import { Card, CenteredLoadingState, EmptyState } from '../components/ui';
 import Button from '../components/ui/Button';
 import { useClipboardFeedback } from '../hooks/useClipboardFeedback';
@@ -170,59 +171,56 @@ const Invites = () => {
         // bordered-surface recipe (now rounded-xl, Card's radius)
         // moves onto the primitive.
         <Card divided={false} className="mx-auto max-w-lg shadow-soft animate-fade-up p-6">
-                <h2 className="text-lg font-bold mb-1">{t('invites.redeemHeading')}</h2>
-                <p className="text-xs opacity-70 mb-4">{t('rewards.share')}</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={redeemInput}
-                    onChange={e => setRedeemInput(e.target.value.toUpperCase())}
-                    onKeyDown={e => e.key === 'Enter' && handleRedeem()}
-                    placeholder={t('invites.redeemPlaceholder')}
-                    className="flex-1 px-4 py-2.5 bg-surface/5 border border-line-strong rounded-xl font-mono text-sm tracking-wider placeholder:text-content-faint placeholder:tracking-normal placeholder:font-sans focus:outline-hidden focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
-                    disabled={redeemStatus === 'loading'}
-                  />
-                  <Button
-                    variant="primary"
-                    onClick={handleRedeem}
-                    disabled={redeemStatus === 'loading' || !redeemInput.trim()}
-                    className="whitespace-nowrap">
-                    {redeemStatus === 'loading' ? '...' : t('invites.redeemSubmit')}
-                  </Button>
-                </div>
-                {redeemStatus === 'success' && (
-                  <p className="text-sage-500 text-xs mt-2">{t('common.success')}</p>
-                )}
-                {redeemStatus === 'error' && redeemError && (
-                  <p className="text-coral-500 text-xs mt-2">{redeemError}</p>
-                )}
-              </Card>
-            )}
-
-            {/* Your Invite Codes */}
-            <Card divided={false} className="shadow-soft animate-fade-up p-6">
-              <div className="mb-4">
-                <h2 className="text-lg font-bold mb-1">{t('rewards.referralCode')}</h2>
-                <p className="text-xs opacity-70">{t('rewards.share')}</p>
-              </div>
-
-              {loadError && <p className="text-coral-500 text-xs text-center py-2">{loadError}</p>}
-
-              {isLoading ? (
-                <CenteredLoadingState label={t('common.loading')} />
-              ) : codes.length > 0 ? (
-                <div className="space-y-2">
-                  {codes.map(invite => (
-                    <CodeRow key={invite._id} invite={invite} />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState label={t('invites.noInvites')} className="text-center" />
-              )}
-            </Card>
+          <h2 className="text-lg font-bold mb-1">{t('invites.redeemHeading')}</h2>
+          <p className="text-xs opacity-70 mb-4">{t('rewards.share')}</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={redeemInput}
+              onChange={e => setRedeemInput(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && handleRedeem()}
+              placeholder={t('invites.redeemPlaceholder')}
+              className="flex-1 px-4 py-2.5 bg-surface/5 border border-line-strong rounded-xl font-mono text-sm tracking-wider placeholder:text-content-faint placeholder:tracking-normal placeholder:font-sans focus:outline-hidden focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
+              disabled={redeemStatus === 'loading'}
+            />
+            <Button
+              variant="primary"
+              onClick={handleRedeem}
+              disabled={redeemStatus === 'loading' || !redeemInput.trim()}
+              className="whitespace-nowrap">
+              {redeemStatus === 'loading' ? '...' : t('invites.redeemSubmit')}
+            </Button>
           </div>
+          {redeemStatus === 'success' && (
+            <p className="text-sage-500 text-xs mt-2">{t('common.success')}</p>
+          )}
+          {redeemStatus === 'error' && redeemError && (
+            <p className="text-coral-500 text-xs mt-2">{redeemError}</p>
+          )}
+        </Card>
+      )}
+
+      {/* Your Invite Codes */}
+      <Card divided={false} className="mx-auto max-w-lg shadow-soft animate-fade-up p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold mb-1">{t('rewards.referralCode')}</h2>
+          <p className="text-xs opacity-70">{t('rewards.share')}</p>
         </div>
-      </div>
+
+        {loadError && <p className="text-coral-500 text-xs text-center py-2">{loadError}</p>}
+
+        {isLoading ? (
+          <CenteredLoadingState label={t('common.loading')} />
+        ) : codes.length > 0 ? (
+          <div className="space-y-2">
+            {codes.map(invite => (
+              <CodeRow key={invite._id} invite={invite} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState label={t('invites.noInvites')} className="text-center" />
+        )}
+      </Card>
     </div>
   );
 };
