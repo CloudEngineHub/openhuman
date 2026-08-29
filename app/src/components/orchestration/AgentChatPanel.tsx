@@ -356,11 +356,15 @@ function SessionChatView({ session }: { session: SessionSummary }) {
       footer={
         <>
           {sendError ? (
-            <p
+            <Alert
+              variant="destructive"
+              density="compact"
               data-testid="orch-session-reply-error"
-              className="mb-2 rounded-md bg-coral-50 px-2 py-1 text-xs text-coral-700 dark:bg-coral-500/10 dark:text-coral-300">
-              {t('tinyplaceOrchestration.composer.sendFailed')}: {sendError}
-            </p>
+              className="mb-2">
+              <AlertDescription>
+                {t('tinyplaceOrchestration.composer.sendFailed')}: {sendError}
+              </AlertDescription>
+            </Alert>
           ) : null}
           <AgentComposer
             value={body}
