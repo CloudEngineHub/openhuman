@@ -182,7 +182,7 @@ const McpServerPanel = ({ embedded = false }: McpServerPanelProps = {}) => {
                 {tool.name}
               </span>
               <span className="text-xs text-content-secondary dark:text-content-muted">
-                {tool.description}
+                {t(tool.descriptionKey)}
               </span>
             </div>
           ))}
