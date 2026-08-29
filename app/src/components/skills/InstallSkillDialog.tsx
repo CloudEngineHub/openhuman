@@ -38,7 +38,7 @@ import {
   skillsApi,
   type WorkflowSummary,
 } from '../../services/api/skillsApi';
-import { ModalShell, TextField } from '../ui';
+import { ModalShell, Spinner, TextField } from '../ui';
 import Button from '../ui/Button';
 
 const log = debug('skills:install-dialog');
