@@ -247,7 +247,7 @@ const DiscordServerChannelPicker = ({
       {/* Permission check result */}
       {state === 'checking_permissions' && (
         <div className="flex items-center gap-2 text-xs text-content-muted">
-          <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-line-strong border-t-primary-500" />
+          <Spinner className="h-3 w-3" />
           {t('channels.discord.picker.checkingPermissions')}
         </div>
       )}
