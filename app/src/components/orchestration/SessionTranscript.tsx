@@ -210,7 +210,7 @@ function ApprovalRow({
       <div
         className={`w-full max-w-[85%] rounded-xl border px-3 py-2.5 ${
           decided
-            ? 'border-line bg-surface/60 dark:bg-black/20'
+            ? 'border-line bg-surface/60 dark:bg-surface-canvas/20'
             : 'border-amber-300 bg-amber-50 dark:border-amber-500/40 dark:bg-amber-500/10'
         }`}>
         <div className="flex items-center gap-2">
