@@ -143,9 +143,7 @@ export function CodingSessionsCard({ onToast }: CodingSessionsCardProps) {
   }, []);
 
   return (
-    <section
-      className="rounded-lg border border-line bg-surface p-4"
-      data-testid="coding-sessions-card">
+    <Card padded divided={false} data-testid="coding-sessions-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-content">
