@@ -108,9 +108,12 @@ export const AlertDescription = ({ className, ...rest }: ComponentPropsWithRef<'
   return (
     <div
       data-slot="alert-description"
+      // The size leads, because tailwind-merge treats a font size as
+      // conflicting with `leading-*` (Tailwind's `text-sm/6` shorthand sets
+      // both). Appending `text-xs` would silently strip the line height.
       className={cn(
-        'text-sm leading-relaxed opacity-90',
-        density === 'compact' && 'text-xs',
+        density === 'compact' ? 'text-xs' : 'text-sm',
+        'leading-relaxed opacity-90',
         className
       )}
       {...rest}
