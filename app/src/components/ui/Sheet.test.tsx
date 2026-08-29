@@ -50,7 +50,13 @@ describe('SheetContent', () => {
    * `agent-process-source-panel`.
    */
   test('an explicit data-testid still wins over testId', () => {
-    renderSheet({ testId: 'ignored', 'data-testid': 'subagent-drawer' });
+    render(
+      <SheetRoot open>
+        <SheetContent aria-describedby={undefined} testId="ignored" data-testid="subagent-drawer">
+          <SheetTitle>Drawer title</SheetTitle>
+        </SheetContent>
+      </SheetRoot>
+    );
 
     expect(screen.getByRole('dialog')).toHaveAttribute('data-testid', 'subagent-drawer');
     expect(screen.queryByTestId('ignored')).not.toBeInTheDocument();
