@@ -359,7 +359,17 @@ const Composer: FC<{
         <ComposerPrimitive.AttachmentDropzone asChild>
           <div
             data-slot="aui_composer-shell"
-            className="border-line focus-within:border-line-strong data-[dragging=true]:border-ring flex w-full cursor-text flex-col gap-2 rounded-(--composer-radius) border bg-(--composer-bg) p-(--composer-padding) transition-[border-color] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-background))]">
+            // Keyed to `content-faint` at the same 0.65 the content card's
+            // `--shadow-content-edge` settled on (see `index.css`), so the
+            // composer's frame and the card's frame carry one contrast rather
+            // than two. `line`/`line-strong` were too close to the card surface
+            // to read as an edge; `content-faint` is a real step along the grey
+            // ramp in both themes, and the alpha pulls it back off full
+            // strength. Focus goes to 0.90 rather than a different token, so
+            // the focus cue is the same edge asserting itself instead of a
+            // colour change. `border-ring` on drag is untouched — that state is
+            // meant to break the pattern.
+            className="border-content-faint/65 focus-within:border-content-faint/90 data-[dragging=true]:border-ring flex w-full cursor-text flex-col gap-2 rounded-(--composer-radius) border bg-(--composer-bg) p-(--composer-padding) transition-[border-color] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-background))]">
             {HostComposerAttachments ? <HostComposerAttachments /> : <ComposerAttachments />}
             {/*
              * Lexical rather than the plain `ComposerPrimitive.Input` textarea,
