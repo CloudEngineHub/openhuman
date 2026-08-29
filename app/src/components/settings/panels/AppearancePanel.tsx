@@ -108,50 +108,50 @@ const AppearancePanel = () => {
         <Card divided={false}>
           <div role="radiogroup" aria-label={t('settings.appearance.fontSizeAria')}>
             {FONT_SIZE_OPTIONS.map((opt, idx) => {
-            // Highlight the preset whose px matches the effective size, so a
-            // fine-tuned value landing exactly on a preset still lights it up.
-            const selected = Number.parseInt(FONT_SIZE_PX[opt.id], 10) === effectiveFontSizePx;
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                onClick={() => dispatch(setFontSize(opt.id))}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors focus:outline-hidden focus-visible:bg-primary-50 dark:focus-visible:bg-primary-900/30 ${
-                  idx !== 0 ? 'border-t border-line-subtle' : ''
-                } ${selected ? 'bg-primary-50 dark:bg-primary-500/10' : 'hover:bg-surface-hover'}`}>
-                <span
-                  className={`flex items-center justify-center w-9 h-9 rounded-lg ${
-                    selected
-                      ? 'bg-primary-500 text-content-inverted'
-                      : 'bg-surface-subtle text-content-secondary'
-                  }`}>
-                  <span className={`font-semibold leading-none ${opt.glyphClass}`} aria-hidden>
-                    A
+              // Highlight the preset whose px matches the effective size, so a
+              // fine-tuned value landing exactly on a preset still lights it up.
+              const selected = Number.parseInt(FONT_SIZE_PX[opt.id], 10) === effectiveFontSizePx;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => dispatch(setFontSize(opt.id))}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors focus:outline-hidden focus-visible:bg-primary-50 dark:focus-visible:bg-primary-900/30 ${
+                    idx !== 0 ? 'border-t border-line-subtle' : ''
+                  } ${selected ? 'bg-primary-50 dark:bg-primary-500/10' : 'hover:bg-surface-hover'}`}>
+                  <span
+                    className={`flex items-center justify-center w-9 h-9 rounded-lg ${
+                      selected
+                        ? 'bg-primary-500 text-content-inverted'
+                        : 'bg-surface-subtle text-content-secondary'
+                    }`}>
+                    <span className={`font-semibold leading-none ${opt.glyphClass}`} aria-hidden>
+                      A
+                    </span>
                   </span>
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-medium text-content">{opt.label}</span>
-                  <span className="block text-xs text-content-muted">{opt.description}</span>
-                </span>
-                {selected && (
-                  <svg
-                    className="w-5 h-5 text-primary-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden>
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </button>
-            );
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-medium text-content">{opt.label}</span>
+                    <span className="block text-xs text-content-muted">{opt.description}</span>
+                  </span>
+                  {selected && (
+                    <svg
+                      className="w-5 h-5 text-primary-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  )}
+                </button>
+              );
             })}
           </div>
         </Card>
