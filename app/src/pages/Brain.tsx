@@ -332,11 +332,9 @@ export default function Brain() {
                           emptyHint={t('brain.empty')}
                         />
                       ) : error ? (
-                        <div
-                          className={`${cardClass} text-sm text-coral-600 dark:text-coral-400`}
-                          role="alert">
-                          {t('brain.error')}
-                        </div>
+                        <Alert variant="destructive">
+                          <AlertDescription>{t('brain.error')}</AlertDescription>
+                        </Alert>
                       ) : null}
                     </div>
                   )}
