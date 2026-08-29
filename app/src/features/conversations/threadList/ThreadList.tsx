@@ -72,12 +72,27 @@ export function ThreadList({
           </svg>
         </button>
       </div>
-      {/* Full-bleed rows: no gutter of its own, so a thread pill spans the
-          whole sidebar column and its hover/selected fill reads as the width of
-          the list rather than a floating inset card. Vertical rhythm is `gap`
-          on the column, not a margin on each row — a margin also lands after
-          the last row and pads the scroll floor unevenly against `pb-3`. */}
-      <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto pb-3">
+      {/* Rows carry no padding gutter of their own — a thread pill spans the
+          full width the scroll container gives it, so its hover/selected fill
+          reads as the width of the list rather than a floating inset card.
+
+          The one inset left is the scrollbar's. `index.css` styles scrollbars
+          app-wide at a fixed 10px whose *track is always reserved* (only the
+          thumb's colour animates — toggling `width` would reflow the pane on
+          every scroll), so an `overflow-y-auto` pane silently loses 10px on the
+          right the moment it overflows: pills sit symmetric in a short list and
+          10px lopsided in a long one, resizing as threads cross the threshold.
+          `scrollbar-gutter: stable both-edges` reserves that band on both sides
+          unconditionally, so the pills are symmetric and never resize. It is an
+          arbitrary property because Tailwind has no utility for it, and it is
+          safe beside the `::-webkit-scrollbar` rules — the precedence conflict
+          that `index.css` warns about is specific to `scrollbar-width` /
+          `scrollbar-color`, not to `scrollbar-gutter`.
+
+          Vertical rhythm is `gap` on the column, not a margin on each row — a
+          margin also lands after the last row and pads the scroll floor
+          unevenly against `pb-3`. */}
+      <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto pb-3 [scrollbar-gutter:stable_both-edges]">
         {threads.length === 0 ? (
           <p className="px-4 py-6 text-xs text-content-faint text-center">{t('chat.noThreads')}</p>
         ) : (
