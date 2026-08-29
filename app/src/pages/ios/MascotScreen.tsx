@@ -409,14 +409,14 @@ export const MascotScreen: FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#0f1117] text-white overflow-hidden relative">
+    <div className="flex flex-col h-screen bg-[#0f1117] text-content-inverted overflow-hidden relative">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-safe-top py-3 border-b border-white/10 shrink-0">
+      <div className="flex items-center justify-between px-4 pt-safe-top py-3 border-b border-content-inverted/10 shrink-0">
         <div className="flex flex-col">
-          <span className="text-xs text-white/40 uppercase tracking-wide">
+          <span className="text-xs text-content-inverted/40 uppercase tracking-wide">
             {t('iosMascot.connectedTo')}
           </span>
-          <span className="text-sm font-medium text-white/90 truncate max-w-[200px]">
+          <span className="text-sm font-medium text-content-inverted/90 truncate max-w-[200px]">
             {pairedLabel}
           </span>
         </div>
