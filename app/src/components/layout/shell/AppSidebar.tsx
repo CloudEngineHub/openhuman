@@ -133,20 +133,6 @@ export default function AppSidebar() {
             them via Tailwind `order-*`. */}
         <SidebarSlotOutlet className="flex h-full flex-col" />
       </SidebarScrollRegion>
-      <SidebarFooter>
-        {/* App-wide footer: connectivity status + build/version, pinned to the
-            bottom of the sidebar. Rewards and Feedback were rows here once;
-            Rewards is a primary `NAV_TABS` destination now and Feedback is a
-            header icon beside the keyboard shortcut, so the footer is the
-            status strip alone. */}
-        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5">
-          <ConnectionIndicator />
-          &middot;
-          <span className="text-[10px] text-content-faint">
-            {t('settings.betaBuild').replace('{version}', APP_VERSION)}
-          </span>
-        </div>
-      </SidebarFooter>
     </div>
   );
 }
