@@ -457,8 +457,8 @@ export const MascotScreen: FC = () => {
             onChange={e => setInputText(e.target.value)}
             disabled={isSending}
             placeholder={isSending ? t('iosMascot.thinking') : t('iosMascot.typeMessage')}
-            className="flex-1 bg-surface/10 text-white placeholder-white/30 rounded-xl
-                       px-4 py-3 text-sm outline-hidden border border-white/10
+            className="flex-1 bg-surface/10 text-content-inverted placeholder-content-inverted/30 rounded-xl
+                       px-4 py-3 text-sm outline-hidden border border-content-inverted/10
                        focus:border-[#4A83DD]/60 transition-colors
                        disabled:opacity-50"
           />
