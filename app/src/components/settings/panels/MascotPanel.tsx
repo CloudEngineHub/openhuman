@@ -714,10 +714,11 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
               </div>
             </div>
           )}
-        </div>
+          </div>
+        </Card>
 
         {/* Mascot manifest library (tinyhumansai/mascots) */}
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <Card divided={false}>
           {manifestError && (
             <p className="p-4 text-sm text-coral-700 dark:text-coral-300">
               {t('settings.mascot.libraryUnavailable')}: {manifestError.message}
