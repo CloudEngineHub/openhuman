@@ -73,7 +73,6 @@ mod ptt_overlay;
 #[cfg(target_os = "windows")]
 mod reset_reboot_schedule;
 mod stderr_panic_hook;
-mod whatsapp_data;
 mod window_state;
 mod workspace_paths;
 
@@ -2946,7 +2945,6 @@ pub fn run() {
             // in-process native handlers so the core agent tools (list/search)
             // and the scanner ingest path can reach the SQLite store over the
             // native request bus. No handler = graceful degradation core-side.
-            whatsapp_data::register_native_handlers();
 
             #[cfg(windows)]
             {
@@ -3340,9 +3338,6 @@ pub fn run() {
             // and the Save-As fallback needs it there (CodeRabbit on #4127).
             artifact_commands::download_artifact_to_downloads,
             // Structured WhatsApp data (store lives shell-side).
-            whatsapp_data::whatsapp_data_list_chats,
-            whatsapp_data::whatsapp_data_list_messages,
-            whatsapp_data::whatsapp_data_search_messages,
             check_core_update,
             apply_core_update,
             check_app_update,

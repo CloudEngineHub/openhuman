@@ -19,8 +19,6 @@ pub use crate::openhuman::agent::artifacts::tools::*;
 pub use crate::openhuman::agent::learning::tools::*;
 pub use crate::openhuman::agent::orchestration::tools::*;
 pub use crate::openhuman::agent::tools::*;
-#[cfg(feature = "channels")]
-pub use crate::openhuman::channels::whatsapp_data::tools::*;
 pub use crate::openhuman::config::tools::*;
 pub use crate::openhuman::config::workspace::tools::*;
 pub use crate::openhuman::cron::tools::*;
