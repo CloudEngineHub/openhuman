@@ -113,7 +113,7 @@ const EmbeddingsPanel = ({ embedded = false }: EmbeddingsPanelProps = {}) => {
           {status.kind === 'loading' ? (
             <CenteredLoadingState label={t('common.loading')} />
           ) : status.kind === 'error' ? (
-            <Alert variant="destructive" className="text-xs">
+            <Alert variant="destructive" density="compact">
               <AlertDescription>{status.message}</AlertDescription>
             </Alert>
           ) : null}
