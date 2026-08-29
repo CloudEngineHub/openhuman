@@ -29,6 +29,7 @@ import type { ToastNotification } from '../../types/intelligence';
 import { memoryTreeRetryFailed, memoryTreeSetEnabled } from '../../utils/tauriCommands';
 import { trackAnalyticsEvent } from '../analytics';
 import Button from '../ui/Button';
+import Card from '../ui/Card';
 import Switch from '../ui/Switch';
 import {
   classifyIntegration,
