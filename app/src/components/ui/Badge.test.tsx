@@ -82,7 +82,6 @@ describe('Badge', () => {
 
   it('does not let a forwarded prop displace the component-owned attributes', () => {
     render(
-      // @ts-expect-error - data-slot is not part of BadgeProps; the guard is a runtime one.
       <Badge data-testid="badge" data-slot="not-a-badge" className="text-content-primary">
         Fixed
       </Badge>
