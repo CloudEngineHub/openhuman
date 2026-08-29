@@ -59,11 +59,12 @@ const WorkflowRunApprovalCard: React.FC<Props> = ({
   const { t } = useT();
 
   return (
-    <div
+    <Alert
+      variant="warning"
       role="alertdialog"
       aria-label={t('orchestration.approval.title')}
       data-testid="workflow-approval-card"
-      className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm shadow-xs dark:border-amber-700 dark:bg-amber-950">
+      className="shadow-xs">
       <div className="flex items-start gap-2">
         <span aria-hidden className="text-base leading-none">
           ⚠️
