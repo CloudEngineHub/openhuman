@@ -36,9 +36,11 @@ const EmbeddingsProviderList = ({
               role="radio"
               aria-checked={selected}
               onClick={() => onSelect(entry)}
-              className={`h-auto w-full items-start justify-start gap-3 rounded-none px-4 py-3 text-left font-normal ${
-                idx !== 0 ? 'border-t border-line-subtle' : ''
-              } ${selected ? 'bg-primary-50 dark:bg-primary-500/10' : ''}`}>
+              className={cn(
+                'h-auto w-full items-start justify-start gap-3 rounded-none px-4 py-3 text-left font-normal',
+                idx !== 0 && 'border-t border-line-subtle',
+                selected && 'bg-primary-50 dark:bg-primary-500/10'
+              )}>
               <span className="flex-1 min-w-0">
                 <span className="flex items-center gap-2">
                   <span className="text-sm font-medium text-content">{entry.label}</span>
