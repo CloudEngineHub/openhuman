@@ -488,41 +488,47 @@ export default function AgentChatPanel({
   const errored = sessionsState.status === 'error' || messagesState.status === 'error';
 
   // The Conscious/Subconscious toggle sits in the composer footer.
+  // `ToggleGroupRoot type="single"` is the app's segmented-selection primitive:
+  // it emits the same `role="radiogroup"` / `role="radio"` / `aria-checked` this
+  // hand-rolled before, and adds the one thing it was missing — a single roving
+  // tab stop, so Tab reaches the control once and the arrow keys move between
+  // the two modes instead of Tab stopping on every chip. The on-state comes from
+  // `toggleVariants` rather than a hand-picked pair of fills.
   const modeToggle = (
-    <div
-      className="inline-flex h-7 items-center rounded-full border border-line bg-surface-subtle p-0.5"
-      role="radiogroup"
+    <ToggleGroupRoot
+      type="single"
+      size="xs"
+      variant="tertiary"
+      value={selectedId ?? undefined}
+      // Radix allows a single-type group to deselect (value becomes ''); this
+      // control always has exactly one mode active, so an empty value is
+      // ignored rather than clearing the selection.
+      onValueChange={value => {
+        if (value) selectChat(value);
+      }}
+      className="inline-flex h-7 items-center gap-0 rounded-full border border-line bg-surface-subtle p-0.5"
       aria-label={t('orchPage.agent.modeLabel')}>
       {rail.map(chat => {
-        const active = selectedId === chat.id;
         const label =
           chat.id === SUBCONSCIOUS_CHAT_KEY
             ? t('orchPage.agent.subconsciousTab')
             : t('orchPage.agent.consciousTab');
         return (
-          <Button
+          <ToggleGroupItem
             key={chat.id}
-            variant="tertiary"
-            size="xs"
-            role="radio"
-            aria-checked={active}
+            value={chat.id}
             data-testid={`orch-agent-tab-${chat.id}`}
-            onClick={() => selectChat(chat.id)}
-            className={`h-auto gap-1.5 rounded-full px-3 py-0.5 text-xs font-medium ${
-              active
-                ? 'bg-surface text-content shadow-xs hover:bg-surface'
-                : 'text-content-muted hover:bg-transparent hover:text-content-secondary'
-            }`}>
+            className="h-auto gap-1.5 rounded-full px-3 py-0.5 text-xs font-medium data-[state=on]:shadow-xs">
             {label}
             {chat.unread > 0 ? (
               <span className="inline-flex min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-semibold text-content-inverted">
                 {chat.unread}
               </span>
             ) : null}
-          </Button>
+          </ToggleGroupItem>
         );
       })}
-    </div>
+    </ToggleGroupRoot>
   );
 
   const showComposer = isMasterSelected && sessionsState.status === 'ok';
