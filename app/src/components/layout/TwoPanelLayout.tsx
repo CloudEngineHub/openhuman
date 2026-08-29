@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useEffect } from 'react';
 import { LuChevronRight } from 'react-icons/lu';
 
+import { cn } from '../../lib/cn';
 import { useT } from '../../lib/i18n/I18nContext';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import {
