@@ -156,7 +156,9 @@ const AppearancePanel = () => {
           </div>
         </Card>
         {/* Fine-tune the exact size beyond the presets (issue #4246). */}
-        <Card padded divided={false} className="mt-3">
+        {/* px-4 py-3, not Card's `padded` p-4, to keep this box's original
+            (denser) vertical padding pixel-identical. */}
+        <Card divided={false} className="px-4 py-3 mt-3">
           <div className="flex items-center justify-between gap-3">
             <label htmlFor="font-size-custom-number" className="text-sm font-medium text-content">
               {t('settings.appearance.fontSizeCustomLabel')}
