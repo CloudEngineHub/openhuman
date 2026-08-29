@@ -3011,8 +3011,6 @@ const en: TranslationMap = {
   // Subconscious mode selector
 
   // WhatsApp
-  'whatsapp.chatsSynced': 'chats synced',
-  'whatsapp.chatSynced': 'chat synced',
 
   // Sync
   'sync.active': 'Active',
@@ -6676,7 +6674,6 @@ const en: TranslationMap = {
     'Configure AI triage settings for Composio integration triggers',
   'memory.sourceFilterAria': 'Filter by source',
   'calls.comingSoonDescription': 'AI-assisted calls are coming soon. Stay tuned.',
-  'whatsapp.title': 'WhatsApp',
   'settings.appearance': 'Appearance',
   'settings.appearanceDesc': 'Pick light, dark, or match your system theme',
   'settings.mascot': 'Mascot',
