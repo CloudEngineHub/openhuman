@@ -374,7 +374,7 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-content-faint mb-2 px-1">
           {t('settings.mascot.colorHeading')}
         </h3>
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <Card divided={false}>
           {available.length === 0 ? (
             <p className="p-4 text-sm text-content-muted">{t('settings.mascot.noColorVariants')}</p>
           ) : (
