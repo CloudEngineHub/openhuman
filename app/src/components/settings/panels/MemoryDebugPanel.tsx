@@ -429,8 +429,9 @@ const MemoryDebugPanel = () => {
                 tone="danger"
                 size="xs"
                 onClick={() => void handleClearNamespace()}
-                disabled={clearLoading || !clearNamespaceInput.trim()}>
-                {clearLoading ? '...' : t('memory.clear')}
+                disabled={clearLoading || !clearNamespaceInput.trim()}
+                leadingIcon={clearLoading ? <Spinner className="h-3 w-3" /> : undefined}>
+                {t('memory.clear')}
               </Button>
             </div>
             <SettingsStatusLine
