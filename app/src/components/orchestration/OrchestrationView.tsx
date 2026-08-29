@@ -193,17 +193,17 @@ export default function OrchestrationView() {
         ) : activeTab === 'tasks' ? (
           // One global Kanban board owned by the orchestrator (not per-thread).
           // Tasks predate Medulla access and must remain usable without it.
-          <div className="mx-auto h-full w-full max-w-3xl">
-            <PanelPage contentClassName="p-4">
-              <div className="animate-fade-up space-y-4">
-                <PageSectionHeader
-                  title={t('orchPage.tasks.nav')}
-                  description={t('orchPage.tasks.subtitle')}
-                />
-                <OrchestratorTaskBoard />
-              </div>
-            </PanelPage>
-          </div>
+          // `width="lg"` is the contentWidth scale's max-w-3xl: the scaffold
+          // owns the centred column now, so there is no hand-picked cap here.
+          <PanelPage width="lg" contentClassName="p-4">
+            <div className="animate-fade-up space-y-4">
+              <PageSectionHeader
+                title={t('orchPage.tasks.nav')}
+                description={t('orchPage.tasks.subtitle')}
+              />
+              <OrchestratorTaskBoard />
+            </div>
+          </PanelPage>
         ) : hasMedullaAccess ? (
           <div className="mx-auto h-full w-full max-w-3xl">
             {/* Network: one page with a Brain-style chip sub-nav (flush pills, no
