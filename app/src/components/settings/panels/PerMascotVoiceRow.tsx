@@ -9,7 +9,7 @@ import {
   selectMascotVoiceGender,
   setMascotVoice,
 } from '../../../store/mascotSlice';
-import { Alert, AlertDescription } from '../../ui';
+import { Alert, AlertDescription, Card } from '../../ui';
 import Button from '../../ui/Button';
 import { SettingsSelect, SettingsTextField } from '../controls';
 import { ELEVENLABS_VOICE_PRESETS, isCuratedVoicePreset } from './elevenlabsVoicePresets';
