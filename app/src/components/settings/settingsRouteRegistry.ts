@@ -243,6 +243,19 @@ export const SETTINGS_ROUTE_REGISTRY: SettingsRegistryEntry[] = [
     navOrder: 97,
   },
   {
+    // Moved out of its own top-level `/feedback` route: it was reached only
+    // from a sidebar-header icon, and that icon became the command-palette
+    // trigger. A public board is a General-settings subject anyway, next to
+    // About.
+    id: 'feedback',
+    titleKey: 'nav.feedback',
+    descriptionKey: 'feedback.header.desc',
+    section: 'home',
+    searchKeywords: ['feedback', 'bug', 'feature', 'request', 'board', 'vote'],
+    navGroup: 'general',
+    navOrder: 98,
+  },
+  {
     id: 'about',
     titleKey: 'settings.about',
     descriptionKey: 'settings.aboutDesc',
