@@ -72,11 +72,12 @@ export function ThreadList({
           </svg>
         </button>
       </div>
-      {/* Rows are inset pills, so the scroll container carries the gutter, and
-          it is px-3 — the shell sidebar's own (`SidebarGroup`/`SidebarHeader`).
-          This list is projected into that column, so a narrower inset of its
-          own put thread rows and app-nav rows on two different left edges. */}
-      <div className="flex-1 overflow-y-auto px-3 pb-3">
+      {/* Full-bleed rows: no gutter of its own, so a thread pill spans the
+          whole sidebar column and its hover/selected fill reads as the width of
+          the list rather than a floating inset card. Vertical rhythm is `gap`
+          on the column, not a margin on each row — a margin also lands after
+          the last row and pads the scroll floor unevenly against `pb-3`. */}
+      <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto pb-3">
         {threads.length === 0 ? (
           <p className="px-4 py-6 text-xs text-content-faint text-center">{t('chat.noThreads')}</p>
         ) : (
@@ -104,7 +105,7 @@ export function ThreadList({
               // actions are taller than the title's line box, so a padding-sized
               // row would grow 4px the moment the pointer entered it and the
               // whole list would shift under the cursor.
-              className={`group mb-0.5 flex h-8 w-full cursor-pointer items-center rounded-md px-2.5 text-left transition-colors ${
+              className={`group flex h-8 w-full flex-none cursor-pointer items-center rounded-md px-3 text-left transition-colors ${
                 selectedThreadId === thread.id
                   ? 'bg-surface/70'
                   : 'hover:bg-surface/40 dark:hover:bg-surface/60'
