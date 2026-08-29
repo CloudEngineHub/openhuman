@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import { createContext, useContext, type AriaRole, type ComponentPropsWithRef } from 'react';
+import { type AriaRole, type ComponentPropsWithRef, createContext, useContext } from 'react';
 
 import { cn } from '../../lib/cn';
 
@@ -50,10 +50,7 @@ export const alertVariants = cva('relative flex w-full gap-3 rounded-xl border p
     // string above so an un-densified caller's class attribute is unchanged
     // to the byte. `compact` overrides it, and `cn()`'s tailwind-merge drops
     // the four base utilities it conflicts with.
-    density: {
-      default: '',
-      compact: 'rounded-lg px-3 py-2 text-xs',
-    },
+    density: { default: '', compact: 'rounded-lg px-3 py-2 text-xs' },
   },
   defaultVariants: { variant: 'default', density: 'default' },
 });

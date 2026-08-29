@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { Alert, AlertDescription, AlertTitle, alertVariants, type AlertVariant } from './Alert';
+import { Alert, AlertDescription, AlertTitle, type AlertVariant, alertVariants } from './Alert';
 
 const RAW_PALETTE = /\b(?:bg|text|border|ring)-(?:neutral|stone|slate|canvas|white|black)\b/;
 
