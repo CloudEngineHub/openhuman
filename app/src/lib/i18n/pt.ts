@@ -5456,7 +5456,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Sólido',
   'settings.theme.backdrop.image': 'Imagem',
   'settings.theme.backdropImageUrl': 'URL da imagem de fundo',
-  'settings.theme.backdropDots': 'Mostrar pontos de fundo',
   'settings.theme.backdropHint':
     'A malha mostra o gradiente animado; Sólido usa um fundo plano; Imagem exibe o seu próprio.',
   'settings.theme.autoForkHint':

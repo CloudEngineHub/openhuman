@@ -5085,7 +5085,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': '纯色',
   'settings.theme.backdrop.image': '图片',
   'settings.theme.backdropImageUrl': '背景图片 URL',
-  'settings.theme.backdropDots': '显示背景圆点',
   'settings.theme.backdropHint': '网格显示动态渐变；纯色使用平面背景；图片使用你自己的背景。',
   'settings.theme.autoForkHint': '编辑预设主题会自动将更改保存为新的自定义主题。',
   'settings.theme.title': '主题工作室',

@@ -5425,7 +5425,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Сплошной',
   'settings.theme.backdrop.image': 'Изображение',
   'settings.theme.backdropImageUrl': 'URL фонового изображения',
-  'settings.theme.backdropDots': 'Показывать точки фона',
   'settings.theme.backdropHint':
     'Сетка показывает анимированный градиент; Сплошной использует ровный фон; Изображение задаёт ваш собственный.',
   'settings.theme.autoForkHint':

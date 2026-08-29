@@ -5398,7 +5398,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Solid',
   'settings.theme.backdrop.image': 'Gambar',
   'settings.theme.backdropImageUrl': 'URL gambar latar belakang',
-  'settings.theme.backdropDots': 'Tampilkan titik latar belakang',
   'settings.theme.backdropHint':
     'Jaring menampilkan gradien beranimasi; Solid menggunakan latar belakang polos; Gambar menampilkan milik Anda sendiri.',
   'settings.theme.autoForkHint':

@@ -5309,7 +5309,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': '단색',
   'settings.theme.backdrop.image': '이미지',
   'settings.theme.backdropImageUrl': '배경 이미지 URL',
-  'settings.theme.backdropDots': '배경 점 표시',
   'settings.theme.backdropHint':
     '메시는 애니메이션 그라데이션을 표시하고, 단색은 평면 배경을 사용하며, 이미지는 직접 지정한 배경을 사용합니다.',
   'settings.theme.autoForkHint':

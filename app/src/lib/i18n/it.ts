@@ -5463,7 +5463,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Tinta unita',
   'settings.theme.backdrop.image': 'Immagine',
   'settings.theme.backdropImageUrl': "URL dell'immagine di sfondo",
-  'settings.theme.backdropDots': 'Mostra punti di sfondo',
   'settings.theme.backdropHint':
     'Il reticolo mostra il gradiente animato; Tinta unita usa uno sfondo piatto; Immagine usa la tua.',
   'settings.theme.autoForkHint':

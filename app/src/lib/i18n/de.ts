@@ -5516,7 +5516,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Einfarbig',
   'settings.theme.backdrop.image': 'Bild',
   'settings.theme.backdropImageUrl': 'URL des Hintergrundbilds',
-  'settings.theme.backdropDots': 'Hintergrundpunkte anzeigen',
   'settings.theme.backdropHint':
     'Netz zeigt den animierten Farbverlauf; Einfarbig nutzt einen flachen Hintergrund; Bild verwendet dein eigenes.',
   'settings.theme.autoForkHint':

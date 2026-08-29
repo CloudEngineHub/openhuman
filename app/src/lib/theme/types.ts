@@ -40,8 +40,6 @@ export interface Theme {
   backdrop?: {
     kind: 'mesh' | 'solid' | 'image';
     imageUrl?: string;
-    /** Show the dotted-canvas overlay (default true when omitted). */
-    dots?: boolean;
   };
 }
 

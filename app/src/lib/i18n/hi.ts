@@ -5371,7 +5371,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'ठोस',
   'settings.theme.backdrop.image': 'छवि',
   'settings.theme.backdropImageUrl': 'पृष्ठभूमि छवि URL',
-  'settings.theme.backdropDots': 'पृष्ठभूमि बिंदु दिखाएं',
   'settings.theme.backdropHint':
     'मेश एनिमेटेड ग्रेडिएंट दिखाता है; ठोस एक सपाट पृष्ठभूमि का उपयोग करता है; छवि आपकी अपनी पृष्ठभूमि बनाती है।',
   'settings.theme.autoForkHint':

@@ -5250,7 +5250,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'لون موحّد',
   'settings.theme.backdrop.image': 'صورة',
   'settings.theme.backdropImageUrl': 'رابط صورة الخلفية',
-  'settings.theme.backdropDots': 'إظهار نقاط الخلفية',
   'settings.theme.backdropHint':
     'تعرض الشبكة التدرّج المتحرك؛ ويستخدم اللون الموحّد خلفية ثابتة؛ وترسم الصورة خلفيتك الخاصة.',
   'settings.theme.autoForkHint': 'تعديل سمة جاهزة يحفظ تغييراتك تلقائيًا كسمة مخصّصة جديدة.',

@@ -5454,7 +5454,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Jednolity',
   'settings.theme.backdrop.image': 'Obraz',
   'settings.theme.backdropImageUrl': 'URL obrazu tła',
-  'settings.theme.backdropDots': 'Pokaż kropki tła',
   'settings.theme.backdropHint':
     'Siatka pokazuje animowany gradient; Jednolity używa płaskiego tła; Obraz wyświetla Twój własny.',
   'settings.theme.autoForkHint':

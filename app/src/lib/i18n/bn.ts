@@ -5373,7 +5373,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'একরঙা',
   'settings.theme.backdrop.image': 'ছবি',
   'settings.theme.backdropImageUrl': 'পটভূমির ছবির URL',
-  'settings.theme.backdropDots': 'পটভূমির বিন্দু দেখান',
   'settings.theme.backdropHint':
     'মেশ অ্যানিমেটেড গ্রেডিয়েন্ট দেখায়; একরঙা একটি সমতল পটভূমি ব্যবহার করে; ছবি আপনার নিজের পটভূমি আঁকে।',
   'settings.theme.autoForkHint':

@@ -5501,7 +5501,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Uni',
   'settings.theme.backdrop.image': 'Image',
   'settings.theme.backdropImageUrl': "URL de l'image d'arrière-plan",
-  'settings.theme.backdropDots': "Afficher les points d'arrière-plan",
   'settings.theme.backdropHint':
     'Le maillage affiche le dégradé animé ; Uni utilise un fond plat ; Image affiche le vôtre.',
   'settings.theme.autoForkHint':

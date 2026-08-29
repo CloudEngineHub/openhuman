@@ -5475,7 +5475,6 @@ const messages: TranslationMap = {
   'settings.theme.backdrop.solid': 'Sólido',
   'settings.theme.backdrop.image': 'Imagen',
   'settings.theme.backdropImageUrl': 'URL de la imagen de fondo',
-  'settings.theme.backdropDots': 'Mostrar puntos de fondo',
   'settings.theme.backdropHint':
     'La malla muestra el degradado animado; Sólido usa un fondo plano; Imagen pinta el tuyo propio.',
   'settings.theme.autoForkHint':

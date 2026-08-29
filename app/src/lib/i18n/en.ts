@@ -5985,7 +5985,6 @@ const en: TranslationMap = {
   'settings.theme.backdrop.solid': 'Solid',
   'settings.theme.backdrop.image': 'Image',
   'settings.theme.backdropImageUrl': 'Background image URL',
-  'settings.theme.backdropDots': 'Show background dots',
   'settings.theme.backdropHint':
     'Mesh shows the animated gradient; Solid uses a flat background; Image paints your own.',
   'settings.theme.builtInBadge': 'Preset',
