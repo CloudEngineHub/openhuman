@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useT } from '../../lib/i18n/I18nContext';
 import type { ApprovalManifestEntry } from '../../services/api/flowsApi';
-import Button from '../ui/Button';
+import { Button } from '../ui';
 
 /**
  * The consolidated save+enable pre-authorization card: one list of every
