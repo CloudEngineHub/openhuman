@@ -170,80 +170,80 @@ const ReferralRewardsSection = () => {
       <Card divided={false} className="shadow-soft p-6">
         <div className="space-y-6">
           {loading && !stats ? (
-          <p className="text-sm text-content-muted">{t('rewards.referralSection.loading')}</p>
-        ) : null}
-        {loadError ? (
-          <div className="rounded-xl border border-coral-200 dark:border-coral-500/30 bg-coral-50 dark:bg-coral-500/10 px-3 py-2 text-sm text-coral-800 dark:text-coral-200">
-            {loadError}
-            <Button
-              variant="tertiary"
-              size="xs"
-              onClick={() => void loadStats()}
-              className="ml-2 underline">
-              {t('rewards.referralSection.retry')}
-            </Button>
-          </div>
-        ) : null}
-
-        {stats ? (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-line bg-surface-muted p-4">
-                <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
-                  {t('rewards.referralSection.yourCode')}
-                </div>
-                <div className="mt-2 font-mono text-lg font-semibold text-content break-all">
-                  {stats.referralCode || '—'}
-                </div>
-              </div>
-              <div className="rounded-xl border border-line bg-surface-muted p-4">
-                <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
-                  {t('rewards.referralSection.totalEarned')}
-                </div>
-                <div className="mt-2 text-2xl font-semibold text-content">
-                  {formatUsd(stats.totals.totalRewardUsd)}
-                </div>
-              </div>
-              <div className="rounded-xl border border-line bg-surface-muted p-4">
-                <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
-                  {t('rewards.referralSection.pendingReferrals')}
-                </div>
-                <div className="mt-2 text-2xl font-semibold text-content">
-                  {stats.totals.pendingCount}
-                </div>
-              </div>
-              <div className="rounded-xl border border-line bg-surface-muted p-4">
-                <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
-                  {t('rewards.referralSection.completed')}
-                </div>
-                <div className="mt-2 text-2xl font-semibold text-content">
-                  {stats.totals.convertedCount}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <p className="text-sm text-content-muted">{t('rewards.referralSection.loading')}</p>
+          ) : null}
+          {loadError ? (
+            <div className="rounded-xl border border-coral-200 dark:border-coral-500/30 bg-coral-50 dark:bg-coral-500/10 px-3 py-2 text-sm text-coral-800 dark:text-coral-200">
+              {loadError}
               <Button
-                variant="primary"
-                size="lg"
-                onClick={() => void handleCopy()}
-                disabled={!referralCodeToCopy}>
-                {t('rewards.referralSection.copyCode')}
+                variant="tertiary"
+                size="xs"
+                onClick={() => void loadStats()}
+                className="ml-2 underline">
+                {t('rewards.referralSection.retry')}
               </Button>
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => void handleShare()}
-                disabled={!referralCodeToCopy}>
-                {t('rewards.referralSection.share')}
-              </Button>
-              {copyHint ? (
-                <span className="self-center text-sm text-sage-600 dark:text-sage-300">
-                  {copyHint}
-                </span>
-              ) : null}
             </div>
-          </>
+          ) : null}
+
+          {stats ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-xl border border-line bg-surface-muted p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
+                    {t('rewards.referralSection.yourCode')}
+                  </div>
+                  <div className="mt-2 font-mono text-lg font-semibold text-content break-all">
+                    {stats.referralCode || '—'}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-line bg-surface-muted p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
+                    {t('rewards.referralSection.totalEarned')}
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-content">
+                    {formatUsd(stats.totals.totalRewardUsd)}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-line bg-surface-muted p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
+                    {t('rewards.referralSection.pendingReferrals')}
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-content">
+                    {stats.totals.pendingCount}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-line bg-surface-muted p-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-content-faint">
+                    {t('rewards.referralSection.completed')}
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-content">
+                    {stats.totals.convertedCount}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => void handleCopy()}
+                  disabled={!referralCodeToCopy}>
+                  {t('rewards.referralSection.copyCode')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => void handleShare()}
+                  disabled={!referralCodeToCopy}>
+                  {t('rewards.referralSection.share')}
+                </Button>
+                {copyHint ? (
+                  <span className="self-center text-sm text-sage-600 dark:text-sage-300">
+                    {copyHint}
+                  </span>
+                ) : null}
+              </div>
+            </>
           ) : null}
         </div>
       </Card>
