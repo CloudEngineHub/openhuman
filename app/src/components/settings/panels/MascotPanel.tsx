@@ -792,7 +792,7 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
               })}
             </ul>
           )}
-        </div>
+        </Card>
 
         {activeEntry && !customMascotGifUrl && (
           <div className="mt-3 rounded-xl border border-line bg-surface-muted p-4">
