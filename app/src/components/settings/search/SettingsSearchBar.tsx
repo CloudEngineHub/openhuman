@@ -1,16 +1,25 @@
 // ---------------------------------------------------------------------------
 // SettingsSearchBar
 //
-// A plain, full-width search field for the settings sidebar. It is purely a
+// A full-width search field for the settings sidebar. It is purely a
 // controlled text input — it does NOT render its own result list. The parent
 // (SettingsSidebar) uses the query to filter the visible nav tabs in place.
+//
+// Built on the shadcn `Input` (`components/assistant-ui/ui/input.tsx`) rather
+// than the app's own `TextField`. It used to be a `TextField` overridden into a
+// square underline — `rounded-none border-0 border-b border-line focus:ring-0`
+// — which is a fourth input shape in an app that already has the shadcn box on
+// its composer and dialogs. Standardising on the shared primitive means the
+// radius, the border token and the focus ring come from one place and this
+// field cannot drift from them again, so the overrides left here are only the
+// two that earn their keep: gutters for the icon and the clear button.
 // ---------------------------------------------------------------------------
 import { useRef } from 'react';
 
+import { Input } from '../../assistant-ui/ui/input';
 import { useT } from '../../../lib/i18n/I18nContext';
 import Button from '../../ui/Button';
 import { CloseIcon } from '../../ui/icons';
-import TextField from '../../ui/TextField';
 
 interface SettingsSearchBarProps {
   value: string;
@@ -34,10 +43,10 @@ const SettingsSearchBar = ({ value, onValueChange }: SettingsSearchBarProps) => 
 
   return (
     <div data-testid="settings-search" className="relative shrink-0">
-      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-content-faint">
+      <span className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-content-faint">
         <SearchIcon />
       </span>
-      <TextField
+      <Input
         ref={inputRef}
         type="text"
         aria-label={t('settings.settingsSearch.ariaLabel')}
@@ -53,7 +62,11 @@ const SettingsSearchBar = ({ value, onValueChange }: SettingsSearchBarProps) => 
         }}
         placeholder={t('settings.settingsSearch.placeholder')}
         data-testid="settings-search-input"
-        className="rounded-none border-0 border-b border-line pl-10 pr-10 focus:ring-0"
+        // Only the gutters: `pl-9` clears the leading search glyph and `pr-9`
+        // the trailing clear button, replacing the primitive's own `px-2.5` on
+        // those sides. Radius, border, height and focus ring are the
+        // primitive's and are deliberately not overridden.
+        className="pl-9 pr-9"
       />
       {value && (
         <Button
@@ -67,7 +80,7 @@ const SettingsSearchBar = ({ value, onValueChange }: SettingsSearchBarProps) => 
           }}
           aria-label={t('settings.settingsSearch.clear')}
           data-testid="settings-search-clear"
-          className="absolute inset-y-0 right-2 my-auto h-7 w-7 text-content-faint hover:text-content-secondary hover:bg-transparent focus-visible:ring-offset-surface">
+          className="absolute inset-y-0 right-1 my-auto h-6 w-6 text-content-faint hover:text-content-secondary hover:bg-transparent focus-visible:ring-offset-surface">
           <CloseIcon className="h-4 w-4" />
         </Button>
       )}
