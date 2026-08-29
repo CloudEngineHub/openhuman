@@ -89,10 +89,16 @@ export function ThreadList({
           that `index.css` warns about is specific to `scrollbar-width` /
           `scrollbar-color`, not to `scrollbar-gutter`.
 
+          `px-2` then breathes the pills off both edges by an equal 8px, on top
+          of that band — so a row's fill is inset 18px from either side of the
+          column and the two sides stay matched. It has to ride on `both-edges`
+          rather than plain `stable`: with the band reserved on the right only,
+          the same `px-2` would read 8px left against 18px right.
+
           Vertical rhythm is `gap` on the column, not a margin on each row — a
           margin also lands after the last row and pads the scroll floor
           unevenly against `pb-3`. */}
-      <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto pb-3 [scrollbar-gutter:stable_both-edges]">
+      <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3 [scrollbar-gutter:stable_both-edges]">
         {threads.length === 0 ? (
           <p className="px-4 py-6 text-xs text-content-faint text-center">{t('chat.noThreads')}</p>
         ) : (
