@@ -183,9 +183,7 @@ function SessionView({
             : undefined
         }>
         {state.status === 'loading' ? (
-          <p className="py-6 text-center text-sm text-content-muted">
-            {t('tinyplaceOrchestration.loading')}
-          </p>
+          <CenteredLoadingState label={t('tinyplaceOrchestration.loading')} className="py-6" />
         ) : state.status === 'error' ? (
           <p className="py-6 text-center text-sm text-coral-600 dark:text-coral-300">
             {t('tinyplaceOrchestration.failedToLoad')}: {state.message}
