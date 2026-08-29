@@ -214,8 +214,9 @@ const MemoryDebugPanel = () => {
                 variant="secondary"
                 size="xs"
                 onClick={() => void loadDocuments()}
-                disabled={documentsLoading}>
-                {documentsLoading ? '...' : t('memory.refresh')}
+                disabled={documentsLoading}
+                leadingIcon={documentsLoading ? <Spinner className="h-3 w-3" /> : undefined}>
+                {t('memory.refresh')}
               </Button>
             </div>
             <SettingsStatusLine saving={false} error={documentsError} savingLabel="" />
