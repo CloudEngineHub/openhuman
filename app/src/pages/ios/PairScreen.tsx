@@ -195,7 +195,9 @@ export const PairScreen: FC = () => {
 
         {/* Heading */}
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-content-inverted mb-2">{t('iosPair.title')}</h1>
+          <h1 className="text-2xl font-semibold text-content-inverted mb-2">
+            {t('iosPair.title')}
+          </h1>
           <p className="text-sm text-content-inverted/60 leading-relaxed">
             {t('iosPair.instructions')}
           </p>
