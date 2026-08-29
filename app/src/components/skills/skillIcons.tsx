@@ -15,11 +15,8 @@ import {
 } from 'react-icons/lu';
 
 import YuanbaoIcon from '../channels/YuanbaoIcon';
+import { cn } from '../../lib/cn';
 import type { SkillCategory } from './skillCategories';
-
-function iconClasses(...parts: Array<string | undefined>): string {
-  return parts.filter(Boolean).join(' ');
-}
 
 function SkillIconBadge({
   icon: Icon,
