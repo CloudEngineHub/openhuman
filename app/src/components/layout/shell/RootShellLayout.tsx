@@ -1,7 +1,6 @@
 import debugFactory from 'debug';
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-
 import { useT } from '../../../lib/i18n/I18nContext';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import {
@@ -11,6 +10,7 @@ import {
   setSidebarWidth,
   toggleSidebar,
 } from '../../../store/layoutSlice';
+import { isTauri, safeInvoke } from '../../../utils/tauriCommands/common';
 import {
   Sidebar,
   SIDEBAR_DEFAULT_WIDTH,
