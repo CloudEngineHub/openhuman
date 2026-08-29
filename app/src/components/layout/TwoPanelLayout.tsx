@@ -309,16 +309,18 @@ export default function TwoPanelLayout({
         </Button>
       )}
 
-      <div className={`flex-1 min-w-0 overflow-hidden ${paneCard} ${contentClassName}`}>
+      <div className={cn('flex-1 min-w-0 overflow-hidden', paneCard, contentClassName)}>
         {children}
       </div>
     </>
   );
 
   return (
-    <div className={`flex min-h-0 ${className}`}>
+    <div className={cn('flex min-h-0', className)}>
       {seamless ? (
-        <div className={`flex min-h-0 flex-1 overflow-hidden ${DEFAULT_PANE_CLASS}`}>{panes}</div>
+        <div className={cn('flex min-h-0 flex-1 overflow-hidden', DEFAULT_PANE_CLASS)}>
+          {panes}
+        </div>
       ) : (
         panes
       )}
