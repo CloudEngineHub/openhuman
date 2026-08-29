@@ -233,13 +233,18 @@ describe('Alert', () => {
         </Alert>
       );
 
-      expect(screen.getByTestId('description').className).toContain('text-sm');
+      // Byte-identical to what the primitive emitted before `density` existed.
+      expect(screen.getByTestId('description').className).toBe(
+        'text-sm leading-relaxed opacity-90'
+      );
     });
 
     it('leaves a standalone description at text-sm', () => {
       render(<AlertDescription data-testid="description">Description</AlertDescription>);
 
-      expect(screen.getByTestId('description').className).toContain('text-sm');
+      expect(screen.getByTestId('description').className).toBe(
+        'text-sm leading-relaxed opacity-90'
+      );
     });
 
     it('lets a description className win over the inherited density', () => {
