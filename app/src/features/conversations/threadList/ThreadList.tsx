@@ -74,12 +74,41 @@ export function ThreadList({
       </div>
       {/* Rows carry no padding gutter of their own — a thread pill spans the
           full width the scroll container gives it, so its hover/selected fill
-          reads as the width of the list rather than a floating inset card.
+          reads as the width of the list rather than a floating inset card, with
+          `px-2` breathing it an equal 8px off either edge.
 
-          The one inset left is the scrollbar's. `index.css` styles scrollbars
-          app-wide at a fixed 10px whose *track is always reserved* (only the
-          thumb's colour animates — toggling `width` would reflow the pane on
-          every scroll), so an `overflow-y-auto` pane silently loses 10px on the
+          `scrollbar-width` makes the bar an OVERLAY here, and it is doing so by
+          opting this one pane OUT of the app-wide rules rather than by adding
+          anything. `index.css` paints every pane's bar with `::-webkit-scrollbar`
+          at a fixed 10px whose track is permanently reserved (only the thumb's
+          colour animates — toggling `width` would reflow the pane on every
+          scroll), so a full-bleed list silently lost 10px on the right the
+          moment it overflowed. That stylesheet's own comment records the escape
+          hatch: a standard `scrollbar-*` property takes precedence and disables
+          the `::-webkit-scrollbar` styling entirely. The runtime is Wry as of
+          #5456 (`app/src-tauri/Cargo.toml` enables the `wry` feature; the CEF
+          notes around it are historical), so on macOS/Linux WebKit that hands
+          the pane back the platform's native overlay bar — zero reserved width,
+          fading on its own, which is what the `data-scrolling` machinery in
+          `lib/autoHideScrollbars.ts` exists to imitate everywhere else.
+
+          `scrollbar-gutter` stays for the platform where that is not true.
+          Windows WebView2 is Chromium and still lays a classic bar out in flow;
+          per spec a gutter is ignored for overlay bars, so the declaration is
+          inert on macOS and reserves a matched band on both sides on Windows.
+          The pill is therefore symmetric on every platform and never resizes as
+          the list crosses the overflow threshold — it is simply 8px inset where
+          the bar overlays and 8px + the bar's width where it does not.
+
+          Only `scrollbar-width` is set, not `scrollbar-color`: colouring the
+          thumb is what tips WebKit out of overlay mode and back into a laid-out
+          bar, which would undo the whole point. Native overlay bars already
+          track the platform's light/dark appearance.
+
+          Vertical rhythm is `gap` on the column, not a margin on each row — a
+          margin also lands after the last row and pads the scroll floor
+          unevenly against `pb-3`. */}
+      <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3 [scrollbar-gutter:stable_both-edges] [scrollbar-width:thin]">
           right the moment it overflows: pills sit symmetric in a short list and
           10px lopsided in a long one, resizing as threads cross the threshold.
           `scrollbar-gutter: stable both-edges` reserves that band on both sides
