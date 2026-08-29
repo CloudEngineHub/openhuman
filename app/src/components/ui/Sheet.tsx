@@ -81,7 +81,6 @@ export const SheetContent = ({
     <DialogPrimitive.Content
       data-slot="sheet-content"
       data-side={side ?? 'right'}
-      data-testid={testId}
       className={cn(sheetVariants({ side }), className)}
       {...rest}>
       {children}
