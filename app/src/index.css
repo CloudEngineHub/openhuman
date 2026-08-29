@@ -256,9 +256,20 @@
      Near-opaque on purpose: the card sits on the themed chrome, and at the
      original 0.45/0.7 the edge read as a smudge rather than an edge on a light
      surface. The bottom edge stays the stronger of the two so the card still
-     reads as resting on the chrome rather than floating in it. */
+     reads as resting on the chrome rather than floating in it.
+
+     Keyed to `--content-faint`, not `--line-chrome`, because raising the alpha
+     had nowhere left to go — it was already 0.9, and `line-chrome` is only
+     stone-300 (light) / neutral-700 (dark), so the edge resolved to ~216 on a
+     white card and ~60 on a dark one: a value the card's own surface almost
+     matches. `content-faint` is a genuine step along the grey ramp in BOTH
+     directions (stone-400 light, neutral-500 dark — darker against a light
+     card, brighter against a dark one), which is what actually buys contrast
+     rather than opacity does. `--line-chrome` itself is deliberately left
+     alone: `Sidebar`'s rail drag indicator paints with it too, and that rail
+     wants to stay a hairline. */
   --shadow-content-edge:
-    inset 0 0 0 1px rgb(var(--line-chrome) / 0.9), inset 0 -1px 0 rgb(var(--line-chrome));
+    inset 0 0 0 1px rgb(var(--content-faint) / 0.9), inset 0 -1px 0 rgb(var(--content-faint));
 
   --animate-fade-in: fadeIn 0.2s ease-out forwards;
   --animate-fade-up: fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
