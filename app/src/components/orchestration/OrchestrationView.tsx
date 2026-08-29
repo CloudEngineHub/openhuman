@@ -211,36 +211,35 @@ export default function OrchestrationView() {
              be a hand-picked `max-w-3xl` nested inside an identical one. */
           <PanelPage width="lg" contentClassName="p-4">
             <div className="space-y-5 animate-fade-up">
-                <PageSectionHeader
-                  title={t('orchPage.group.network')}
-                  description={t('orchPage.network.desc')}
-                  tabs={
-                    <ChipTabs<NetworkSub>
-                      as="tab"
-                      ariaLabel={t('orchPage.group.network')}
-                      testIdPrefix="orch-network"
-                      className="inline-flex flex-wrap items-center gap-1.5"
-                      items={[
-                        { id: 'connections', label: t('orchPage.connections.nav') },
-                        { id: 'discover', label: t('orchPage.discover.nav') },
-                        { id: 'usage', label: t('orchPage.usage.nav') },
-                      ]}
-                      value={networkSub}
-                      onChange={setNetworkSub}
-                    />
-                  }
-                />
-                {networkSub === 'connections' && (
-                  <ConnectionsPanel
-                    onDiscover={() => setNetworkSub('discover')}
-                    onInitializeAgent={() => setActiveTab('agent')}
+              <PageSectionHeader
+                title={t('orchPage.group.network')}
+                description={t('orchPage.network.desc')}
+                tabs={
+                  <ChipTabs<NetworkSub>
+                    as="tab"
+                    ariaLabel={t('orchPage.group.network')}
+                    testIdPrefix="orch-network"
+                    className="inline-flex flex-wrap items-center gap-1.5"
+                    items={[
+                      { id: 'connections', label: t('orchPage.connections.nav') },
+                      { id: 'discover', label: t('orchPage.discover.nav') },
+                      { id: 'usage', label: t('orchPage.usage.nav') },
+                    ]}
+                    value={networkSub}
+                    onChange={setNetworkSub}
                   />
-                )}
-                {networkSub === 'discover' && <DiscoverPanel />}
-                {networkSub === 'usage' && <UsagePanel />}
-              </div>
-            </PanelPage>
-          </div>
+                }
+              />
+              {networkSub === 'connections' && (
+                <ConnectionsPanel
+                  onDiscover={() => setNetworkSub('discover')}
+                  onInitializeAgent={() => setActiveTab('agent')}
+                />
+              )}
+              {networkSub === 'discover' && <DiscoverPanel />}
+              {networkSub === 'usage' && <UsagePanel />}
+            </div>
+          </PanelPage>
         ) : (
           // Scale showcase: fake peer-agent mesh with the preview banner.
           <MedullaDemoNetwork />
