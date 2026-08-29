@@ -6,7 +6,7 @@ import { useCoreState } from '../../providers/CoreStateProvider';
 import { referralApi } from '../../services/api/referralApi';
 import type { ReferralRelationshipStatus, ReferralStats } from '../../types/referral';
 import { LATEST_APP_DOWNLOAD_URL } from '../../utils/config';
-import { Button, TextField } from '../ui';
+import { Button, Card, TextField } from '../ui';
 
 function formatUsd(n: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
