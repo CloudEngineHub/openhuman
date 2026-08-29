@@ -830,7 +830,7 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
           {/* Second-mascot picker — bespoke label + select combo mirroring
               the voice preset dropdown. The primary's id is disabled so the
               duo can never duplicate a single mascot. */}
-          <div className="bg-surface rounded-xl border border-line p-4 space-y-1">
+          <Card padded divided={false}>
             <label className="block space-y-1">
               <span className="sr-only">{t('settings.mascot.secondaryHeading')}</span>
               <SettingsSelect
