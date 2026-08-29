@@ -323,11 +323,8 @@ export function FlowRunInspectorDrawer({ runId, onClose, onFixWithAgent }: Props
 
         <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
           {loading && !run && (
-            <div
-              className="flex items-center gap-2 py-8 text-content-faint"
-              data-testid="flow-run-inspector-loading">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
-              <span className="text-sm">{t('flowRuns.inspector.loading')}</span>
+            <div data-testid="flow-run-inspector-loading">
+              <CenteredLoadingState label={t('flowRuns.inspector.loading')} />
             </div>
           )}
 
