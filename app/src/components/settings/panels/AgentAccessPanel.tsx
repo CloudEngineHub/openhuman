@@ -12,6 +12,7 @@ import {
   type TrustedRoot,
 } from '../../../utils/tauriCommands';
 import { openhumanCronList, openhumanCronUpdate } from '../../../utils/tauriCommands/cron';
+import { Alert, AlertDescription } from '../../ui';
 import Button from '../../ui/Button';
 import {
   SettingsBadge,
