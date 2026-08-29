@@ -35,12 +35,12 @@ function SkillIconBadge({
     <span
       role="img"
       aria-label={label}
-      className={iconClasses(
+      className={cn(
         'flex h-8 w-8 items-center justify-center rounded-xl shadow-xs ring-1 ring-surface-overlay/5',
         bgClassName,
         className
       )}>
-      <Icon className={iconClasses('h-[18px] w-[18px]', iconClassName)} aria-hidden="true" />
+      <Icon className={cn('h-[18px] w-[18px]', iconClassName)} aria-hidden="true" />
     </span>
   );
 }
@@ -165,7 +165,7 @@ export function SkillCategoryIcon({
   className?: string;
 }) {
   const Icon = CATEGORY_META[category].icon;
-  return <Icon className={iconClasses('h-3.5 w-3.5', className)} aria-hidden="true" />;
+  return <Icon className={cn('h-3.5 w-3.5', className)} aria-hidden="true" />;
 }
 
 export function skillCategoryChipClassName(category: SkillCategory): string {
