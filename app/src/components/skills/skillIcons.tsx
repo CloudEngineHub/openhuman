@@ -95,15 +95,28 @@ export function getChannelIcons(
   };
 }
 
+/**
+ * Category tone table. The app has four themeable ramps (primary / sage /
+ * amber / coral) and nine categories, so only the four categories whose
+ * identity a reader acts on keep a hue — the shipped tier (`Built-in`), the
+ * two behavioural families (`Productivity`, `Social`) and the one that already
+ * carries a caution tone (`Tools & Automation`). The surplus rows fall back to
+ * the neutral pair defined by `All` / `Other` rather than reaching for a fifth,
+ * unthemeable ramp. See `gitbooks/developing/theming.md` ("Colour as identity").
+ */
+const NEUTRAL_CATEGORY_TONE = {
+  chipClassName: 'bg-surface-subtle text-content-secondary',
+  iconClassName: 'text-content-muted',
+  headingClassName: 'text-content-muted',
+} as const;
+
 const CATEGORY_META: Record<
   SkillCategory,
   { icon: IconType; chipClassName: string; iconClassName: string; headingClassName: string }
 > = {
   All: {
     icon: LuBlocks,
-    chipClassName: 'bg-surface-subtle text-content-secondary',
-    iconClassName: 'text-content-muted',
-    headingClassName: 'text-content-muted',
+    ...NEUTRAL_CATEGORY_TONE,
   },
   'Built-in': {
     icon: LuSparkles,
@@ -113,21 +126,17 @@ const CATEGORY_META: Record<
   },
   Channels: {
     icon: LuMessageSquareMore,
-    chipClassName: 'bg-sky-50 text-sky-700',
-    iconClassName: 'text-sky-600',
-    headingClassName: 'text-sky-600',
+    ...NEUTRAL_CATEGORY_TONE,
   },
   Productivity: {
     icon: LuBot,
-    chipClassName: 'bg-emerald-50 text-emerald-700',
-    iconClassName: 'text-emerald-600',
-    headingClassName: 'text-emerald-600',
+    chipClassName: 'bg-sage-50 text-sage-700',
+    iconClassName: 'text-sage-600',
+    headingClassName: 'text-sage-600',
   },
   Chat: {
     icon: LuShare2,
-    chipClassName: 'bg-violet-50 text-violet-700',
-    iconClassName: 'text-violet-600',
-    headingClassName: 'text-violet-600',
+    ...NEUTRAL_CATEGORY_TONE,
   },
   'Tools & Automation': {
     icon: LuWrench,
@@ -137,21 +146,17 @@ const CATEGORY_META: Record<
   },
   Social: {
     icon: LuPlugZap,
-    chipClassName: 'bg-rose-50 text-rose-700',
-    iconClassName: 'text-rose-600',
-    headingClassName: 'text-rose-600',
+    chipClassName: 'bg-coral-50 text-coral-700',
+    iconClassName: 'text-coral-600',
+    headingClassName: 'text-coral-600',
   },
   Platform: {
     icon: LuShare2,
-    chipClassName: 'bg-cyan-50 text-cyan-700',
-    iconClassName: 'text-cyan-600',
-    headingClassName: 'text-cyan-600',
+    ...NEUTRAL_CATEGORY_TONE,
   },
   Other: {
     icon: LuBlocks,
-    chipClassName: 'bg-surface-subtle text-content-secondary',
-    iconClassName: 'text-content-muted',
-    headingClassName: 'text-content-muted',
+    ...NEUTRAL_CATEGORY_TONE,
   },
 };
 
