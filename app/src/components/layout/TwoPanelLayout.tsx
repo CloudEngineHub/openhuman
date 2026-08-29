@@ -235,7 +235,7 @@ export default function TwoPanelLayout({
       {isOpen && (
         <>
           <div
-            className={`shrink-0 min-w-0 overflow-hidden ${paneCard} ${sidebarClassName}`}
+            className={cn('shrink-0 min-w-0 overflow-hidden', paneCard, sidebarClassName)}
             style={{ width }}
             data-testid={`two-panel-sidebar-${id}`}>
             {sidebar}
