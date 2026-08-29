@@ -192,11 +192,11 @@ const Invites = () => {
                 {redeemStatus === 'error' && redeemError && (
                   <p className="text-coral-500 text-xs mt-2">{redeemError}</p>
                 )}
-              </div>
+              </Card>
             )}
 
             {/* Your Invite Codes */}
-            <div className="bg-surface rounded-2xl shadow-soft border border-line p-6 animate-fade-up">
+            <Card divided={false} className="shadow-soft animate-fade-up p-6">
               <div className="mb-4">
                 <h2 className="text-lg font-bold mb-1">{t('rewards.referralCode')}</h2>
                 <p className="text-xs opacity-70">{t('rewards.share')}</p>
