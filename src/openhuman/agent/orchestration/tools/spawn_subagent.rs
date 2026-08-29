@@ -172,7 +172,7 @@ impl Tool for SpawnSubagentTool {
         &self,
         args: serde_json::Value,
         _options: ToolCallOptions,
-        tool_context: Option<&ToolExecutionContext>,
+        tool_context: Option<&dyn ToolRunContext>,
     ) -> anyhow::Result<ToolResult> {
         // ── Argument extraction with back-compat ───────────────────────
         let agent_id = args
@@ -530,7 +530,7 @@ impl Tool for SpawnSubagentTool {
         }
 
         // ── Run the sub-agent ──────────────────────────────────────────
-        let workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace.clone());
+        let workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace().cloned());
         let worktree_action_dir = workspace_descriptor
             .as_ref()
             .map(|descriptor| descriptor.root.clone());

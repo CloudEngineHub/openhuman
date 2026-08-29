@@ -107,7 +107,7 @@ impl Tool for SpawnWorkerThreadTool {
         &self,
         args: serde_json::Value,
         _options: ToolCallOptions,
-        tool_context: Option<&ToolExecutionContext>,
+        tool_context: Option<&dyn ToolRunContext>,
     ) -> anyhow::Result<ToolResult> {
         let started = std::time::Instant::now();
 
@@ -229,7 +229,7 @@ impl Tool for SpawnWorkerThreadTool {
         // sees. Instead, we return the info in the tool result.
 
         // ── Run Subagent ──────────────────────────────────────────────
-        let workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace.clone());
+        let workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace().cloned());
         let worktree_action_dir = workspace_descriptor
             .as_ref()
             .map(|descriptor| descriptor.root.clone());

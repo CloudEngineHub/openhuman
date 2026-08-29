@@ -204,7 +204,7 @@ impl Tool for SkillDelegationTool {
         &self,
         args: serde_json::Value,
         _options: ToolCallOptions,
-        tool_context: Option<&ToolExecutionContext>,
+        tool_context: Option<&dyn ToolRunContext>,
     ) -> anyhow::Result<ToolResult> {
         let raw_toolkit = args
             .get("toolkit")

@@ -121,7 +121,7 @@ impl Tool for ArchetypeDelegationTool {
         &self,
         args: serde_json::Value,
         _options: ToolCallOptions,
-        tool_context: Option<&ToolExecutionContext>,
+        tool_context: Option<&dyn ToolRunContext>,
     ) -> anyhow::Result<ToolResult> {
         let raw_prompt = args
             .get("prompt")

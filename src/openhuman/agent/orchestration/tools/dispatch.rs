@@ -32,10 +32,10 @@ pub(crate) async fn dispatch_subagent(
     prompt: &str,
     skill_filter: Option<&str>,
     model_override: Option<&str>,
-    tool_context: Option<&ToolExecutionContext>,
+    tool_context: Option<&dyn ToolRunContext>,
     mode: DispatchMode,
 ) -> anyhow::Result<ToolResult> {
-    let parent_workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace.clone());
+    let parent_workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace().cloned());
     let registry = match AgentDefinitionRegistry::global() {
         Some(reg) => reg,
         None => {

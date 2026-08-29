@@ -252,7 +252,7 @@ impl Tool for UseSkillTool {
         &self,
         args: Value,
         options: ToolCallOptions,
-        context: Option<&tinyagents::harness::tool::ToolExecutionContext>,
+        context: Option<&dyn ToolRunContext>,
     ) -> anyhow::Result<ToolResult> {
         let Some((tools, idx)) = self.resolve(&args) else {
             let skill = args.get("skill").and_then(Value::as_str).unwrap_or("");

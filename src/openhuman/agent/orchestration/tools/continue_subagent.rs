@@ -49,7 +49,7 @@ impl ContinueSubagentTool {
         task_id: &str,
         agent_id: &str,
         message: &str,
-        tool_context: Option<&ToolExecutionContext>,
+        tool_context: Option<&dyn ToolRunContext>,
     ) -> anyhow::Result<ToolResult> {
         use crate::openhuman::agent::orchestration::subagent_sessions::{
             self, SubagentSessionStore,
@@ -167,7 +167,7 @@ impl Tool for ContinueSubagentTool {
         &self,
         args: serde_json::Value,
         _options: ToolCallOptions,
-        tool_context: Option<&ToolExecutionContext>,
+        tool_context: Option<&dyn ToolRunContext>,
     ) -> anyhow::Result<ToolResult> {
         let task_id = args
             .get("task_id")
@@ -321,7 +321,7 @@ impl Tool for ContinueSubagentTool {
         }
 
         // Build options with initial_history for replay
-        let workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace.clone());
+        let workspace_descriptor = tool_context.and_then(|ctx| ctx.workspace().cloned());
         let worktree_action_dir = workspace_descriptor
             .as_ref()
             .map(|descriptor| descriptor.root.clone());

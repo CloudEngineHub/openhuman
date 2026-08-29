@@ -67,11 +67,11 @@ pub use workspace_state::WorkspaceStateTool;
 /// model-supplied text.
 pub(super) fn security_for_tool_context(
     security: &SecurityPolicy,
-    context: Option<&ToolExecutionContext>,
+    context: Option<&dyn ToolRunContext>,
     tool: &str,
 ) -> SecurityPolicy {
     let mut scoped = security.clone();
-    if let Some(workspace) = context.and_then(|ctx| ctx.workspace.as_ref()) {
+    if let Some(workspace) = context.and_then(|ctx| ctx.workspace()) {
         tracing::debug!(
             tool,
             workspace_root = %workspace.root.display(),
