@@ -28,8 +28,8 @@ import { useAppDispatch } from '../../store/hooks';
 import type { ToastNotification } from '../../types/intelligence';
 import { memoryTreeRetryFailed, memoryTreeSetEnabled } from '../../utils/tauriCommands';
 import { trackAnalyticsEvent } from '../analytics';
+import { Card } from '../ui';
 import Button from '../ui/Button';
-import Card from '../ui/Card';
 import Switch from '../ui/Switch';
 import {
   classifyIntegration,
