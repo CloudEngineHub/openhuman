@@ -43,7 +43,13 @@ import {
 import ChatComposer from '../chat/ChatComposer';
 import ChatNewWindowHero from '../chat/ChatNewWindowHero';
 import { DetachedComposerRuntime } from '../chat/composer/DetachedComposerRuntime';
-import { Alert, AlertDescription, CenteredLoadingState } from '../ui';
+import {
+  Alert,
+  AlertDescription,
+  CenteredLoadingState,
+  ToggleGroupItem,
+  ToggleGroupRoot,
+} from '../ui';
 import Button from '../ui/Button';
 import SessionTranscript from './SessionTranscript';
 
