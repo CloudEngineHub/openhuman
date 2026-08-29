@@ -246,7 +246,7 @@ function ApprovalRow({
               variant="primary"
               size="xs"
               onClick={() => onDecide(message, 'approve')}
-              className="rounded-lg bg-amber-500 px-3 font-semibold text-white hover:bg-amber-600 active:bg-amber-700 focus-visible:ring-amber-500/25 dark:hover:bg-amber-600 dark:active:bg-amber-600">
+              className="rounded-lg bg-amber-500 px-3 font-semibold text-content-inverted hover:bg-amber-600 active:bg-amber-700 focus-visible:ring-amber-500/25 dark:hover:bg-amber-600 dark:active:bg-amber-600">
               {t('chat.approval.approve')}
             </Button>
             <Button
