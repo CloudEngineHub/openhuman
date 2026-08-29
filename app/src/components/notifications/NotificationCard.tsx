@@ -20,31 +20,25 @@ function relativeTime(isoString: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-/** Provider badge color class based on slug. */
-function providerBadgeClass(provider: string): string {
-  switch (provider) {
-    case 'gmail':
-      return 'bg-red-100 text-red-700 border-red-200';
-    case 'slack':
-      return 'bg-purple-100 text-purple-700 border-purple-200';
-    case 'whatsapp':
-      return 'bg-green-100 text-green-700 border-green-200';
-    case 'discord':
-      return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-    case 'telegram':
-      return 'bg-blue-100 text-blue-700 border-blue-200';
-    case 'linkedin':
-      return 'bg-sky-100 text-sky-700 border-sky-200';
-    default:
-      return 'bg-surface-subtle text-content-secondary border-line';
-  }
-}
+/**
+ * Provider badge tone. Six providers would need six hues and the app has four
+ * themeable ramps — three of which the importance badge beside it already
+ * spends on high / medium / low. A provider painted coral would read as a
+ * failed notification, so the whole set takes the neutral pair; the badge
+ * prints the provider slug, which is what a reader actually scans.
+ *
+ * Restoring a per-provider tint means adding brand tokens (the same product
+ * decision the Telegram / Discord / iMessage plates in `skills/skillIcons.tsx`
+ * are parked on), not reaching back for a stock Tailwind ramp.
+ * See `gitbooks/developing/theming.md`.
+ */
+const PROVIDER_BADGE_CLASS = 'bg-surface-subtle text-content-secondary border-line';
 
-/** Score badge color. */
+/** Importance badge tone: high / medium / low on coral / amber / sage. */
 function scoreBadgeClass(score: number): string {
-  if (score >= 0.75) return 'bg-coral-500/20 text-red-600 border-red-200';
+  if (score >= 0.75) return 'bg-coral-100 text-coral-700 border-coral-200';
   if (score >= 0.4) return 'bg-amber-100 text-amber-700 border-amber-200';
-  return 'bg-sage-500/20 text-green-700 border-green-200';
+  return 'bg-sage-100 text-sage-700 border-sage-200';
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -104,7 +98,7 @@ const NotificationCard = ({ notification: n, onMarkRead, onNavigate, onDismiss }
           className="flex-1 min-w-0 text-left focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1 rounded-sm">
           {/* Header row: provider badge + timestamp */}
           <div className="flex items-center gap-2 mb-1">
-            <Badge className={providerBadgeClass(n.provider)}>{n.provider}</Badge>
+            <Badge className={PROVIDER_BADGE_CLASS}>{n.provider}</Badge>
 
             {n.importance_score !== undefined && (
               <Badge
