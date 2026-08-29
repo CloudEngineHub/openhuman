@@ -1251,9 +1251,9 @@ fn set_titlebar_for_sidebar(app: AppHandle<AppRuntime>, collapsed: bool) -> Resu
             .ok_or_else(|| "main window not found".to_string())?;
 
         let style = if collapsed {
-            tauri_utils::TitleBarStyle::Visible
+            tauri::TitleBarStyle::Visible
         } else {
-            tauri_utils::TitleBarStyle::Overlay
+            tauri::TitleBarStyle::Overlay
         };
         window
             .set_title_bar_style(style)
