@@ -189,7 +189,7 @@ const AppearancePanel = () => {
             <span>{`${MIN_FONT_SIZE_PX}${t('settings.appearance.fontSizeUnit')}`}</span>
             <span>{`${MAX_FONT_SIZE_PX}${t('settings.appearance.fontSizeUnit')}`}</span>
           </div>
-        </div>
+        </Card>
 
         <p className="text-xs text-content-muted leading-relaxed px-1 mt-2">
           {t('settings.appearance.fontSizeHelperText')}
