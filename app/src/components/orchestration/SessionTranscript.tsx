@@ -109,7 +109,7 @@ function UserBubble({ message }: { message: ChatMessage }): ReactElement {
         <div className="overflow-hidden wrap-break-word rounded-2xl rounded-br-md bg-primary-500 px-4 py-2.5 text-content-inverted">
           <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.body}</p>
         </div>
-        <span className="px-1 text-[10px] text-white/60">{formatTime(message.timestamp)}</span>
+        <span className="px-1 text-[10px] text-content-faint">{formatTime(message.timestamp)}</span>
       </div>
     </div>
   );
