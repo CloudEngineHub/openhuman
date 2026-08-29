@@ -165,7 +165,7 @@ describe('Notifications page category filter', () => {
   it('shows all items under the default All filter', () => {
     renderPage(mixed());
     expect(screen.getAllByTestId('notification-item')).toHaveLength(4);
-    expect(screen.getByTestId('notif-filter-chip-all')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('notif-filter-chip-all')).toHaveAttribute('aria-selected', 'true');
   });
 
   it('filters the list to the selected category and marks the chip active', () => {
@@ -175,10 +175,10 @@ describe('Notifications page category filter', () => {
 
     expect(screen.getAllByTestId('notification-item')).toHaveLength(2);
     expect(screen.getByTestId('notif-filter-chip-messages')).toHaveAttribute(
-      'aria-pressed',
+      'aria-selected',
       'true'
     );
-    expect(screen.getByTestId('notif-filter-chip-all')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('notif-filter-chip-all')).toHaveAttribute('aria-selected', 'false');
   });
 
   it('restores the full list when All is reselected', () => {
@@ -210,7 +210,7 @@ describe('Notifications page category filter', () => {
     // Select the only category present.
     fireEvent.click(screen.getByTestId('notif-filter-chip-messages'));
     expect(screen.getByTestId('notif-filter-chip-messages')).toHaveAttribute(
-      'aria-pressed',
+      'aria-selected',
       'true'
     );
 
@@ -226,9 +226,9 @@ describe('Notifications page category filter', () => {
     act(() => {
       store.dispatch(notificationReceived(makeItem('m-2', 'msg two', { category: 'messages' })));
     });
-    expect(screen.getByTestId('notif-filter-chip-all')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('notif-filter-chip-all')).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByTestId('notif-filter-chip-messages')).toHaveAttribute(
-      'aria-pressed',
+      'aria-selected',
       'false'
     );
     expect(screen.getAllByTestId('notification-item')).toHaveLength(1);
