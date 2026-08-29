@@ -15,6 +15,7 @@ import { apiClient } from '../../lib/agentworld/apiClient';
 import { useT } from '../../lib/i18n/I18nContext';
 import { type CreditBalance, creditsApi, type TeamUsage } from '../../services/api/creditsApi';
 import { getTokenjuiceSavings, type SavingsStats } from '../../utils/tauriCommands/tokenjuice';
+import { CenteredLoadingState } from '../ui';
 import { StatTile } from './primitives';
 
 const debug = debugFactory('orchestration:usage');
