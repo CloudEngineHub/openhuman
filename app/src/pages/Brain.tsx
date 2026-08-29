@@ -348,17 +348,17 @@ export default function Brain() {
 
                   {activeTab === 'sync' && (
                     <div className="space-y-5 animate-fade-up">
-                      <div className={cardClass}>
+                      <Card padded divided={false}>
                         <MemoryTreeStatusPanel onToast={addToast} />
-                      </div>
+                      </Card>
                       {/* Sync history relocated from the Memory Inspection panel so
                       the Sync tab is the single sync surface. */}
-                      <div className={cardClass} data-testid="brain-sync-history">
+                      <Card padded divided={false} data-testid="brain-sync-history">
                         <h3 className="mb-2 text-sm font-medium text-content-secondary">
                           {t('sync.auditTitle', 'Sync History')}
                         </h3>
                         <SyncAuditPanel />
-                      </div>
+                      </Card>
                     </div>
                   )}
                 </div>
