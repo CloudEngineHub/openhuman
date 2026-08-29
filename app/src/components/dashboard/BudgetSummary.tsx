@@ -53,7 +53,7 @@ const BudgetSummary = ({
       {/* Hero tile: 7-day total + status badge + progress bar */}
       <div
         data-testid="metric-total-spend"
-        className="md:col-span-2 rounded-2xl border border-line bg-linear-to-br from-primary-50 to-white dark:from-neutral-900 dark:to-neutral-950 p-5 flex flex-col gap-3 shadow-soft">
+        className="md:col-span-2 rounded-2xl border border-line bg-linear-to-br from-primary-50 to-surface dark:from-neutral-900 dark:to-neutral-950 p-5 flex flex-col gap-3 shadow-soft">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-content-muted">
             <WalletIcon className="h-4 w-4" />
