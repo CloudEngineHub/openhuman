@@ -93,8 +93,8 @@ const MascotChatTranscript: FC<TranscriptProps> = ({ messages }) => {
             className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-snug
               ${
                 msg.role === 'user'
-                  ? 'bg-[#4A83DD] text-white rounded-br-sm'
-                  : 'bg-surface/10 text-white/90 rounded-bl-sm'
+                  ? 'bg-[#4A83DD] text-content-inverted rounded-br-sm'
+                  : 'bg-surface/10 text-content-inverted/90 rounded-bl-sm'
               }
               ${msg.streaming ? 'animate-pulse' : ''}`}>
             {msg.text}
