@@ -249,14 +249,20 @@ const McpServerPanel = ({ embedded = false }: McpServerPanelProps = {}) => {
             )}
           </div>
 
-          {/* Open config error */}
+          {/* Open config error — a result of the "Open config file" click
+              above, but not urgent enough to interrupt: polite, not
+              assertive. */}
           {openConfigError && (
-            <div
+            <Alert
+              variant="destructive"
+              density="compact"
               role="status"
               aria-live="polite"
-              className="px-4 pb-3 text-xs text-coral-600 dark:text-coral-300">
-              {t('settings.mcpServer.openConfigError')}: {openConfigError}
-            </div>
+              className="mx-4 mb-3">
+              <AlertDescription>
+                {t('settings.mcpServer.openConfigError')}: {openConfigError}
+              </AlertDescription>
+            </Alert>
           )}
         </SettingsSection>
       </div>
