@@ -96,11 +96,11 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
         </div>
       )}
       {data && !data.enabled && (
-        <div
-          className="rounded-md border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300"
-          data-testid="cost-dashboard-disabled">
-          {t('settings.costDashboard.disabledHint')}
-        </div>
+        // A resolved config state, not a response to a user action — opt out
+        // of the assertive default so it doesn't talk over the page it's on.
+        <Alert variant="warning" density="compact" role={undefined} data-testid="cost-dashboard-disabled">
+          <AlertDescription>{t('settings.costDashboard.disabledHint')}</AlertDescription>
+        </Alert>
       )}
 
       {!data && isLoading && <DashboardSkeleton />}
