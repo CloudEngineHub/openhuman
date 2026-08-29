@@ -170,7 +170,10 @@ impl Tool for LoadSkillTool {
         PermissionLevel::ReadOnly
     }
 
-    fn pack_registry_handle(&self) -> Option<&PackRegistryHandle> {
+    /// The registry handle rides on the vocabulary's erased host extension:
+    /// `PackRegistryHandle` is this host's concept, and `tinytools` has no
+    /// business naming it. `traits::pack_registry_handle` reads it back.
+    fn host_extension(&self) -> Option<&(dyn std::any::Any + Send + Sync)> {
         Some(&self.handle)
     }
 }
@@ -323,7 +326,10 @@ impl Tool for UseSkillTool {
         }
     }
 
-    fn pack_registry_handle(&self) -> Option<&PackRegistryHandle> {
+    /// The registry handle rides on the vocabulary's erased host extension:
+    /// `PackRegistryHandle` is this host's concept, and `tinytools` has no
+    /// business naming it. `traits::pack_registry_handle` reads it back.
+    fn host_extension(&self) -> Option<&(dyn std::any::Any + Send + Sync)> {
         Some(&self.handle)
     }
 }

@@ -269,7 +269,7 @@ impl Tool for GeneratedContextTool {
         Ok(ToolResult::success("generated-output"))
     }
 
-    fn generated_runtime_context(
+    fn host_call_extension(
         &self,
         _args: &serde_json::Value,
     ) -> Option<GeneratedToolRuntimeContext> {
