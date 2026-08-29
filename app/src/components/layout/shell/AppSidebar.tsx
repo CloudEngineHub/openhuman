@@ -111,6 +111,22 @@ export default function AppSidebar() {
     <div className="flex h-full min-h-0 flex-col">
       <SidebarHeader />
       <SidebarNav />
+      {/* Closes the primary-nav group off from whatever a route projects below
+          it. The region comment above notes that spacing alone separated these
+          bands; that held while the only thing under the nav was more spacing,
+          but the projected region is a titled, scrolling list of its own, and
+          two adjacent groups of rows with nothing between them read as one long
+          list whose headings arrive at random.
+
+          Kept faint enough not to become a line across the chrome: the sidebar
+          has no fill of its own, so a hairline here is drawn on the window
+          chrome rather than inside a panel. `content-faint/20` is low enough to
+          read as a seam rather than a rule, and unlike `line-subtle` (the
+          primitive's default, stone-100) it stays visible on a light themed
+          chrome instead of washing out. `mx-3` lines its ends up with the nav
+          rows' own inset rather than the primitive's narrower `mx-2`; `my-1.5`
+          sits it centred in the gap left by `SidebarGroup`'s `py-1`. */}
+      <SidebarSeparator className="mx-3 my-1.5 bg-content-faint/20" />
       <SidebarScrollRegion className="gap-0">
         {/* Flex column so routes that project more than one region can order
             them via Tailwind `order-*`. */}

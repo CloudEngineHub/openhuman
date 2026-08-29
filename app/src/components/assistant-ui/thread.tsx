@@ -359,17 +359,25 @@ const Composer: FC<{
         <ComposerPrimitive.AttachmentDropzone asChild>
           <div
             data-slot="aui_composer-shell"
-            // Keyed to `content-faint` at the same 0.65 the content card's
-            // `--shadow-content-edge` settled on (see `index.css`), so the
-            // composer's frame and the card's frame carry one contrast rather
-            // than two. `line`/`line-strong` were too close to the card surface
-            // to read as an edge; `content-faint` is a real step along the grey
-            // ramp in both themes, and the alpha pulls it back off full
-            // strength. Focus goes to 0.90 rather than a different token, so
-            // the focus cue is the same edge asserting itself instead of a
-            // colour change. `border-ring` on drag is untouched — that state is
-            // meant to break the pattern.
-            className="border-content-faint/65 focus-within:border-content-faint/90 data-[dragging=true]:border-ring flex w-full cursor-text flex-col gap-2 rounded-(--composer-radius) border bg-(--composer-bg) p-(--composer-padding) transition-[border-color] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-background))]">
+            // Keyed to `content-faint` rather than `line`/`line-strong`, which
+            // sat too close to the composer's own surface to read as an edge at
+            // all; `content-faint` is a real step along the grey ramp in both
+            // themes and the alpha then pulls it back.
+            //
+            // The border is deliberately fainter than the content card's edge
+            // (0.65 in `index.css`) because it is not carrying the definition
+            // alone: `shadow-soft` lifts the composer off the transcript, and a
+            // lifted surface needs less outline than a flat one to read as
+            // separate. Border and shadow together at low strength read calmer
+            // than either at full — a hard 0.65 line under a shadow reads as
+            // two competing edges.
+            //
+            // Focus moves the same token to 0.75 instead of swapping colour, so
+            // the cue is this edge asserting itself. `transition` covers
+            // box-shadow as well now, or focus would cross-fade the border
+            // against a shadow that snapped. `border-ring` on drag is
+            // untouched — that state is meant to break the pattern.
+            className="border-content-faint/40 focus-within:border-content-faint/75 data-[dragging=true]:border-ring shadow-soft flex w-full cursor-text flex-col gap-2 rounded-(--composer-radius) border bg-(--composer-bg) p-(--composer-padding) transition-[border-color,box-shadow] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-background))]">
             {HostComposerAttachments ? <HostComposerAttachments /> : <ComposerAttachments />}
             {/*
              * Lexical rather than the plain `ComposerPrimitive.Input` textarea,
