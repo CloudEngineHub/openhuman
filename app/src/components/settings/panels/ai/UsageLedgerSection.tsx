@@ -80,37 +80,48 @@ export const UsageLedgerSection = ({
     <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-3">
       <MetricTile
         label={t('settings.ai.weekBudget')}
-        value={usage ? formatUsd(usage.cycleBudgetUsd) : 'n/a'}
-        detail={`resets ${formatDateTime(usage?.cycleEndsAt)}`}
+        value={usage ? formatUsd(usage.cycleBudgetUsd) : t('common.notAvailable')}
+        detail={t('settings.ai.resetsAt').replace('{time}', formatDateTime(usage?.cycleEndsAt))}
       />
       <MetricTile
         label={t('settings.ai.cycleRemaining')}
-        value={usage ? formatUsd(usage.remainingUsd) : 'n/a'}
-        detail={usage ? `${formatUsd(usage.cycleSpentUsd)} used` : undefined}
+        value={usage ? formatUsd(usage.remainingUsd) : t('common.notAvailable')}
+        detail={
+          usage
+            ? t('settings.ai.usedAmount').replace('{amount}', formatUsd(usage.cycleSpentUsd))
+            : undefined
+        }
       />
       <MetricTile
         label={t('settings.ai.cycleTotalSpend')}
-        value={usage ? formatUsd(usage.insights.totals.totalUsd) : 'n/a'}
+        value={usage ? formatUsd(usage.insights.totals.totalUsd) : t('common.notAvailable')}
         detail={
           usage
-            ? `inference ${formatUsd(usage.insights.totals.inferenceUsd)} + integrations ${formatUsd(usage.insights.totals.integrationsUsd)}`
+            ? t('settings.ai.inferenceIntegrationsBreakdown')
+                .replace('{inference}', formatUsd(usage.insights.totals.inferenceUsd))
+                .replace('{integrations}', formatUsd(usage.insights.totals.integrationsUsd))
             : undefined
         }
       />
       <MetricTile
         label={t('settings.ai.avgSpendRow')}
-        value={spendAvgRowUsd > 0 ? formatUsd(spendAvgRowUsd) : 'n/a'}
-        detail={`${spendRows.length} recent spend rows`}
+        value={spendAvgRowUsd > 0 ? formatUsd(spendAvgRowUsd) : t('common.notAvailable')}
+        detail={t('settings.ai.recentSpendRowsCount').replace('{count}', String(spendRows.length))}
       />
       <MetricTile
         label={t('settings.ai.backgroundApiReads')}
-        value={`${formatCount(backgroundApiReadsPerWeek)}/week`}
-        detail={`${formatCount(calendarPlannerCallsPerWeek)} planner + ${formatCount(composioConnectionScansPerWeek)} sync`}
+        value={t('settings.ai.perWeek').replace('{count}', formatCount(backgroundApiReadsPerWeek))}
+        detail={t('settings.ai.plannerSyncBreakdown')
+          .replace('{planner}', formatCount(calendarPlannerCallsPerWeek))
+          .replace('{sync}', formatCount(composioConnectionScansPerWeek))}
       />
       <MetricTile
         label={t('settings.ai.backgroundWakeups')}
-        value={`${formatCount(backgroundWakeupsPerWeek)}/week`}
-        detail={`${formatCount(memoryPollsPerWeek)} memory polls`}
+        value={t('settings.ai.perWeek').replace('{count}', formatCount(backgroundWakeupsPerWeek))}
+        detail={t('settings.ai.memoryPollsDetail').replace(
+          '{count}',
+          formatCount(memoryPollsPerWeek)
+        )}
       />
     </div>
 
