@@ -497,7 +497,7 @@ export function MemorySourcesRegistry({
   };
 
   return (
-    <section className="rounded-lg border border-line bg-surface p-4" data-testid="memory-sources">
+    <Card padded divided={false} data-testid="memory-sources">
       <header className="mb-3 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-content-secondary">{t('memorySources.title')}</h3>
         <div className="flex items-center gap-2">
