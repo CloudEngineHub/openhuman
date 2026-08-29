@@ -37,7 +37,7 @@ import {
   setSelectedMascotId,
   SUPPORTED_MASCOT_COLORS,
 } from '../../../store/mascotSlice';
-import { Button, Checkbox } from '../../ui';
+import { Alert, AlertDescription, Button, Checkbox } from '../../ui';
 import { SettingsSelect, SettingsTextField } from '../controls';
 import SettingsPanel from '../layout/SettingsPanel';
 import {
