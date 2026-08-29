@@ -9,6 +9,7 @@ import { useT } from '../../../lib/i18n/I18nContext';
 import { safeInvoke as invoke, isTauri } from '../../../utils/tauriCommands/common';
 import ChipTabs from '../../layout/ChipTabs';
 import PanelPage from '../../layout/PanelPage';
+import { Alert, AlertDescription } from '../../ui';
 import Button from '../../ui/Button';
 import { SettingsSection } from '../controls';
 import SettingsPanel from '../layout/SettingsPanel';
