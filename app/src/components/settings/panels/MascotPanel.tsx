@@ -602,7 +602,8 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
               </AlertDescription>
             </Alert>
           )}
-        </div>
+          </div>
+        </Card>
         <p className="text-xs text-content-muted leading-relaxed px-1 mt-2">
           {t('settings.mascot.voice.desc')}
         </p>
