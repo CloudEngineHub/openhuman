@@ -1,11 +1,20 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { Alert, AlertDescription, AlertTitle, type AlertVariant } from './Alert';
+import { Alert, AlertDescription, AlertTitle, alertVariants, type AlertVariant } from './Alert';
 
 const RAW_PALETTE = /\b(?:bg|text|border|ring)-(?:neutral|stone|slate|canvas|white|black)\b/;
 
 const VARIANTS: AlertVariant[] = ['default', 'info', 'success', 'warning', 'destructive'];
+
+/**
+ * The class attribute every existing call site produced before `density`
+ * existed. Every default-density assertion below compares against this, so a
+ * later variant addition cannot silently reshape the ~34 alerts already in the
+ * tree.
+ */
+const BASE_GEOMETRY = ['rounded-xl', 'px-4', 'py-3', 'text-sm'] as const;
+const COMPACT_GEOMETRY = ['rounded-lg', 'px-3', 'py-2', 'text-xs'] as const;
 
 describe('Alert', () => {
   it('renders its title and description', () => {
