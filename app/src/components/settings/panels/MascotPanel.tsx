@@ -424,31 +424,32 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
                 <input
                   type="color"
                   value={customPrimary}
-                onChange={e => dispatch(setCustomPrimaryColor(e.target.value))}
-                className="w-8 h-8 rounded-md border border-line dark:border-line-strong cursor-pointer p-0"
-              />
-              <span className="text-sm text-content-secondary">
-                {t('settings.mascot.primaryColor')}
-              </span>
-              <code className="ml-auto text-[11px] font-mono text-content-faint">
-                {customPrimary}
-              </code>
-            </label>
-            <label className="flex items-center gap-3">
-              <input
-                type="color"
-                value={customSecondary}
-                onChange={e => dispatch(setCustomSecondaryColor(e.target.value))}
-                className="w-8 h-8 rounded-md border border-line dark:border-line-strong cursor-pointer p-0"
-              />
-              <span className="text-sm text-content-secondary">
-                {t('settings.mascot.secondaryColor')}
-              </span>
-              <code className="ml-auto text-[11px] font-mono text-content-faint">
-                {customSecondary}
-              </code>
-            </label>
-          </div>
+                  onChange={e => dispatch(setCustomPrimaryColor(e.target.value))}
+                  className="w-8 h-8 rounded-md border border-line dark:border-line-strong cursor-pointer p-0"
+                />
+                <span className="text-sm text-content-secondary">
+                  {t('settings.mascot.primaryColor')}
+                </span>
+                <code className="ml-auto text-[11px] font-mono text-content-faint">
+                  {customPrimary}
+                </code>
+              </label>
+              <label className="flex items-center gap-3">
+                <input
+                  type="color"
+                  value={customSecondary}
+                  onChange={e => dispatch(setCustomSecondaryColor(e.target.value))}
+                  className="w-8 h-8 rounded-md border border-line dark:border-line-strong cursor-pointer p-0"
+                />
+                <span className="text-sm text-content-secondary">
+                  {t('settings.mascot.secondaryColor')}
+                </span>
+                <code className="ml-auto text-[11px] font-mono text-content-faint">
+                  {customSecondary}
+                </code>
+              </label>
+            </div>
+          </Card>
         )}
         <p className="text-xs text-content-muted leading-relaxed px-1 mt-2">
           {t('settings.mascot.colorDesc')}
