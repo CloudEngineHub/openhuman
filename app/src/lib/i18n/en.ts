@@ -2169,6 +2169,27 @@ const en: TranslationMap = {
   'settings.notifications.categories': 'Categories',
   'settings.notifications.categoryFooter':
     'Disabling a category stops new notifications of that type from appearing in the notification center. Existing notifications remain until cleared.',
+  'settings.notifications.category.messages.title': 'Messages',
+  'settings.notifications.category.messages.desc':
+    'New messages from embedded webview accounts (Slack, WhatsApp, …).',
+  'settings.notifications.category.agents.title': 'Agent activity',
+  'settings.notifications.category.agents.desc':
+    'Agent task completions and long-running responses.',
+  'settings.notifications.category.skills.title': 'Skills',
+  'settings.notifications.category.skills.desc': 'Skill sync events and OAuth status changes.',
+  'settings.notifications.category.system.title': 'System',
+  'settings.notifications.category.system.desc':
+    'Connection issues, background process errors, updates.',
+  'settings.notifications.category.meetings.title': 'Meetings',
+  'settings.notifications.category.meetings.desc':
+    'Upcoming meetings and calendar events detected by heartbeat.',
+  'settings.notifications.category.reminders.title': 'Reminders',
+  'settings.notifications.category.reminders.desc':
+    'Upcoming reminders and scheduled tasks from cron jobs.',
+  'settings.notifications.category.important.title': 'Important events',
+  'settings.notifications.category.important.desc':
+    'Urgent or time-sensitive events surfaced from connected sources.',
+  'settings.notifications.categoryToggleAria': 'Toggle {name} notifications',
 
   // Settings: Billing
   'settings.billing.movedToWeb': 'Billing moved to the web',
