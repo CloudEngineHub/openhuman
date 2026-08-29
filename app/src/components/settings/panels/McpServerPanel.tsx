@@ -30,17 +30,17 @@ type McpClient = 'claude-desktop' | 'cursor' | 'codex' | 'zed';
 // Static tool catalogue
 // ---------------------------------------------------------------------------
 
-const MCP_TOOLS: { name: string; description: string }[] = [
-  { name: 'core.list_tools', description: 'List all available MCP tools' },
-  { name: 'core.tool_instructions', description: 'Get usage instructions for a tool' },
-  { name: 'agent.list_subagents', description: 'List available subagents' },
-  { name: 'agent.run_subagent', description: 'Run a subagent with a prompt' },
-  { name: 'memory.search', description: 'Search memory by semantic query' },
-  { name: 'memory.recall', description: 'Recall specific memories by ID' },
-  { name: 'tree.read_chunk', description: 'Read a memory tree chunk' },
-  { name: 'tree.browse', description: 'Browse the memory tree structure' },
-  { name: 'tree.top_entities', description: 'Get top entities from memory tree' },
-  { name: 'tree.list_sources', description: 'List memory tree sources' },
+const MCP_TOOLS: { name: string; descriptionKey: string }[] = [
+  { name: 'core.list_tools', descriptionKey: 'settings.mcpServer.tools.listTools' },
+  { name: 'core.tool_instructions', descriptionKey: 'settings.mcpServer.tools.toolInstructions' },
+  { name: 'agent.list_subagents', descriptionKey: 'settings.mcpServer.tools.listSubagents' },
+  { name: 'agent.run_subagent', descriptionKey: 'settings.mcpServer.tools.runSubagent' },
+  { name: 'memory.search', descriptionKey: 'settings.mcpServer.tools.memorySearch' },
+  { name: 'memory.recall', descriptionKey: 'settings.mcpServer.tools.memoryRecall' },
+  { name: 'tree.read_chunk', descriptionKey: 'settings.mcpServer.tools.treeReadChunk' },
+  { name: 'tree.browse', descriptionKey: 'settings.mcpServer.tools.treeBrowse' },
+  { name: 'tree.top_entities', descriptionKey: 'settings.mcpServer.tools.treeTopEntities' },
+  { name: 'tree.list_sources', descriptionKey: 'settings.mcpServer.tools.treeListSources' },
 ];
 
 // ---------------------------------------------------------------------------
