@@ -550,7 +550,12 @@ export default function FlowsPage() {
   return (
     <>
       {nav}
-      <PanelPage testId="flows-page" contentClassName="p-4">
+      {/* `width="lg"` is the contentWidth scale's `max-w-3xl`; the scaffold
+          renders the centred column, so the body only owns its section gap.
+          `contentClassName` keeps the explicit `p-4` because the default's
+          `space-y-5` would land on the scaffold's width wrapper, not on the
+          sections inside it. */}
+      <PanelPage testId="flows-page" width="lg" contentClassName="p-4">
         <input
           ref={importInputRef}
           type="file"
@@ -559,7 +564,7 @@ export default function FlowsPage() {
           data-testid="flows-import-input"
           onChange={e => void handleImportFile(e)}
         />
-        <div className="mx-auto w-full max-w-3xl space-y-4">
+        <div className="space-y-5">
           <PageSectionHeader
             title={t('flows.page.title')}
             description={t('flows.page.description')}
