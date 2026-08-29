@@ -23,7 +23,7 @@ const CodeRow = ({ invite }: { invite: InviteCode }) => {
     : claimedUser?.firstName || 'Someone';
 
   return (
-    <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-surface/5 hover:bg-white/[0.07] transition-colors">
+    <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-surface/5 hover:bg-surface-hover transition-colors">
       <div className="flex-1 min-w-0">
         <span className="font-mono text-sm tracking-wider">{invite.code}</span>
         {claimed && (
