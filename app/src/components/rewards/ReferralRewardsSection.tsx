@@ -244,38 +244,40 @@ const ReferralRewardsSection = () => {
       </div>
 
       {stats && stats.canApplyReferral !== false && showApplyForm ? (
-        <div className="rounded-xl shadow-soft border border-line bg-surface p-4 space-y-3">
-          <h2 className="text-2xl font-semibold text-content">
-            {t('rewards.referralSection.haveCode')}
-          </h2>
-          <p className="text-xs text-content-secondary">
-            {t('rewards.referralSection.haveCodeDesc')}
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <TextField
-              type="text"
-              value={applyCode}
-              onChange={e => setApplyCode(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && void handleApply()}
-              placeholder={t('rewards.referralSection.placeholder')}
-              disabled={applyLoading}
-              mono
-              className="flex-1"
-            />
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => void handleApply()}
-              disabled={applyLoading || !applyCode.trim()}>
-              {applyLoading
-                ? t('rewards.referralSection.applying')
-                : t('rewards.referralSection.apply')}
-            </Button>
+        <Card padded divided={false} className="shadow-soft">
+          <div className="space-y-3">
+            <h2 className="text-2xl font-semibold text-content">
+              {t('rewards.referralSection.haveCode')}
+            </h2>
+            <p className="text-xs text-content-secondary">
+              {t('rewards.referralSection.haveCodeDesc')}
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <TextField
+                type="text"
+                value={applyCode}
+                onChange={e => setApplyCode(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && void handleApply()}
+                placeholder={t('rewards.referralSection.placeholder')}
+                disabled={applyLoading}
+                mono
+                className="flex-1"
+              />
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => void handleApply()}
+                disabled={applyLoading || !applyCode.trim()}>
+                {applyLoading
+                  ? t('rewards.referralSection.applying')
+                  : t('rewards.referralSection.apply')}
+              </Button>
+            </div>
+            {applyError ? (
+              <p className="text-xs text-coral-600 dark:text-coral-300">{applyError}</p>
+            ) : null}
           </div>
-          {applyError ? (
-            <p className="text-xs text-coral-600 dark:text-coral-300">{applyError}</p>
-          ) : null}
-        </div>
+        </Card>
       ) : null}
 
       {stats && (hasAppliedFromStats || hasAppliedFromProfile || applySuccess) && !showApplyForm ? (
