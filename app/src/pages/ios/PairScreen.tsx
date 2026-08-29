@@ -250,7 +250,7 @@ export const PairScreen: FC = () => {
             </button>
             <button
               onClick={() => setState({ kind: 'idle' })}
-              className="text-white/40 text-xs underline-offset-2 underline">
+              className="text-content-inverted/40 text-xs underline-offset-2 underline">
               {t('common.cancel')}
             </button>
           </div>
