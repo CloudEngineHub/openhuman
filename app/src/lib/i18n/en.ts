@@ -263,6 +263,7 @@ const en: TranslationMap = {
   'common.edit': 'Edit',
   'common.create': 'Create',
   'common.search': 'Search',
+  'common.notAvailable': 'n/a',
   'common.loading': 'Loading…',
   'common.noResults': 'No results',
   'common.filter': 'Filter',
