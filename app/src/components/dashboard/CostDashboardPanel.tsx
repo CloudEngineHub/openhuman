@@ -175,32 +175,30 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
               </div>
             ) : null}
           </Card>
-          <section
+          <Card
             data-testid="cost-dashboard-usage-log"
-            className="rounded-2xl border border-line p-4 bg-surface/40">
-            <header className="mb-3 flex items-baseline justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-semibold text-content">
-                  {t('settings.costDashboard.usageLog')}
-                </h2>
-                <p className="text-[11px] text-content-muted">
-                  {usageLog
-                    ? t('settings.costDashboard.usageLogHint')
-                        .replace('{days}', String(usageLog.days))
-                        .replace('{limit}', String(usageLog.limit))
-                    : t('settings.costDashboard.usageLogHint')
-                        .replace('{days}', '30')
-                        .replace('{limit}', '250')}
-                </p>
-              </div>
-              {usageLog && (
+            padded
+            divided={false}
+            className="bg-surface/40"
+            title={t('settings.costDashboard.usageLog')}
+            description={
+              usageLog
+                ? t('settings.costDashboard.usageLogHint')
+                    .replace('{days}', String(usageLog.days))
+                    .replace('{limit}', String(usageLog.limit))
+                : t('settings.costDashboard.usageLogHint')
+                    .replace('{days}', '30')
+                    .replace('{limit}', '250')
+            }
+            headerRight={
+              usageLog && (
                 <span className="shrink-0 text-[11px] text-content-muted">
                   {t('settings.costDashboard.logTotal')
                     .replace('{requests}', String(usageLog.request_count))
                     .replace('{cost}', formatCurrency(usageLog.total_cost_usd, usageLog.currency))}
                 </span>
-              )}
-            </header>
+              )
+            }>
             {usageLog ? (
               <UsageLogTable records={usageLog.records} currency={usageLog.currency} />
             ) : usageLogLoading ? (
@@ -208,7 +206,7 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
                 {t('settings.costDashboard.loading')}
               </div>
             ) : null}
-          </section>
+          </Card>
           {!hasAnyCost && (
             <div
               data-testid="cost-dashboard-empty"
