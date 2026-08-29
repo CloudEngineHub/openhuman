@@ -164,8 +164,12 @@ const ReferralRewardsSection = () => {
 
   return (
     <div className="space-y-4">
-      <div className="bg-surface rounded-2xl shadow-soft border border-line p-6 space-y-6">
-        {loading && !stats ? (
+      {/* p-6 space-y-6 kept explicit (not Card's `padded` p-4) to preserve this
+          section's original padding pixel-for-pixel; only the rounded-2xl →
+          Card's rounded-xl radius is converged here. */}
+      <Card divided={false} className="shadow-soft p-6">
+        <div className="space-y-6">
+          {loading && !stats ? (
           <p className="text-sm text-content-muted">{t('rewards.referralSection.loading')}</p>
         ) : null}
         {loadError ? (
