@@ -57,7 +57,7 @@ export function ConfirmDialog({
   confirmDisabled = false,
   destructive = false,
   testId,
-  confirmTestId,
+  confirmTestId = 'confirm-dialog-confirm',
   cancelTestId,
   onConfirm,
   onCancel,
