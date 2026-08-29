@@ -5945,7 +5945,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'সংযোগ পরিচালনা করুন',
   'walkthrough.steps.connectionsTab.content':
     'সেবা যোগ বা বদলাতে চাইলে Connections সবসময় প্রধান নেভিগেশনে থাকে।',
-    'Feedback সমস্যা জানানো বা উন্নতির অনুরোধ করার সরাসরি জায়গা।',
   'walkthrough.steps.allSet.title': 'সব প্রস্তুত!',
   'walkthrough.steps.allSet.content':
     'আপনার সহকারী একটি স্বাগত নোট রেখে গেছে: এখানে আপনি চ্যাট করতে, প্রশ্ন করতে বা ধারণা গুছাতে পারেন। উপভোগ করুন!',

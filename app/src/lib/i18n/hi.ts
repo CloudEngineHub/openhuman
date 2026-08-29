@@ -5943,7 +5943,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'कनेक्शन प्रबंधित करें',
   'walkthrough.steps.connectionsTab.content':
     'सेवाएं जोड़ने या बदलने के लिए Connections हमेशा मुख्य नेविगेशन में उपलब्ध है।',
-    'Feedback समस्याएं बताने या सुधार मांगने की सीधी जगह है।',
   'walkthrough.steps.allSet.title': 'सब तैयार है!',
   'walkthrough.steps.allSet.content':
     'आपके सहायक ने स्वागत नोट छोड़ा है: यहां आप चैट कर सकते हैं, सवाल पूछ सकते हैं या विचार कर सकते हैं। आनंद लें!',

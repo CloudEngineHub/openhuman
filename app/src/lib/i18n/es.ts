@@ -6058,7 +6058,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'Gestiona conexiones',
   'walkthrough.steps.connectionsTab.content':
     'Connections siempre está disponible en la navegación principal para agregar o ajustar servicios.',
-    'Feedback te da un lugar directo para reportar problemas o pedir mejoras.',
   'walkthrough.steps.allSet.title': '¡Todo listo!',
   'walkthrough.steps.allSet.content':
     'Tu asistente te dejó una nota de bienvenida: este es tu espacio para chatear, preguntar o explorar ideas. ¡Diviértete!',

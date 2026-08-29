@@ -6000,7 +6000,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'Управляйте подключениями',
   'walkthrough.steps.connectionsTab.content':
     'Connections всегда доступен в основной навигации, когда нужно добавить или настроить сервисы.',
-    'Feedback дает прямое место для сообщений о проблемах и просьб об улучшениях.',
   'walkthrough.steps.allSet.title': 'Все готово!',
   'walkthrough.steps.allSet.content':
     'Ассистент оставил приветственную заметку: здесь можно общаться, задавать вопросы и развивать идеи. Удачи!',

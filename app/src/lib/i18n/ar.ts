@@ -5810,7 +5810,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'إدارة الاتصالات',
   'walkthrough.steps.connectionsTab.content':
     'Connections متاح دائماً في التنقل الرئيسي عندما تريد إضافة الخدمات أو تعديلها.',
-    'يوفر Feedback مكاناً مباشراً للإبلاغ عن المشاكل أو طلب التحسينات.',
   'walkthrough.steps.allSet.title': 'كل شيء جاهز!',
   'walkthrough.steps.allSet.content':
     'ترك لك المساعد رسالة ترحيب: هذه مساحتك للدردشة وطرح الأسئلة وتطوير الأفكار. استمتع!',

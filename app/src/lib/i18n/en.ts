@@ -6561,7 +6561,6 @@ const en: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'Manage connections',
   'walkthrough.steps.connectionsTab.content':
     'Connections is always available from the main nav when you want to add or adjust services.',
-    'Feedback gives you a direct place to report rough edges or ask for improvements.',
   'walkthrough.steps.allSet.title': "You're all set!",
   'walkthrough.steps.allSet.content':
     'Your assistant left you a welcome note - this is your space to chat, ask questions, or brainstorm. Have fun!',

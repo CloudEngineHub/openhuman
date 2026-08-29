@@ -5972,7 +5972,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'Kelola koneksi',
   'walkthrough.steps.connectionsTab.content':
     'Connections selalu tersedia di navigasi utama saat Anda ingin menambah atau menyesuaikan layanan.',
-    'Feedback memberi tempat langsung untuk melaporkan masalah atau meminta peningkatan.',
   'walkthrough.steps.allSet.title': 'Semua siap!',
   'walkthrough.steps.allSet.content':
     'Asisten meninggalkan catatan sambutan: ini ruang Anda untuk chat, bertanya, atau menyusun ide. Selamat mencoba!',
