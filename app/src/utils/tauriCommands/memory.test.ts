@@ -156,5 +156,3 @@ describe('aiListMemoryFiles', () => {
     await expect(aiListMemoryFiles()).rejects.toThrow(/Not running in Tauri/);
   });
 });
-
-});
