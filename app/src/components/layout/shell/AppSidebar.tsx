@@ -8,6 +8,7 @@ import ConnectionIndicator from '../../ConnectionIndicator';
 import {
   SidebarFooter,
   SidebarContent as SidebarScrollRegion,
+  SidebarSeparator,
   SidebarTrigger,
   Tooltip,
   useSidebar,
