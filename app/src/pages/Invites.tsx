@@ -34,7 +34,7 @@ const CodeRow = ({ invite }: { invite: InviteCode }) => {
       </div>
       <div className="flex items-center gap-2 ml-3">
         {claimed ? (
-          <span className="text-xs px-2 py-1 rounded-full bg-stone-700/50 text-content-faint">
+          <span className="text-xs px-2 py-1 rounded-full bg-surface-strong text-content-faint">
             {t('common.disabled')}
           </span>
         ) : (
