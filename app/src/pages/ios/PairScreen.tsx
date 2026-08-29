@@ -232,7 +232,7 @@ export const PairScreen: FC = () => {
             <p className="text-amber-400 text-sm">{t('iosPair.expired')}</p>
             <button
               onClick={() => setState({ kind: 'idle' })}
-              className="w-full py-3 rounded-xl border border-white/20 text-white/80 text-sm
+              className="w-full py-3 rounded-xl border border-content-inverted/20 text-content-inverted/80 text-sm
                          active:opacity-70 transition-opacity">
               {t('common.retry')}
             </button>
