@@ -192,8 +192,6 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
 
   const checked = !(status?.is_paused ?? false);
 
-  const tileClass =
-    'rounded-xl border border-line bg-surface-muted p-3 transition-colors hover:bg-surface-hover';
   const labelClass = 'text-[11px] uppercase tracking-wide text-content-muted mb-1';
   const valueClass = 'text-xl font-semibold text-content';
   const skeletonClass = 'h-7 w-16 rounded bg-surface-strong animate-pulse';
