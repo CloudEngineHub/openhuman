@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { createBlankWorkflowGraph } from '../../lib/flows/newFlow';
 import { type FlowTemplate, templateNameKey } from '../../lib/flows/templates';
 import { useT } from '../../lib/i18n/I18nContext';
+import { Alert, AlertDescription } from '../ui';
 import Button from '../ui/Button';
 import { ModalShell } from '../ui/ModalShell';
 import FlowTemplateGallery from './FlowTemplateGallery';
