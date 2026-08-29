@@ -12,6 +12,7 @@ import { LuPencil, LuPlus, LuRotateCcw, LuTrash2 } from 'react-icons/lu';
 
 import { useT } from '../../../lib/i18n/I18nContext';
 import { agentRegistryApi, type AgentRegistryEntry } from '../../../services/api/agentRegistryApi';
+import { CenteredLoadingState } from '../../ui';
 import Button from '../../ui/Button';
 import { SettingsBadge, SettingsEmptyState, SettingsSwitch } from '../controls';
 import { useSettingsNavigation } from '../hooks/useSettingsNavigation';
