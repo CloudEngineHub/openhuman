@@ -230,9 +230,7 @@ const CoreModeBadge = () => {
       <Alert variant="success">
         <div className="w-full">
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-sage-600 text-content-inverted text-[11px] font-medium">
-              {t('devOptions.gateway')}
-            </span>
+            <Badge variant="success">{t('devOptions.gateway')}</Badge>
             <span className="text-sm font-semibold text-content">
               {t('devOptions.provisionedCore')}
             </span>
