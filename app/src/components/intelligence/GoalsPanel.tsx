@@ -11,10 +11,9 @@ import { LuCheck, LuPencil, LuPlus, LuSparkles, LuTrash2, LuX } from 'react-icon
 
 import { useT } from '../../lib/i18n/I18nContext';
 import { type GoalItem, goalsApi } from '../../services/api/goalsApi';
+import { Card } from '../ui';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
-
-const cardClass = 'rounded-lg border border-line bg-surface p-4';
 
 export default function GoalsPanel() {
   const { t } = useT();
