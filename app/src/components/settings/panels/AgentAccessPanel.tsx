@@ -355,11 +355,16 @@ const AgentAccessPanel = () => {
               }
             />
             <div className="px-4 pb-3 -mt-1">
-              <p
-                className="rounded border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300 leading-relaxed"
+              {/* Persistent, visible regardless of toggle state — not a
+                  response to a user action, so it must not interrupt with an
+                  assertive announcement on every visit. */}
+              <Alert
+                variant="warning"
+                density="compact"
+                role={undefined}
                 data-testid="auto-approve-all-warning">
-                {t('settings.agentAccess.autoApproveAll.desc')}
-              </p>
+                <AlertDescription>{t('settings.agentAccess.autoApproveAll.desc')}</AlertDescription>
+              </Alert>
             </div>
           </SettingsSection>
 
