@@ -157,17 +157,13 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
             description={t('settings.costDashboard.modelBreakdownHint')}>
             <ModelCostTable models={data.by_model} currency={data.currency} />
           </Card>
-          <section
+          <Card
             data-testid="cost-dashboard-category-distribution"
-            className="rounded-2xl border border-line p-4 bg-surface/40">
-            <header className="mb-3">
-              <h2 className="text-sm font-semibold text-content">
-                {t('settings.costDashboard.categoryDistribution')}
-              </h2>
-              <p className="text-[11px] text-content-muted">
-                {t('settings.costDashboard.categoryDistributionHint')}
-              </p>
-            </header>
+            padded
+            divided={false}
+            className="bg-surface/40"
+            title={t('settings.costDashboard.categoryDistribution')}
+            description={t('settings.costDashboard.categoryDistributionHint')}>
             {usageLog ? (
               <CategoryDistribution
                 categories={usageLog.by_category}
@@ -178,7 +174,7 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
                 {t('settings.costDashboard.loading')}
               </div>
             ) : null}
-          </section>
+          </Card>
           <section
             data-testid="cost-dashboard-usage-log"
             className="rounded-2xl border border-line p-4 bg-surface/40">
