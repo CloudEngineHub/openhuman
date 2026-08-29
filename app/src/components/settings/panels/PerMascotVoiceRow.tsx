@@ -152,10 +152,11 @@ const PerMascotVoiceRow = ({ mascotId, label, testIdPrefix }: PerMascotVoiceRowP
   };
 
   return (
-    <div className="bg-surface rounded-xl border border-line p-4 space-y-3">
-      <span className="text-xs font-medium text-content-muted dark:text-content-secondary">
-        {label}
-      </span>
+    <Card padded divided={false}>
+      <div className="space-y-3">
+        <span className="text-xs font-medium text-content-muted dark:text-content-secondary">
+          {label}
+        </span>
 
       {/* Preset dropdown — mirrors the primary control's label + select combo */}
       <label className="block space-y-1">
