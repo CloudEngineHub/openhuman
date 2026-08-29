@@ -85,7 +85,10 @@ export default function SidebarNav() {
     // (no primitive substitutes for that a11y role) and picks up
     // `shrink-0` so the caller no longer needs a wrapping div for it.
     <nav className="shrink-0" aria-label={t('nav.home')}>
-      <SidebarGroup>
+      {/* `pb-0` drops the primitive's own `py-1` bottom half. The gap down to
+          the separator is the separator's `my-*` alone, so the space between
+          the two lists has exactly one owner instead of three stacking. */}
+      <SidebarGroup className="pb-0">
         <SidebarMenu>
           {tabs.map(tab => {
             const active = matchActive(tab.path, location.pathname);

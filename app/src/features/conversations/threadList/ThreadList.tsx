@@ -54,8 +54,12 @@ export function ThreadList({
     <div className="h-full flex flex-col">
       {/* Section header: a muted group label with the "new" affordance docked on
           the right, replacing the old full-width centered button. Mirrors the
-          grouped-nav idiom the settings sidebar already uses. */}
-      <div className="flex shrink-0 items-center justify-between px-3 pb-1.5 pt-4">
+          grouped-nav idiom the settings sidebar already uses.
+
+          `pt-0`, not `pt-4`: projected into the app sidebar this list sits under
+          a separator that already owns the gap, and a top pad here stacked on
+          top of it. Spacing above this list belongs to whatever precedes it. */}
+      <div className="flex shrink-0 items-center justify-between px-3 pb-1.5 pt-0">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-content-muted">
           {t('chat.conversationsHeading')}
         </span>
