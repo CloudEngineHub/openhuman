@@ -22,7 +22,7 @@ import {
 } from '../../../services/api/embeddingsApi';
 import { isLocalSessionToken } from '../../../utils/localSession';
 import PanelPage from '../../layout/PanelPage';
-import { Alert, AlertDescription, Button, ConfirmDialog } from '../../ui';
+import { Alert, AlertDescription, Button, CenteredLoadingState, ConfirmDialog } from '../../ui';
 import SettingsBackButton from '../components/SettingsBackButton';
 import { SettingsStatusLine } from '../controls';
 import { useSettingsNavigation } from '../hooks/useSettingsNavigation';
