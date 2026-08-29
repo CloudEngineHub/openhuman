@@ -217,9 +217,9 @@ const NotificationCenter = () => {
         )}
 
         {!loading && error && (
-          <div className="m-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-            {error}
-          </div>
+          <Alert variant="destructive" className="m-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
         {!loading && !error && visibleItems.length === 0 && coreActionItems.length === 0 && (
