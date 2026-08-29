@@ -193,12 +193,21 @@ const CoreJobList = ({
                   <div className="text-[11px] uppercase tracking-wide text-content-faint">
                     {t('settings.cron.jobs.recentRuns')}
                   </div>
-                  {runs.map(run => (
-                    <div key={run.id} className="text-xs text-content-secondary">
-                      <span className="font-medium text-content-secondary">{run.status}</span> at{' '}
-                      {new Date(run.finished_at).toLocaleString()}
-                    </div>
-                  ))}
+                  {runs.map(run => {
+                    const finishedAt = new Date(run.finished_at).toLocaleString();
+                    const [beforeTime, afterTime] = t('settings.cron.jobs.runFinishedAt')
+                      .replace('{time}', ' ')
+                      .split(' ');
+                    return (
+                      <div key={run.id} className="text-xs text-content-secondary">
+                        {beforeTime.replace('{status}', '')}
+                        <span className="font-medium text-content-secondary">{run.status}</span>
+                        {beforeTime.includes('{status}') ? '' : null}
+                        {afterTime.replace('{time}', '')}
+                        {finishedAt}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
