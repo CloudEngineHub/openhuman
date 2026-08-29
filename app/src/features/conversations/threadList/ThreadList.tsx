@@ -109,27 +109,6 @@ export function ThreadList({
           margin also lands after the last row and pads the scroll floor
           unevenly against `pb-3`. */}
       <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3 [scrollbar-gutter:stable_both-edges] [scrollbar-width:thin]">
-          right the moment it overflows: pills sit symmetric in a short list and
-          10px lopsided in a long one, resizing as threads cross the threshold.
-          `scrollbar-gutter: stable both-edges` reserves that band on both sides
-          unconditionally, so the pills are symmetric and never resize. It is an
-          arbitrary property because Tailwind has no utility for it, and it is
-          safe beside the `::-webkit-scrollbar` rules — the precedence conflict
-          that `index.css` warns about is specific to `scrollbar-width` /
-          `scrollbar-color`, not to `scrollbar-gutter`.
-
-          `pl-2` then breathes the pills off the left edge by 8px on top of that
-          band, for an 18px inset. The right side takes no padding of its own:
-          the 10px band there is already mostly empty — a ~4px thumb inset
-          inside it — so it reads as its own gutter, and adding 8px more made
-          the right side look airier than the left rather than matched. The
-          band stays `both-edges` regardless, because that is what keeps the
-          left inset from moving when the list crosses the overflow threshold.
-
-          Vertical rhythm is `gap` on the column, not a margin on each row — a
-          margin also lands after the last row and pads the scroll floor
-          unevenly against `pb-3`. */}
-      <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto pb-3 pl-2 [scrollbar-gutter:stable_both-edges]">
         {threads.length === 0 ? (
           <p className="px-4 py-6 text-xs text-content-faint text-center">{t('chat.noThreads')}</p>
         ) : (
