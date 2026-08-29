@@ -154,11 +154,7 @@ describe('ConfirmDialog', () => {
     const props = baseProps();
     const user = userEvent.setup();
     render(
-      <ConfirmDialog
-        {...props}
-        confirmTestId="flow-leave-discard"
-        cancelTestId="flow-leave-stay"
-      />
+      <ConfirmDialog {...props} confirmTestId="flow-leave-discard" cancelTestId="flow-leave-stay" />
     );
 
     await user.click(screen.getByTestId('flow-leave-discard'));
