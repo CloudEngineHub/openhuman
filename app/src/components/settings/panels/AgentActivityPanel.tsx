@@ -165,7 +165,8 @@ export default function AgentActivityPanel() {
           error={error}
           savingLabel={t('autonomy.statusSaving')}
         />
-      </div>
+        </div>
+      )}
     </SettingsPanel>
   );
 }
