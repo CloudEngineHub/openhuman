@@ -271,7 +271,9 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="memory-tree-status-tiles">
         {/* Status tile ── color-coded pill */}
-        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
+        <Card
+          divided={false}
+          className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.statusTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
@@ -311,7 +313,9 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
         </Card>
 
         {/* Last-sync tile */}
-        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
+        <Card
+          divided={false}
+          className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.lastSyncTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
@@ -323,7 +327,9 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
         </Card>
 
         {/* Total chunks tile */}
-        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
+        <Card
+          divided={false}
+          className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.totalChunksTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
@@ -335,7 +341,9 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
         </Card>
 
         {/* Wiki size tile */}
-        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
+        <Card
+          divided={false}
+          className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.wikiSizeTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
