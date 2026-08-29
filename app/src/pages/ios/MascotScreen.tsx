@@ -439,7 +439,7 @@ export const MascotScreen: FC = () => {
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
 
       {/* Input row */}
-      <div className="shrink-0 border-t border-white/10 px-4 pb-safe-bottom py-3">
+      <div className="shrink-0 border-t border-content-inverted/10 px-4 pb-safe-bottom py-3">
         <form onSubmit={e => void handleSend(e)} className="flex items-center gap-3">
           {/* PTT button — Layer 6 live implementation */}
           <PTTButton
