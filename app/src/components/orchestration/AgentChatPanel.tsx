@@ -313,7 +313,7 @@ function SessionChatView({ session }: { session: SessionSummary }) {
       scrollRef={scrollRef}
       header={
         // Agent metadata, centered to the same width-capped column as the chat.
-        <div className="border-b border-line bg-surface/60 dark:bg-black/30">
+        <div className="border-b border-line bg-surface/60 dark:bg-surface-canvas/30">
           <div className="mx-auto w-full max-w-195 px-5 py-3" data-testid="orch-session-header">
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold text-content">{sessionLabel(session)}</p>
