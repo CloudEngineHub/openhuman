@@ -175,8 +175,6 @@ export default function Brain() {
     // graph-bearing tab).
   }, [mode, refreshKey, authUserId, activeTab]);
 
-  const cardClass = 'rounded-lg border border-line bg-surface p-4';
-
   if (shouldRedirectFromOrchestration) {
     return <Navigate to="/brain" replace />;
   }
