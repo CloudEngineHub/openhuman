@@ -122,7 +122,7 @@ const PTTButton: FC<PTTButtonProps> = ({ active, partialText, ariaLabel, onDown,
     <div className="relative flex flex-col items-center justify-center gap-1">
       {partialText && (
         <div
-          className="absolute bottom-full mb-2 px-3 py-1.5 rounded-lg bg-black/80 text-white text-xs
+          className="absolute bottom-full mb-2 px-3 py-1.5 rounded-lg bg-surface-overlay/80 text-content-inverted text-xs
                      max-w-[200px] text-center pointer-events-none z-10">
           {partialText}
         </div>
