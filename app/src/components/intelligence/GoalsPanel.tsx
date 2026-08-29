@@ -287,7 +287,7 @@ export default function GoalsPanel() {
             </ul>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
