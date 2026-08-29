@@ -8,6 +8,7 @@ import {
   openhumanMigrateOpenclaw,
 } from '../../../utils/tauriCommands/core';
 import PanelPage from '../../layout/PanelPage';
+import { Alert, AlertDescription } from '../../ui';
 import Button from '../../ui/Button';
 import { SettingsSection, SettingsSelect, SettingsTextField } from '../controls';
 import SettingsPanel from '../layout/SettingsPanel';
