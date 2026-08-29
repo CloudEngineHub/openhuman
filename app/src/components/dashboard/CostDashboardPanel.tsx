@@ -116,17 +116,17 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
             utilization={data.budget_utilization}
             status={data.budget_status}
           />
-          <section
+          <Card
             data-testid="cost-dashboard-cost-chart"
-            className="rounded-2xl border border-line p-4 bg-surface/40">
-            <header className="mb-2 flex items-baseline justify-between">
-              <h2 className="text-sm font-semibold text-content">
-                {t('settings.costDashboard.sevenDayCost')}
-              </h2>
+            padded
+            divided={false}
+            className="bg-surface/40"
+            title={t('settings.costDashboard.sevenDayCost')}
+            headerRight={
               <span className="text-[11px] text-content-muted">
                 {t('settings.costDashboard.utcNote')}
               </span>
-            </header>
+            }>
             <CostBarChart
               days={data.days}
               currency={data.currency}
@@ -134,7 +134,7 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
               warnThreshold={data.warn_threshold}
               alertThreshold={data.alert_threshold}
             />
-          </section>
+          </Card>
           <section
             data-testid="cost-dashboard-token-chart"
             className="rounded-2xl border border-line p-4 bg-surface/40">
