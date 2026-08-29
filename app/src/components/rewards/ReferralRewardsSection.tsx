@@ -360,7 +360,7 @@ const ReferralRewardsSection = () => {
               </div>
             )}
           </div>
-        </div>
+        </Card>
       ) : null}
     </div>
   );
