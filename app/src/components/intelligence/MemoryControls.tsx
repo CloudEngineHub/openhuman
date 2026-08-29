@@ -89,12 +89,11 @@ export function MemoryControls({
       const resp = await memoryTreeResetTree();
       onToast?.({
         type: 'success',
-        title: 'Memory tree rebuilding',
-        message:
-          `Cleared ${resp.tree_rows_deleted.toLocaleString()} tree row(s); ` +
-          `requeued ${resp.chunks_requeued.toLocaleString()} chunk(s) ` +
-          `(${resp.jobs_enqueued.toLocaleString()} extract jobs). ` +
-          `The graph will fill back in as the worker drains.`,
+        title: t('workspace.resetTreeSuccessTitle'),
+        message: t('workspace.resetTreeSuccessMessage')
+          .replace('{treeRows}', resp.tree_rows_deleted.toLocaleString())
+          .replace('{chunks}', resp.chunks_requeued.toLocaleString())
+          .replace('{jobs}', resp.jobs_enqueued.toLocaleString()),
       });
       // reset_tree restarts from extract jobs (slower than seal-only) — give the
       // worker a longer head start than build does before re-pulling.
@@ -103,7 +102,7 @@ export function MemoryControls({
       console.error('[ui-flow][memory-controls] reset_tree failed', err);
       onToast?.({
         type: 'error',
-        title: 'Could not reset memory tree',
+        title: t('workspace.resetTreeFailedTitle'),
         message: err instanceof Error ? err.message : String(err),
       });
     } finally {
