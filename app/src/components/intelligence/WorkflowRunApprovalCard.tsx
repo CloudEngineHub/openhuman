@@ -143,7 +143,7 @@ const WorkflowRunApprovalCard: React.FC<Props> = ({
           </div>
         </div>
       </div>
-    </div>
+    </Alert>
   );
 };
 
