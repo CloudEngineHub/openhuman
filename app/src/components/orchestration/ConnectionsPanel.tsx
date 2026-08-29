@@ -26,7 +26,7 @@ import {
 } from '../../lib/orchestration/useOrchestrationSessions';
 import { usePairing } from '../../lib/orchestration/usePairing';
 import { contactAddress, extractHandle } from '../intelligence/orchestrationTabHelpers';
-import { CenteredLoadingState } from '../ui';
+import { Alert, AlertDescription, CenteredLoadingState } from '../ui';
 import Button from '../ui/Button';
 import TextField from '../ui/TextField';
 import { SectionCard, StatTile } from './primitives';
