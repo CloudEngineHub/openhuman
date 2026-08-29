@@ -169,16 +169,16 @@ export function ProviderModelPickerDialog({
 
   return (
     <ModalShell
-      title="Choose provider and model"
+      title={t('settings.ai.picker.title')}
       titleId="provider-model-picker-title"
-      subtitle="Search configured providers and available models."
+      subtitle={t('settings.ai.picker.subtitle')}
       onClose={onClose}
       maxWidthClassName="max-w-3xl"
       contentClassName="p-0"
       footer={
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             type="button"
@@ -203,7 +203,7 @@ export function ProviderModelPickerDialog({
                     : null,
               });
             }}>
-            Use this model
+            {t('settings.ai.picker.useThisModel')}
           </Button>
         </div>
       }>
@@ -211,14 +211,16 @@ export function ProviderModelPickerDialog({
         <TextField
           value={query}
           onChange={event => setQuery(event.target.value)}
-          placeholder="Search providers and models"
-          aria-label="Search providers and models"
+          placeholder={t('settings.ai.picker.searchPlaceholder')}
+          aria-label={t('settings.ai.picker.searchPlaceholder')}
           autoFocus
         />
       </div>
       <div className="grid min-h-80 grid-cols-1 divide-y divide-line-subtle md:grid-cols-[13rem_1fr] md:divide-x md:divide-y-0">
         <div className="p-2">
-          <p className="px-2 pb-2 text-xs font-medium text-content-muted">Providers</p>
+          <p className="px-2 pb-2 text-xs font-medium text-content-muted">
+            {t('settings.ai.picker.providersLabel')}
+          </p>
           <div className="space-y-1">
             {filteredSources.map(candidate => {
               const selected = source && sourceKey(candidate) === sourceKey(source);
