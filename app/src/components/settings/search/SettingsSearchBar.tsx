@@ -16,8 +16,8 @@
 // ---------------------------------------------------------------------------
 import { useRef } from 'react';
 
-import { Input } from '../../assistant-ui/ui/input';
 import { useT } from '../../../lib/i18n/I18nContext';
+import { Input } from '../../assistant-ui/ui/input';
 import Button from '../../ui/Button';
 import { CloseIcon } from '../../ui/icons';
 
