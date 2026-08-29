@@ -102,12 +102,10 @@ const AppearancePanel = () => {
         <h3 className="text-xs font-semibold uppercase tracking-wider text-content-faint mb-2 px-1">
           {t('settings.appearance.fontSizeHeading')}
         </h3>
-        <Card
-          divided={false}
-          // Card forwards no `role`/`aria-label` to its wrapper, so the
-          // radiogroup semantics move to an inner div that still encloses
-          // every option — `within(group)` in the specs resolves the same.
-          className="[&>div]:contents">
+        {/* Card forwards no `role`/`aria-label` to its wrapper, so the
+            radiogroup semantics move to an inner div that still encloses
+            every option — `within(group)` in the specs resolves the same. */}
+        <Card divided={false}>
           <div role="radiogroup" aria-label={t('settings.appearance.fontSizeAria')}>
             {FONT_SIZE_OPTIONS.map((opt, idx) => {
             // Highlight the preset whose px matches the effective size, so a
