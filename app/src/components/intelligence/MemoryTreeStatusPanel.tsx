@@ -272,7 +272,7 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="memory-tree-status-tiles">
         {/* Status tile ── color-coded pill */}
-        <div className={tileClass}>
+        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.statusTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
@@ -309,10 +309,10 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
               ) : null}
             </>
           )}
-        </div>
+        </Card>
 
         {/* Last-sync tile */}
-        <div className={tileClass}>
+        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.lastSyncTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
@@ -321,10 +321,10 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
               {formatRelativeMs(status.last_sync_ms, t, t('memoryTree.status.never'))}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Total chunks tile */}
-        <div className={tileClass}>
+        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.totalChunksTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
@@ -333,10 +333,10 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
               {new Intl.NumberFormat().format(status.total_chunks)}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Wiki size tile */}
-        <div className={tileClass}>
+        <Card divided={false} className="bg-surface-muted p-3 transition-colors hover:bg-surface-hover">
           <div className={labelClass}>{t('memoryTree.status.wikiSizeTile')}</div>
           {loading || !status ? (
             <div className={skeletonClass} />
@@ -345,7 +345,7 @@ export function MemoryTreeStatusPanel({ onToast }: MemoryTreeStatusPanelProps) {
               {formatBytes(status.wiki_size_bytes)}
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* #002 (FR-010 / US5): extraction coverage. Only meaningful once chunks
