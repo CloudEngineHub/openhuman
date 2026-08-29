@@ -1,5 +1,6 @@
 import { useT } from '../../lib/i18n/I18nContext';
 import { type NotificationItem } from '../../store/notificationSlice';
+import Badge from '../ui/Badge';
 import NotificationBody from './NotificationBody';
 
 /** Relative human-readable time string from epoch ms, e.g. "2m ago". */
