@@ -205,12 +205,12 @@ export default function OrchestrationView() {
             </div>
           </PanelPage>
         ) : hasMedullaAccess ? (
-          <div className="mx-auto h-full w-full max-w-3xl">
-            {/* Network: one page with a Brain-style chip sub-nav (flush pills, no
-                header background) over connections/discover/usage, aligned to the
-                same content column. */}
-            <PanelPage contentClassName="p-4">
-              <div className="mx-auto max-w-3xl space-y-5 animate-fade-up">
+          /* Network: one page with a Brain-style chip sub-nav (flush pills, no
+             header background) over connections/discover/usage, aligned to the
+             same content column. `width="lg"` supplies that column — it used to
+             be a hand-picked `max-w-3xl` nested inside an identical one. */
+          <PanelPage width="lg" contentClassName="p-4">
+            <div className="space-y-5 animate-fade-up">
                 <PageSectionHeader
                   title={t('orchPage.group.network')}
                   description={t('orchPage.network.desc')}
