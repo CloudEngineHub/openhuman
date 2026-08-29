@@ -200,11 +200,15 @@ function SessionView({
           />
         )}
         {sendError ? (
-          <p
+          <Alert
+            variant="destructive"
+            density="compact"
             data-testid="orch-session-reply-error"
-            className="mt-3 rounded-md bg-coral-50 px-2 py-1 text-xs text-coral-700 dark:bg-coral-500/10 dark:text-coral-300">
-            {t('tinyplaceOrchestration.composer.sendFailed')}: {sendError}
-          </p>
+            className="mt-3">
+            <AlertDescription>
+              {t('tinyplaceOrchestration.composer.sendFailed')}: {sendError}
+            </AlertDescription>
+          </Alert>
         ) : null}
         <form className="mt-3 flex gap-2 border-t border-line pt-3" onSubmit={submit}>
           <TextField
