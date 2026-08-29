@@ -38,7 +38,7 @@ import {
 } from '../components/flows/workflowCopilotThreads';
 import { ToastContainer } from '../components/intelligence/Toast';
 import PanelPage from '../components/layout/PanelPage';
-import { Alert, AlertDescription } from '../components/ui';
+import { Alert, AlertDescription, Badge } from '../components/ui';
 import Button from '../components/ui/Button';
 import UiInput from '../components/ui/Input';
 import { CenteredLoadingState, ErrorBanner } from '../components/ui/LoadingState';
