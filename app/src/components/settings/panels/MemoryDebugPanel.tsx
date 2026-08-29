@@ -12,6 +12,7 @@ import {
   memoryRecallNamespace,
 } from '../../../utils/tauriCommands';
 import { MemoryTextWithEntities } from '../../intelligence/MemoryTextWithEntities';
+import { Spinner } from '../../ui';
 import Button from '../../ui/Button';
 import {
   SettingsEmptyState,
