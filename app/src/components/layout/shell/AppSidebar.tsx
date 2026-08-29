@@ -116,15 +116,24 @@ export default function AppSidebar() {
           two adjacent groups of rows with nothing between them read as one long
           list whose headings arrive at random.
 
-          Kept faint enough not to become a line across the chrome: the sidebar
-          has no fill of its own, so a hairline here is drawn on the window
-          chrome rather than inside a panel. `content-faint/20` is low enough to
-          read as a seam rather than a rule, and unlike `line-subtle` (the
-          primitive's default, stone-100) it stays visible on a light themed
-          chrome instead of washing out. `mx-3` lines its ends up with the nav
-          rows' own inset rather than the primitive's narrower `mx-2`; `my-1.5`
-          sits it centred in the gap left by `SidebarGroup`'s `py-1`. */}
-      <SidebarSeparator className="mx-3 my-1.5 bg-content-faint/20" />
+          `content-faint/40` rather than `line-subtle` (the primitive's default,
+          stone-100), which washes out entirely on a light themed chrome — the
+          sidebar has no fill of its own, so this hairline is drawn on the
+          window chrome rather than inside a panel, and it has to hold up
+          against whatever the theme puts there. /40 is twice the /20 this
+          started at, which was faint enough to disappear.
+
+          `my-2.5` owns the ENTIRE gap between the two lists, by design: the nav
+          group's `pb-0` and the thread list header's `pt-0` both give up their
+          own padding so this is the only spacing between them. That is why it
+          is 10px a side rather than the 6px it was — at 6px it was one
+          contributor among three, and once the other two were removed the same
+          value left the lists nearly touching. Change this and the whole gap
+          changes; there is nothing else stacking with it.
+
+          `mx-3` lines its ends up with the nav rows' own inset rather than the
+          primitive's narrower `mx-2`. */}
+      <SidebarSeparator className="mx-3 my-2.5 bg-content-faint/40" />
       <SidebarScrollRegion className="gap-0">
         {/* Flex column so routes that project more than one region can order
             them via Tailwind `order-*`. */}
