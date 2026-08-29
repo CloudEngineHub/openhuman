@@ -6034,8 +6034,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'Gerencie conexões',
   'walkthrough.steps.connectionsTab.content':
     'Connections está sempre na navegação principal quando você quiser adicionar ou ajustar serviços.',
-  'walkthrough.steps.feedbackTab.title': 'Enviar feedback',
-  'walkthrough.steps.feedbackTab.content':
     'Feedback oferece um lugar direto para relatar problemas ou pedir melhorias.',
   'walkthrough.steps.allSet.title': 'Tudo pronto!',
   'walkthrough.steps.allSet.content':

@@ -6100,8 +6100,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'Verbindungen verwalten',
   'walkthrough.steps.connectionsTab.content':
     'Connections ist immer in der Hauptnavigation verfügbar, wenn du Dienste hinzufügen oder anpassen möchtest.',
-  'walkthrough.steps.feedbackTab.title': 'Feedback senden',
-  'walkthrough.steps.feedbackTab.content':
     'Feedback ist der direkte Ort, um Probleme zu melden oder Verbesserungen vorzuschlagen.',
   'walkthrough.steps.allSet.title': 'Alles bereit!',
   'walkthrough.steps.allSet.content':

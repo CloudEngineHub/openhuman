@@ -5621,8 +5621,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': '管理连接',
   'walkthrough.steps.connectionsTab.content':
     '想添加或调整服务时，Connections 始终可从主导航进入。',
-  'walkthrough.steps.feedbackTab.title': '发送反馈',
-  'walkthrough.steps.feedbackTab.content': 'Feedback 提供直接入口，用来报告问题或请求改进。',
   'walkthrough.steps.allSet.title': '全部就绪！',
   'walkthrough.steps.allSet.content':
     '你的助手留下了一条欢迎消息：这里就是你聊天、提问和整理想法的空间。祝你使用愉快！',

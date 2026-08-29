@@ -5876,8 +5876,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': '연결 관리',
   'walkthrough.steps.connectionsTab.content':
     '서비스를 추가하거나 조정하고 싶을 때 Connections는 항상 기본 내비게이션에 있습니다.',
-  'walkthrough.steps.feedbackTab.title': '피드백 보내기',
-  'walkthrough.steps.feedbackTab.content':
     'Feedback은 문제를 보고하거나 개선을 요청하는 직접적인 공간입니다.',
   'walkthrough.steps.allSet.title': '준비 완료!',
   'walkthrough.steps.allSet.content':

@@ -5945,8 +5945,6 @@ const messages: TranslationMap = {
   'walkthrough.steps.connectionsTab.title': 'সংযোগ পরিচালনা করুন',
   'walkthrough.steps.connectionsTab.content':
     'সেবা যোগ বা বদলাতে চাইলে Connections সবসময় প্রধান নেভিগেশনে থাকে।',
-  'walkthrough.steps.feedbackTab.title': 'মতামত পাঠান',
-  'walkthrough.steps.feedbackTab.content':
     'Feedback সমস্যা জানানো বা উন্নতির অনুরোধ করার সরাসরি জায়গা।',
   'walkthrough.steps.allSet.title': 'সব প্রস্তুত!',
   'walkthrough.steps.allSet.content':
