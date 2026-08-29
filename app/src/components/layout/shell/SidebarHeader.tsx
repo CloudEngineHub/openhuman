@@ -31,29 +31,20 @@ export default function SidebarHeader() {
   return (
     // The primitive's header slot supplies the px-3/pb-2/pt-3 band; this only
     // turns it into a right-aligned row. Right-aligned so the macOS traffic
-    // lights (top-left, overlay title bar) sit in the empty left space, clear
-    // of the window controls.
+    // lights (top-left, overlay title bar) sit in the empty left space — the
+    // icons stay clear of the window controls and inline with them.
     //
-    // `pt-0` overrides the primitive's `pt-3` so the icons are actually ON the
-    // traffic lights' line rather than merely near it. The numbers: the lights
-    // are centred in the 28px band {@link WINDOW_DRAG_BAR_HEIGHT} names (that
-    // constant exists precisely to record the zone's height), so their centre
-    // is y=14 from the window top. `ICON_BTN` is `h-7` — 28px, the same band —
-    // so with no top padding the icon row occupies y=0..28 and its centre lands
-    // on 14 too. The old `pt-3` pushed that centre to 12+14=26, a 12px drop
-    // that read as a second row under the window controls. Aligning by making
-    // the row coincide with the band beats nudging a magic offset, because it
-    // stays correct if the button footprint changes.
-    //
-    // Not guarded by `isMac()`: elsewhere there is no overlay title bar and
-    // nothing to align to, and the only effect is a header sitting 12px higher.
+    // The icons deliberately do NOT move to meet the lights: this row's
+    // vertical rhythm is the sidebar's, shared with `SidebarNav` below it, and
+    // pulling it up to the window's edge to chase a platform control would bend
+    // the app's own spacing around one OS's chrome. The lights are moved to
+    // this line instead, via `trafficLightPosition` in `tauri.conf.json` — see
+    // the comment there for the arithmetic that ties the two together.
     //
     // `data-tauri-drag-region` lives directly on the primitive (rather than a
     // wrapping div in `AppSidebar`) so the header band is draggable window
     // chrome without an extra hand-rolled layout element.
-    <SidebarHeaderShell
-      data-tauri-drag-region
-      className="flex-row items-center justify-end gap-1 pt-0">
+    <SidebarHeaderShell data-tauri-drag-region className="flex-row items-center justify-end gap-1">
       <div className="flex items-center gap-0.5">
         {/* Keyboard shortcuts — one-click open of the help directory (also ? / ⌘/). */}
         <Tooltip label={t('shortcuts.title')}>
