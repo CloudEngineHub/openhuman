@@ -182,7 +182,7 @@ export default function DiscoverPanel() {
         title={t('tinyplaceOrchestration.pairing.requests')}
         testId="orch-discover-requests">
         {state.status === 'loading' ? (
-          <p className="text-sm text-content-muted">{t('tinyplaceOrchestration.loading')}</p>
+          <CenteredLoadingState label={t('tinyplaceOrchestration.loading')} className="py-2" />
         ) : incoming.length === 0 ? (
           <p className="py-2 text-sm text-content-muted" data-testid="orch-discover-no-requests">
             {t('orchPage.discover.noRequests')}
