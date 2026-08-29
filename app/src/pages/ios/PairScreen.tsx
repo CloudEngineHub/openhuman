@@ -244,7 +244,7 @@ export const PairScreen: FC = () => {
             <p className="text-red-400 text-sm">{state.message}</p>
             <button
               onClick={() => void startScan()}
-              className="w-full py-3 rounded-xl bg-[#4A83DD]/80 text-white text-sm
+              className="w-full py-3 rounded-xl bg-[#4A83DD]/80 text-content-inverted text-sm
                          active:opacity-70 transition-opacity">
               {t('iosPair.retryScan')}
             </button>
