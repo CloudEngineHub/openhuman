@@ -143,7 +143,9 @@ export const ThreadTodoStrip: React.FC<Props> = ({
                 {card.status === 'blocked' && card.blocker?.trim() && (
                   // Surface why a step is stuck + what's needed next, matching
                   // the todo-tool guidance to set `blocked` with a `blocker`.
-                  <span className="min-w-0 text-[11px] text-coral-600/80 dark:text-coral-300/80">{card.blocker.trim()}</span>
+                  <span className="min-w-0 text-[11px] text-coral-600/80 dark:text-coral-300/80">
+                    {card.blocker.trim()}
+                  </span>
                 )}
               </span>
               {card.sessionThreadId && onViewSession && (

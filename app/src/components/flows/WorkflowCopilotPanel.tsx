@@ -544,7 +544,9 @@ export default function WorkflowCopilotPanel({
 
       <div className="space-y-3 border-t border-line px-3 py-2.5">
         {error && (
-          <p className="text-xs text-coral-600 dark:text-coral-400" data-testid="workflow-copilot-error">
+          <p
+            className="text-xs text-coral-600 dark:text-coral-400"
+            data-testid="workflow-copilot-error">
             {error === 'offline' ? t('flows.copilot.offline') : t('flows.copilot.error')}
           </p>
         )}
@@ -614,7 +616,9 @@ export default function WorkflowCopilotPanel({
               </Button>
             </div>
             {acceptState === 'idle' && enableError && (
-              <p className="mt-2 text-xs text-coral-600 dark:text-coral-400" data-testid="workflow-copilot-enable-error">
+              <p
+                className="mt-2 text-xs text-coral-600 dark:text-coral-400"
+                data-testid="workflow-copilot-enable-error">
                 {t('flows.copilot.enableError')}
               </p>
             )}
