@@ -152,10 +152,11 @@ const AppearancePanel = () => {
                 )}
               </button>
             );
-          })}
-        </div>
+            })}
+          </div>
+        </Card>
         {/* Fine-tune the exact size beyond the presets (issue #4246). */}
-        <div className="bg-surface rounded-xl border border-line px-4 py-3 mt-3">
+        <Card padded divided={false} className="mt-3">
           <div className="flex items-center justify-between gap-3">
             <label htmlFor="font-size-custom-number" className="text-sm font-medium text-content">
               {t('settings.appearance.fontSizeCustomLabel')}
