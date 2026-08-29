@@ -2922,6 +2922,15 @@ const en: TranslationMap = {
   'workspace.resetMemoryTree': 'Reset Memory Tree',
   'workspace.building': 'Building...',
   'workspace.buildSummaryTrees': 'Build Summary Trees',
+  'workspace.wipeSuccessTitle': 'Memory wiped',
+  'workspace.wipeSuccessMessage':
+    'Removed {rows} row(s) and {dirs} folder(s); cleared {cursors} sync-state cursor(s). Click Sync on a connected source to repopulate.',
+  'workspace.wipeFailedTitle': 'Reset failed',
+  'workspace.resetTreeSuccessTitle': 'Memory tree rebuilding',
+  'workspace.resetTreeSuccessMessage':
+    'Cleared {treeRows} tree row(s); requeued {chunks} chunk(s) ({jobs} extract jobs). The graph will fill back in as the worker drains.',
+  'workspace.resetTreeFailedTitle': 'Could not reset memory tree',
+  'workspace.buildTreesFailedTitle': 'Could not build summary trees',
   'workspace.viewVault': 'View Vault',
   'workspace.openingVaultTitle': 'Opening vault in Obsidian',
   'workspace.openingVaultMessage':
