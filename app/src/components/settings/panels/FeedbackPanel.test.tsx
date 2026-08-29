@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { renderWithProviders } from '../test/test-utils';
+import { renderWithProviders } from '../../../test/test-utils';
 import type { FeedbackItem } from '../../../types/feedback';
 import Feedback, { acceptedItemMatchesFilters } from './FeedbackPanel';
 
