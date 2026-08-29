@@ -4,6 +4,7 @@ import { useT } from '../../../lib/i18n/I18nContext';
 import { callCoreRpc } from '../../../services/coreRpcClient';
 import Badge from '../../ui/Badge';
 import Button from '../../ui/Button';
+import { CenteredLoadingState } from '../../ui/LoadingState';
 import { SettingsStatusLine } from '../controls';
 import SettingsPanel from '../layout/SettingsPanel';
 
