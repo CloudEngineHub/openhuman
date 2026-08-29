@@ -5210,6 +5210,23 @@ const en: TranslationMap = {
   'settings.ai.routeLabel': 'route: {route}',
   'settings.ai.on': 'on',
   'settings.ai.off': 'off',
+  'settings.ai.loops.memoryTreeWorkers.name': 'Memory tree workers',
+  'settings.ai.loops.cadence.queue': 'queue',
+  'settings.ai.loops.memoryTreeWorkers.work':
+    'Extracts chunks, seals branches, runs daily digests, routes topics.',
+  'settings.ai.loops.memoryTreeWorkers.risk':
+    '{workers} workers poll every {seconds}s; LLM calls only when queue has extract/seal/digest/topic jobs.',
+  'settings.ai.loops.reflectionRebuild.name': 'Reflection rebuild',
+  'settings.ai.loops.cadence.thirtyMin': '30 min',
+  'settings.ai.loops.reflectionRebuild.work': 'Refreshes reflection state after memory activity.',
+  'settings.ai.loops.reflectionRebuild.risk':
+    '{count} wakeups/week; LLM work only when rebuild needs reflection.',
+  'settings.ai.loops.composioSync.name': 'Composio sync',
+  'settings.ai.loops.cadence.twentyMin': '20 min',
+  'settings.ai.loops.composioSync.route': 'Integration APIs',
+  'settings.ai.loops.composioSync.work': 'Polls connected tools when provider sync is due.',
+  'settings.ai.loops.composioSync.risk':
+    '{count} wakeups/week; scans {active} active connection(s).',
   'settings.ai.recentUsageLedger': 'Recent usage ledger',
   'settings.ai.recentUsageLedgerDesc':
     'Backend rows expose action/time today; source tags need backend support.',
