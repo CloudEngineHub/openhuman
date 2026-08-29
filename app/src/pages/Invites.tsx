@@ -154,18 +154,22 @@ const Invites = () => {
   };
 
   return (
-    <div className="min-h-full flex items-center justify-center p-4 pt-6">
-      <div className="max-w-md w-full space-y-4">
-        <div>
-          <div className="space-y-4">
-            {/* Redeem Section — shown only if user hasn't redeemed yet */}
-            {!hasBeenInvited && (
-              // Card imposes a divide-y body and a shrunk h3 title (see
-              // Card.tsx), neither wanted here, so the whole block stays one
-              // child and this heading keeps its own markup — only the
-              // bordered-surface recipe (now rounded-xl, Card's radius)
-              // moves onto the primitive.
-              <Card divided={false} className="shadow-soft animate-fade-up p-6">
+    // The page column follows `Notifications.tsx`: an outer `space-y-4 p-4 pt-6`
+    // gutter, a `PageSectionHeader` first, and `mx-auto max-w-lg` repeated on
+    // each section below it — `PageSectionHeader`'s own `width` caps only the
+    // header card, not the body. `max-w-lg` is the contentWidth `sm` step; the
+    // hand-picked `max-w-md` this replaced is on no scale.
+    <div className="min-h-full space-y-4 p-4 pt-6">
+      <PageSectionHeader className="mx-auto max-w-lg" title={t('invites.title')} />
+
+      {/* Redeem Section — shown only if user hasn't redeemed yet */}
+      {!hasBeenInvited && (
+        // Card imposes a divide-y body and a shrunk h3 title (see
+        // Card.tsx), neither wanted here, so the whole block stays one
+        // child and this heading keeps its own markup — only the
+        // bordered-surface recipe (now rounded-xl, Card's radius)
+        // moves onto the primitive.
+        <Card divided={false} className="mx-auto max-w-lg shadow-soft animate-fade-up p-6">
                 <h2 className="text-lg font-bold mb-1">{t('invites.redeemHeading')}</h2>
                 <p className="text-xs opacity-70 mb-4">{t('rewards.share')}</p>
                 <div className="flex gap-2">
