@@ -470,9 +470,9 @@ export default function ConnectionsPanel({
       </div>
 
       {actionError && (
-        <p className="rounded-md bg-coral-50 px-3 py-2 text-xs text-coral-700 dark:bg-coral-500/10 dark:text-coral-300">
-          {actionError}
-        </p>
+        <Alert variant="destructive" density="compact">
+          <AlertDescription>{actionError}</AlertDescription>
+        </Alert>
       )}
 
       {incoming.length > 0 ? (
