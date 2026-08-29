@@ -8,6 +8,7 @@ import {
   getCodingSessionStatus,
 } from '../../services/memorySourcesService';
 import type { ToastNotification } from '../../types/intelligence';
+import { Card } from '../ui';
 import Button from '../ui/Button';
 
 interface CodingSessionsCardProps {
