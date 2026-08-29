@@ -104,17 +104,19 @@ const AgentsPanel = () => {
         </Button>
       }>
       {actionError && (
-        <div className="mb-3 rounded-lg border border-coral-200 bg-coral-50 px-3 py-2 text-sm text-coral-700 dark:border-coral-500/30 dark:bg-coral-500/10 dark:text-coral-300">
-          {actionError}
-        </div>
+        <Alert variant="destructive" density="compact" className="mb-3">
+          <AlertDescription>{actionError}</AlertDescription>
+        </Alert>
       )}
 
       {loading ? (
         <CenteredLoadingState label={t('common.loading')} className="py-12" />
       ) : error ? (
-        <div className="rounded-lg border border-coral-200 bg-coral-50 px-4 py-3 text-sm text-coral-700 dark:border-coral-500/30 dark:bg-coral-500/10 dark:text-coral-300">
-          {t('settings.agents.loadError')}: {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertDescription>
+            {t('settings.agents.loadError')}: {error}
+          </AlertDescription>
+        </Alert>
       ) : agents.length === 0 ? (
         <SettingsEmptyState label={t('settings.agents.empty')} />
       ) : (
