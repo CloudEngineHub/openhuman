@@ -4,6 +4,7 @@
  * convention.
  */
 import { useT } from '../../../lib/i18n/I18nContext';
+import { cn } from '../../../lib/cn';
 import type { EmbeddingProviderEntry } from '../../../services/api/embeddingsApi';
 import { Button } from '../../ui';
 import { SettingsBadge, SettingsSection } from '../controls';
