@@ -1,17 +1,17 @@
 import debugFactory from 'debug';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import FeedbackFilterSelect from '../components/feedback/FeedbackFilterSelect';
-import FeedbackItemRow from '../components/feedback/FeedbackItemRow';
-import FeedbackSubmitForm from '../components/feedback/FeedbackSubmitForm';
-import SettingsTabbedPage from '../components/settings/layout/SettingsTabbedPage';
-import Button from '../components/ui/Button';
-import { useUser } from '../hooks/useUser';
-import { useT } from '../lib/i18n/I18nContext';
-import { feedbackApi } from '../services/api/feedbackApi';
-import type { FeedbackItem, FeedbackSort, FeedbackStatus, FeedbackType } from '../types/feedback';
+import FeedbackFilterSelect from '../../feedback/FeedbackFilterSelect';
+import FeedbackItemRow from '../../feedback/FeedbackItemRow';
+import FeedbackSubmitForm from '../../feedback/FeedbackSubmitForm';
+import SettingsTabbedPage from '../layout/SettingsTabbedPage';
+import Button from '../../ui/Button';
+import { useUser } from '../../../hooks/useUser';
+import { useT } from '../../../lib/i18n/I18nContext';
+import { feedbackApi } from '../../../services/api/feedbackApi';
+import type { FeedbackItem, FeedbackSort, FeedbackStatus, FeedbackType } from '../../../types/feedback';
 
-const log = debugFactory('feedback:page');
+const log = debugFactory('feedback:panel');
 
 const PAGE_SIZE = 20;
 
@@ -40,7 +40,7 @@ export function acceptedItemMatchesFilters(
   );
 }
 
-const Feedback = () => {
+const FeedbackPanel = () => {
   const { t } = useT();
   const { user } = useUser();
   const isAdmin = user?.role === 'admin';
@@ -136,11 +136,14 @@ const Feedback = () => {
   const hasMore = items.length < total;
 
   return (
-    // `p-4` is the gutter SettingsTabbedPage's full-bleed divider bleeds
-    // through, and `h-full` is what makes the body scroll: the content surface
-    // is `overflow-hidden`, so the `min-h-full` wrapper this replaced grew past
-    // the card and the board below the fold was unreachable.
-    <div className="h-full p-4" data-testid="feedback-page">
+    // No `h-full p-4` wrapper any more. This was a standalone routed page and
+    // needed one: the content surface is `overflow-hidden`, so it had to claim
+    // the height and scroll itself or the board fell below an unreachable fold.
+    // As a settings panel it is mounted through `wrapSettingsPage`, which is
+    // that scroll container (`h-full min-h-0 overflow-y-auto`) — keeping the
+    // wrapper would have nested a second scroller inside it. Every other panel
+    // renders `SettingsTabbedPage` bare for the same reason.
+    <div data-testid="feedback-page">
       <SettingsTabbedPage
         title={t('feedback.header.title')}
         description={t('feedback.header.desc')}>
@@ -264,4 +267,4 @@ const Feedback = () => {
   );
 };
 
-export default Feedback;
+export default FeedbackPanel;
