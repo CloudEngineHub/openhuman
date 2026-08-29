@@ -58,28 +58,28 @@ const CoreJobList = ({
     coreBusyKey === `core-remove:${jobId}` ? t('settings.cron.jobs.removing') : t('common.remove');
 
   return (
-    <section className="rounded-xl border border-line bg-surface">
-      <div className="p-4 border-b border-line">
-        <h3 className="text-sm font-semibold text-content">{t('settings.cron.jobs.title')}</h3>
-        <p className="text-xs text-content-muted mt-1">{t('settings.cron.jobs.desc')}</p>
-      </div>
-
+    // A plain divided list, not a card: the only host (`CronJobsPanel`) already
+    // renders this inside a titled `SettingsSection`, so the frame and heading
+    // this used to draw were a titled card nested in a titled card. The rows
+    // are `py-3` because that host's `px-4` supplies the horizontal gutter —
+    // a `p-4` here would inset them 32px, past the buttons above them.
+    <div className="divide-y divide-line-subtle">
       {loading && (
-        <div className="p-4 text-sm text-content-faint">{t('settings.cron.jobs.loading')}</div>
+        <div className="py-3 text-sm text-content-faint">{t('settings.cron.jobs.loading')}</div>
       )}
 
       {!loading && coreJobs.length === 0 && (
-        <div className="p-4 text-sm text-content-faint">{t('settings.cron.jobs.empty')}</div>
+        <div className="py-3 text-sm text-content-faint">{t('settings.cron.jobs.empty')}</div>
       )}
 
       {!loading &&
-        coreJobs.map((job, index) => {
+        coreJobs.map(job => {
           const runs = coreRunsByJob[job.id] ?? [];
           return (
             <div
               key={job.id}
               data-testid={`cron-job-row-${job.id}`}
-              className={`p-4 ${index === 0 ? '' : 'border-t border-line'} space-y-3`}>
+              className="space-y-3 py-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-content">{job.name || job.id}</div>
@@ -224,7 +224,7 @@ const CoreJobList = ({
             </div>
           );
         })}
-    </section>
+    </div>
   );
 };
 
