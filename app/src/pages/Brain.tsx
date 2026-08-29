@@ -21,7 +21,7 @@ import { SidebarContent } from '../components/layout/shell/SidebarSlot';
 import TwoPaneNav from '../components/layout/TwoPaneNav';
 import OrchestrationView from '../components/orchestration/OrchestrationView';
 import SettingsTabbedPage from '../components/settings/layout/SettingsTabbedPage';
-import { Alert, AlertDescription } from '../components/ui';
+import { Alert, AlertDescription, Card } from '../components/ui';
 import { useTinyPlaceIdentity } from '../hooks/useTinyPlaceIdentity';
 import { useT } from '../lib/i18n/I18nContext';
 import { useCoreState } from '../providers/CoreStateProvider';
