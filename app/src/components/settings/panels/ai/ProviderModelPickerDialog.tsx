@@ -271,18 +271,20 @@ export function ProviderModelPickerDialog({
               catalogLoading={loading}
               catalogError={catalogError}
               onRetry={() => setCatalogRequest(request => request + 1)}
-              label="Model"
-              placeholder="Enter a model ID"
+              label={t('settings.ai.modelLabel')}
+              placeholder={t('settings.ai.picker.modelIdPlaceholder')}
               analyticsId="settings-ai-model-picker-manual-entry"
             />
           ) : (
             <>
-              <p className="mb-2 text-xs font-medium text-content-muted">Model</p>
+              <p className="mb-2 text-xs font-medium text-content-muted">
+                {t('settings.ai.modelLabel')}
+              </p>
               <TextField
                 value={model}
                 onChange={event => setModel(event.target.value)}
-                placeholder="Enter a model ID"
-                aria-label="Model"
+                placeholder={t('settings.ai.picker.modelIdPlaceholder')}
+                aria-label={t('settings.ai.modelLabel')}
                 mono
               />
             </>
