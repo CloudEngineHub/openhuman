@@ -12,6 +12,7 @@ import {
   setFontSize,
 } from '../../../store/themeSlice';
 import LanguageSelect from '../../LanguageSelect';
+import { Card } from '../../ui';
 import Slider from '../../ui/Slider';
 import { SettingsNumberField, SettingsRow, SettingsSection } from '../controls';
 import SettingsPanel from '../layout/SettingsPanel';
