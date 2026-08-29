@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, it, expect } from 'vitest';
-import SettingsSearchBar from '../../src/components/settings/search/SettingsSearchBar';
+import SettingsSearchBar from '../src/components/settings/search/SettingsSearchBar';
 
 function Harness() {
   const [v, setV] = useState('hello');
