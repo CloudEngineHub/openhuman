@@ -232,7 +232,10 @@ export function ProviderModelPickerDialog({
                   variant="tertiary"
                   size="sm"
                   onClick={() => selectSource(candidate)}
-                  className={`h-auto w-full justify-start gap-3 px-2.5 py-2 ${selected ? 'bg-surface-muted' : ''}`}>
+                  className={cn(
+                    'h-auto w-full justify-start gap-3 px-2.5 py-2',
+                    selected && 'bg-surface-muted'
+                  )}>
                   <ProviderSwatch
                     slug={sourceSlug(candidate)}
                     label={sourceLabel(candidate, cloudProviders, t)}
