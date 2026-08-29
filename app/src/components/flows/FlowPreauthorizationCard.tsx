@@ -82,7 +82,7 @@ export const FlowPreauthorizationCard: React.FC<Props> = ({
                     {entry.kind === 'approvable' ? '✅' : entry.kind === 'blocked' ? '⛔' : '⚠️'}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block wrap-break-word text-ink dark:text-content">
+                    <span className="block wrap-break-word text-content">
                       {entry.label}
                     </span>
                     {hint && <span className="block text-xs text-content-secondary">{hint}</span>}
