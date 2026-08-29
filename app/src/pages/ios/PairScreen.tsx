@@ -173,7 +173,7 @@ export const PairScreen: FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f1117] text-white px-6 py-12">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f1117] text-content-inverted px-6 py-12">
       <div className="flex flex-col items-center gap-8 max-w-sm w-full">
         {/* Logo / icon area */}
         <div className="w-20 h-20 rounded-2xl bg-[#4A83DD] flex items-center justify-center shadow-lg">
