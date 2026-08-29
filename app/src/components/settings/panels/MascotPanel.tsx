@@ -771,9 +771,7 @@ const MascotPanel = ({ embedded = false }: MascotPanelProps) => {
                         <span className="flex items-center gap-2">
                           {mascot.name}
                           {mascot.status === 'draft' && (
-                            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-700 dark:bg-amber-500/20 dark:text-amber-200">
-                              {t('settings.mascot.characterDraft')}
-                            </span>
+                            <Badge variant="warning">{t('settings.mascot.characterDraft')}</Badge>
                           )}
                         </span>
                         <span className="text-[10px] text-content-muted">
