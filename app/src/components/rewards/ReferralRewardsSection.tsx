@@ -244,8 +244,9 @@ const ReferralRewardsSection = () => {
               ) : null}
             </div>
           </>
-        ) : null}
-      </div>
+          ) : null}
+        </div>
+      </Card>
 
       {stats && stats.canApplyReferral !== false && showApplyForm ? (
         <Card padded divided={false} className="shadow-soft">
