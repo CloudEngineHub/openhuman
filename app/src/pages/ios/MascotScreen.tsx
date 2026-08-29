@@ -179,7 +179,7 @@ const Toast: FC<ToastProps> = ({ message, onDismiss }) => (
   <div
     role="alert"
     className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50
-               px-4 py-2 rounded-xl bg-red-500/90 text-white text-sm
+               px-4 py-2 rounded-xl bg-red-500/90 text-content-inverted text-sm
                max-w-[80%] text-center shadow-lg"
     onClick={onDismiss}>
     {message}
