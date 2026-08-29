@@ -1240,7 +1240,7 @@ function FlowEditor({
                     />
                   </svg>
                 </Button>
-              </div>
+              </Alert>
             </div>
           )}
 
