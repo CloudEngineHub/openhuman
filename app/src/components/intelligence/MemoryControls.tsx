@@ -130,7 +130,7 @@ export function MemoryControls({
       console.error('[ui-flow][memory-controls] flush_now failed', err);
       onToast?.({
         type: 'error',
-        title: 'Could not build summary trees',
+        title: t('workspace.buildTreesFailedTitle'),
         message: err instanceof Error ? err.message : String(err),
       });
     } finally {
