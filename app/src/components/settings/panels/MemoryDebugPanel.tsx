@@ -337,16 +337,18 @@ const MemoryDebugPanel = () => {
                 variant="secondary"
                 size="xs"
                 onClick={() => void handleQuery()}
-                disabled={queryLoading || !namespaceInput.trim() || !queryInput.trim()}>
-                {queryLoading ? '...' : t('memory.query')}
+                disabled={queryLoading || !namespaceInput.trim() || !queryInput.trim()}
+                leadingIcon={queryLoading ? <Spinner className="h-3 w-3" /> : undefined}>
+                {t('memory.query')}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 size="xs"
                 onClick={() => void handleRecall()}
-                disabled={recallLoading || !namespaceInput.trim()}>
-                {recallLoading ? '...' : t('memory.recall')}
+                disabled={recallLoading || !namespaceInput.trim()}
+                leadingIcon={recallLoading ? <Spinner className="h-3 w-3" /> : undefined}>
+                {t('memory.recall')}
               </Button>
             </div>
             <SettingsStatusLine
