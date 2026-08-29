@@ -12,6 +12,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import type { ChannelConnectionStatus, ChannelDefinition } from '../../types/channels';
 import { restartCoreProcess } from '../../utils/tauriCommands/core';
+import { Spinner } from '../ui';
 import Button from '../ui/Button';
 import ChannelFieldInput from './ChannelFieldInput';
 import ChannelStatusBadge from './ChannelStatusBadge';
