@@ -323,7 +323,7 @@ fn capability_allowed_in(caps: Capabilities, capability: Option<Capability>) -> 
 static REGISTRY: OnceLock<Vec<GroupedController>> = OnceLock::new();
 
 /// Internal-only controllers: registered for RPC dispatch but NOT in the agent-facing
-/// schema catalog.  These handlers are callable by trusted callers (e.g. the Tauri scanner)
+/// schema catalog.  These handlers are callable by trusted callers (e.g. the desktop shell)
 /// but should not be advertised to agents via tool listings or schema discovery.
 static INTERNAL_REGISTRY: OnceLock<Vec<GroupedController>> = OnceLock::new();
 
@@ -1023,7 +1023,7 @@ fn build_registered_controllers() -> Vec<GroupedController> {
 /// Aggregates controllers that are registered for RPC routing but NOT exposed to agents.
 ///
 /// These are write-path or internal-only handlers callable by trusted callers
-/// (e.g. the Tauri scanner ingest path) that should not appear in agent tool listings.
+/// (e.g. the desktop shell) that should not appear in agent tool listings.
 fn build_internal_only_controllers() -> Vec<GroupedController> {
     let mut controllers = Vec::new();
     // MCP write audit list: internal-only so the desktop UI/CLI can inspect
