@@ -61,7 +61,7 @@ const BudgetSummary = ({
           </div>
           <span
             data-testid="budget-status-badge"
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium text-white ${STATUS_BG[status]}`}>
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium text-content-inverted ${STATUS_BG[status]}`}>
             <span
               aria-hidden
               className="inline-block h-1.5 w-1.5 rounded-full bg-surface/80 animate-pulse"
