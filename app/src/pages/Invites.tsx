@@ -165,7 +165,7 @@ const Invites = () => {
               // child and this heading keeps its own markup — only the
               // bordered-surface recipe (now rounded-xl, Card's radius)
               // moves onto the primitive.
-              <Card padded divided={false} className="shadow-soft animate-fade-up">
+              <Card divided={false} className="shadow-soft animate-fade-up p-6">
                 <h2 className="text-lg font-bold mb-1">{t('invites.redeemHeading')}</h2>
                 <p className="text-xs opacity-70 mb-4">{t('rewards.share')}</p>
                 <div className="flex gap-2">
