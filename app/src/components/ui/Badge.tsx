@@ -51,7 +51,8 @@ const Badge = ({
     data-slot="badge"
     data-variant={variant ?? 'neutral'}
     data-testid={testId}
-    className={cn(badgeVariants({ variant }), className)}>
+    className={cn(badgeVariants({ variant }), className)}
+    {...rest}>
     {children}
   </span>
 );
