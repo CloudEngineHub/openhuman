@@ -110,10 +110,7 @@ const AgentsPanel = () => {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-12 text-content-faint">
-          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
-          <span className="text-sm">{t('common.loading')}</span>
-        </div>
+        <CenteredLoadingState label={t('common.loading')} className="py-12" />
       ) : error ? (
         <div className="rounded-lg border border-coral-200 bg-coral-50 px-4 py-3 text-sm text-coral-700 dark:border-coral-500/30 dark:bg-coral-500/10 dark:text-coral-300">
           {t('settings.agents.loadError')}: {error}
