@@ -4,9 +4,11 @@ import debug from 'debug';
 // Settings Route Registry
 //
 // Single declarative source of truth for every navigable settings destination.
-// Consumers (SettingsHome, Settings.tsx section arrays, DeveloperOptionsPanel,
-// settingsSearchRegistry) derive their menus from here so that a route added
-// once automatically appears in navigation, breadcrumbs, and search.
+// Consumers (SettingsHome, Settings.tsx section arrays, DeveloperOptionsPanel)
+// derive their menus from here so that a route added once automatically appears
+// in navigation and breadcrumbs. `settingsSearchRegistry` was a consumer too,
+// until the settings sidebar's search field was removed and the whole
+// `components/settings/search/` directory went with it.
 //
 // Section values determine the canonical breadcrumb parent:
 //   'home'      → top-level home menu entry (Settings breadcrumb only)
