@@ -153,7 +153,7 @@ export default function GoalsPanel() {
 
   return (
     <div className="space-y-3 animate-fade-up">
-      <div className={cardClass}>
+      <Card padded divided={false}>
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
