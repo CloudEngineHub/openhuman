@@ -173,9 +173,10 @@ const McpServerPanel = ({ embedded = false }: McpServerPanelProps = {}) => {
       {/* ----------------------------------------------------------------- */}
       {/* Section 1 — Available Tools                                        */}
       {/* ----------------------------------------------------------------- */}
-      <SettingsSection
-        title={t('settings.mcpServer.toolsSectionTitle')}
-        description={t('settings.mcpServer.toolsSectionDesc')}>
+      <div className="px-4 pt-4 pb-2">
+        <SettingsSection
+          title={t('settings.mcpServer.toolsSectionTitle')}
+          description={t('settings.mcpServer.toolsSectionDesc')}>
           {MCP_TOOLS.map(tool => (
             <div key={tool.name} className="flex items-start gap-3 px-4 py-3 bg-surface">
               <span className="font-mono text-xs text-primary-700 dark:text-primary-400 mt-0.5 shrink-0">
