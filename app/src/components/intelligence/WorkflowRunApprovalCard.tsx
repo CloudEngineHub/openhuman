@@ -21,7 +21,6 @@ import {
   type WorkflowDefinition,
   type WorkflowSafetyTier,
 } from '../../services/api/workflowRunsApi';
-import { Alert } from '../ui';
 import Button from '../ui/Button';
 
 const log = debug('intelligence:workflow-approval');
