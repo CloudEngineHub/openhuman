@@ -114,7 +114,7 @@ function ChatPageScaffold({
   }, [hasFooter]);
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-surface/70 dark:bg-black/40">
+    <div className="relative flex h-full flex-col overflow-hidden bg-surface/70 dark:bg-surface-canvas/40">
       {header}
       <div
         ref={scrollRef}
