@@ -48,11 +48,11 @@ const Badge = ({
   ...rest
 }: BadgeProps) => (
   <span
+    {...rest}
     data-slot="badge"
     data-variant={variant ?? 'neutral'}
     data-testid={testId}
-    className={cn(badgeVariants({ variant }), className)}
-    {...rest}>
+    className={cn(badgeVariants({ variant }), className)}>
     {children}
   </span>
 );
