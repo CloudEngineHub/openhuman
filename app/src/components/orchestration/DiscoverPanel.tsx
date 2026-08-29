@@ -18,6 +18,7 @@ import {
 } from '../../lib/orchestration/orchestrationClient';
 import { usePairing } from '../../lib/orchestration/usePairing';
 import { contactAddress, extractHandle } from '../intelligence/orchestrationTabHelpers';
+import { CenteredLoadingState } from '../ui';
 import Button from '../ui/Button';
 import TextField from '../ui/TextField';
 import { SectionCard } from './primitives';
