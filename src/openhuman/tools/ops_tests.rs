@@ -139,51 +139,15 @@ fn all_tools_includes_spawn_subagent() {
     );
 }
 
-/// The three read-only WhatsApp-data agent tools are registered when the
-/// `channels` feature is on (#4801). Paired with the absent-variant below to
-/// pin both directions of the compile-time gate.
-#[cfg(feature = "channels")]
+/// The three `whatsapp_data_*` agent tools are gone, in every build.
+///
+/// They queried a shell-side SQLite store whose only writer was the CDP
+/// `whatsapp_scanner`, deleted in #5478 when the app moved off Chromium — so
+/// from that release the tools read a store nothing could write. This asserts
+/// the removal in both directions of the `channels` gate at once, replacing the
+/// present/absent pair that used to pin them.
 #[test]
-fn whatsapp_data_tools_present_when_channels_on() {
-    let tmp = TempDir::new().unwrap();
-    let security = Arc::new(SecurityPolicy::default());
-    let browser = BrowserConfig {
-        enabled: false,
-        allowed_domains: vec![],
-        session_name: None,
-        ..BrowserConfig::default()
-    };
-    let http = crate::openhuman::config::HttpRequestConfig::default();
-    let cfg = test_config(&tmp);
-    let tools = all_tools(
-        Arc::new(Config::default()),
-        &security,
-        AuditLogger::disabled(),
-        &browser,
-        &http,
-        tmp.path(),
-        &HashMap::new(),
-        &cfg,
-    );
-    let names = tool_names(&tools);
-    for expected in [
-        "whatsapp_data_list_chats",
-        "whatsapp_data_list_messages",
-        "whatsapp_data_search_messages",
-    ] {
-        assert!(
-            names.iter().any(|n| n == expected),
-            "`{expected}` must be registered when the `channels` feature is on; got: {names:?}"
-        );
-    }
-}
-
-/// With `channels` compiled out the three WhatsApp-data agent tools are absent
-/// from the registry (not degraded to an error) — the tool types live in the
-/// gated `whatsapp_data` domain (#4801).
-#[cfg(not(feature = "channels"))]
-#[test]
-fn whatsapp_data_tools_absent_when_channels_off() {
+fn whatsapp_data_tools_are_gone_in_every_build() {
     let tmp = TempDir::new().unwrap();
     let security = Arc::new(SecurityPolicy::default());
     let browser = BrowserConfig {
@@ -212,7 +176,7 @@ fn whatsapp_data_tools_absent_when_channels_off() {
     ] {
         assert!(
             !names.iter().any(|n| n == absent),
-            "`{absent}` must be absent when the `channels` feature is off; got: {names:?}"
+            "`{absent}` was removed with the store it read; got: {names:?}"
         );
     }
 }
@@ -684,15 +648,6 @@ fn all_tools_default_registry_contains_expected_baseline_surface() {
     if cfg!(feature = "runtime-node") {
         expected.extend(&["node_exec", "npm_exec"]);
     }
-    // WhatsApp tools are only registered when channels feature is on
-    if cfg!(feature = "channels") {
-        expected.extend(&[
-            "whatsapp_data_list_chats",
-            "whatsapp_data_list_messages",
-            "whatsapp_data_search_messages",
-        ]);
-    }
-
     assert_contains_all(&names, &expected);
 }
 
@@ -2268,15 +2223,6 @@ fn tool_group_classifies_gate_and_harness_families() {
         tool_group("audio_generate_and_email_podcast"),
         DomainGroup::Voice
     );
-    // Channels read-only WhatsApp data tools.
-    assert_eq!(
-        tool_group("whatsapp_data_list_chats"),
-        DomainGroup::Channels
-    );
-    assert_eq!(
-        tool_group("whatsapp_data_search_messages"),
-        DomainGroup::Channels
-    );
 
     // Harness-mapped families → kept under harness().
     assert_eq!(tool_group("memory_store"), DomainGroup::Memory);
@@ -2343,7 +2289,6 @@ fn tool_group_gate_families_dropped_under_harness_not_full() {
     assert!(!harness.allows(tool_group("shell")));
     // The previously-misclassified gate-family tools now drop under harness.
     assert!(!harness.allows(tool_group("audio_generate_podcast")));
-    assert!(!harness.allows(tool_group("whatsapp_data_list_chats")));
 }
 
 #[test]
@@ -2359,7 +2304,6 @@ fn no_gate_family_tool_silently_defaults_to_platform() {
         "x402_new_thing",
         "mcp_new_thing",
         "media_new_thing",
-        "whatsapp_data_new_thing",
     ] {
         assert_ne!(
             tool_group(name),
@@ -2475,7 +2419,6 @@ const REPRESENTATIVE: &[(&str, crate::core::all::DomainGroup)] = {
         ("mcp_list_servers", G::Mcp),
         ("wallet_get_address", G::Web3),
         ("media_generate_image", G::Media),
-        ("whatsapp_data_list_chats", G::Channels),
         ("audio_generate_podcast", G::Voice),
         ("create_workflow", G::Flows),
         ("run_workflow", G::Skills),
@@ -2497,8 +2440,17 @@ const TOOL_LESS: &[crate::core::all::DomainGroup] = {
     // document tools), so the family itself owns no agent tool.
     // `Relay` joined this list when the `tinyplace_*` agent-tool family was
     // removed: the domain still exists and still serves its controllers, it
-    // just advertises no agent tool any more.
-    &[G::Config, G::Security, G::Medulla, G::Modules, G::Relay]
+    // just advertises no agent tool any more. `Channels` joined it for the same
+    // reason when the three `whatsapp_data_*` tools went — the channel runtime,
+    // its controllers and its inbound dispatch are all still there.
+    &[
+        G::Config,
+        G::Security,
+        G::Medulla,
+        G::Modules,
+        G::Relay,
+        G::Channels,
+    ]
 };
 
 // ---- tool_capability() drift guard (M5.3) ----------------------------------
