@@ -244,8 +244,13 @@ const MemoryDebugPanel = () => {
                       variant="tertiary"
                       size="xs"
                       disabled={Boolean(deleteLoadingId)}
-                      onClick={() => void handleDelete(doc)}>
-                      {deleteLoadingId === doc.documentId ? '...' : t('memory.delete')}
+                      onClick={() => void handleDelete(doc)}
+                      leadingIcon={
+                        deleteLoadingId === doc.documentId ? (
+                          <Spinner className="h-3 w-3" />
+                        ) : undefined
+                      }>
+                      {t('memory.delete')}
                     </Button>
                   </div>
                 ))}
