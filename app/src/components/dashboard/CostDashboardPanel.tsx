@@ -148,19 +148,15 @@ const CostDashboardPanel = ({ embedded = false }: CostDashboardPanelProps) => {
             }>
             <TokenUsageChart days={data.days} />
           </Card>
-          <section
+          <Card
             data-testid="cost-dashboard-model-table"
-            className="rounded-2xl border border-line p-4 bg-surface/40">
-            <header className="mb-2">
-              <h2 className="text-sm font-semibold text-content">
-                {t('settings.costDashboard.modelBreakdown')}
-              </h2>
-              <p className="text-[11px] text-content-muted">
-                {t('settings.costDashboard.modelBreakdownHint')}
-              </p>
-            </header>
+            padded
+            divided={false}
+            className="bg-surface/40"
+            title={t('settings.costDashboard.modelBreakdown')}
+            description={t('settings.costDashboard.modelBreakdownHint')}>
             <ModelCostTable models={data.by_model} currency={data.currency} />
-          </section>
+          </Card>
           <section
             data-testid="cost-dashboard-category-distribution"
             className="rounded-2xl border border-line p-4 bg-surface/40">
