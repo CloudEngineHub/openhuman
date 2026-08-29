@@ -234,7 +234,7 @@ function ApprovalRow({
           // Resolved in place — no more actions, just the outcome.
           <div
             className={`mt-2.5 flex items-center gap-1.5 text-xs font-semibold ${
-              denied ? 'text-danger' : 'text-sage-600 dark:text-sage-400'
+              denied ? 'text-coral-600 dark:text-coral-400' : 'text-sage-600 dark:text-sage-400'
             }`}
             data-testid="approval-resolved">
             <span>{denied ? '✕' : '✓'}</span>
