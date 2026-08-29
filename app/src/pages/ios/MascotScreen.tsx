@@ -144,7 +144,7 @@ const PTTButton: FC<PTTButtonProps> = ({ active, partialText, ariaLabel, onDown,
                    ${
                      active
                        ? 'bg-[#4A83DD] border-[#4A83DD] scale-110'
-                       : 'bg-surface/10 border-white/20 opacity-80'
+                       : 'bg-surface/10 border-content-inverted/20 opacity-80'
                    }`}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z" fill="white" />
