@@ -239,8 +239,9 @@ const PerMascotVoiceRow = ({ mascotId, label, testIdPrefix }: PerMascotVoiceRowP
             {t('settings.mascot.voice.previewError')}: {voicePreviewError}
           </AlertDescription>
         </Alert>
-      )}
-    </div>
+        )}
+      </div>
+    </Card>
   );
 };
 
