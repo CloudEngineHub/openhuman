@@ -164,10 +164,6 @@ openhuman_core = { path = "../..", package = "openhuman", default-features = fal
     "file-logging",
     "contacts",
     "runtime-node",
-    # Without this the memory_diff RPC namespace is unknown-method in the
-    # shipped app, the memory_diff agent tool is absent, and the embedded
-    # driver stops advertising Capability::Diff — the product keeps all three.
-    "memory-git",
     # Declared "Default-OFF, product-ON" by its own gate comment in the root
     # Cargo.toml, but it reached neither the product set nor this list, so the
     # family was compiled in no configuration at all. Registration stays

@@ -90,9 +90,17 @@ contacts
 # its static liblzma C build.
 runtime-node
 
-# Git-backed memory diff (snapshots/checkpoints/read markers) and the git wiki
-# mirror of summary nodes. Carries git2 + vendored libgit2.
-memory-git
+# NOTE: `memory-git` was REMOVED from the product set. It was the last gate
+# carrying a native C build the product could shed: `git2` brings `libgit2-sys`
+# and `libz-sys`, which were 2 of the 4 native builds in this profile (now 2 —
+# `libsqlite3-sys` and `ring`, both load-bearing). Only 3 crates, but two C
+# toolchain builds is disproportionate build time for a surface nothing in the
+# desktop UI calls: `memory_diff` had no frontend caller. What the product
+# loses: the `memory_diff` RPC namespace becomes unknown-method, the
+# `memory_diff` agent tool is absent, the embedded driver stops advertising
+# `Capability::Diff`, and summary nodes are still written to disk but no longer
+# mirrored into git. Re-add this line (and the shell's forwarding entry) to
+# bring it back.
 
 # The `hosting_*` agent tools: put a workspace on a real hosting provider and
 # manage its sites, databases, environment, domains and deployments over the
