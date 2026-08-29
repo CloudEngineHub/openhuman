@@ -260,16 +260,16 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn save_via_dialog_rejects_bad_source() {
-        // Validation runs before any dialog is shown, so these resolve
-        // without user interaction.
+    async fn download_rejects_bad_source() {
+        // Source validation runs before the Downloads directory is touched,
+        // so these resolve without writing anything.
         assert!(
-            save_artifact_via_dialog(String::new(), "x.pptx".to_string())
+            download_artifact_to_downloads(String::new(), "x.pptx".to_string())
                 .await
                 .is_err()
         );
         assert!(
-            save_artifact_via_dialog("relative".to_string(), "x.pptx".to_string())
+            download_artifact_to_downloads("relative".to_string(), "x.pptx".to_string())
                 .await
                 .is_err()
         );
