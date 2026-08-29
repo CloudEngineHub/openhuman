@@ -372,9 +372,7 @@ function SessionChatView({ session }: { session: SessionSummary }) {
       }>
       <div className="mx-auto w-full max-w-195 space-y-3 px-5 pt-4">
         {state.status === 'loading' ? (
-          <p className="py-10 text-center text-sm text-content-muted">
-            {t('tinyplaceOrchestration.loading')}
-          </p>
+          <CenteredLoadingState label={t('tinyplaceOrchestration.loading')} className="py-10" />
         ) : state.status === 'error' ? (
           <p className="py-10 text-center text-sm text-coral-600 dark:text-coral-300">
             {t('tinyplaceOrchestration.failedToLoad')}: {state.message}
