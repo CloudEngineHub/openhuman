@@ -41,7 +41,7 @@ import type { WorkflowProposal } from '../../store/chatRuntimeSlice';
 import ApprovalRequestCard from '../chat/ApprovalRequestCard';
 import ChatComposer from '../chat/ChatComposer';
 import IntegrationConnectCard from '../chat/IntegrationConnectCard';
-import Button from '../ui/Button';
+import { Button } from '../ui';
 
 const log = createDebug('app:flows:copilot-panel');
 
