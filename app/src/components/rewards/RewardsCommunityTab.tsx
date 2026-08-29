@@ -500,8 +500,7 @@ export default function RewardsCommunityTab({
                   ? role.discordRoleStatus === 'assigned'
                     ? {
                         label: t('rewards.community.roleAssigned'),
-                        classes:
-                          'bg-sage-50 text-sage-700 dark:bg-sage-500/10 dark:text-sage-300',
+                        classes: 'bg-sage-50 text-sage-700 dark:bg-sage-500/10 dark:text-sage-300',
                       }
                     : role.discordRoleStatus === 'not_assigned'
                       ? {

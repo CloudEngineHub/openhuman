@@ -78,7 +78,7 @@ looks fine in the default skin and falls apart in every other one.
 
 3. **When a table needs more than four distinct hues, send the surplus rows to
    the neutral pair the table already defines** (`bg-surface-subtle
-   text-content-secondary`, or whatever that table's "unknown"/"other" row
+text-content-secondary`, or whatever that table's "unknown"/"other" row
    uses). Never let two rows collide on the same ramp: two domains rendering
    identically destroys the exact distinction the table exists to encode, which
    is strictly worse than rendering one of them in neutral.
@@ -93,13 +93,13 @@ looks fine in the default skin and falls apart in every other one.
 
 Worked examples in the tree:
 
-| Table | Rows | Kept a hue | Why |
-| --- | --- | --- | --- |
-| `skills/skillIcons.tsx` `CATEGORY_META` | 9 | `Built-in` (primary), `Productivity` (sage), `Social` (coral), `Tools & Automation` (amber) | `Channels`, `Chat` and `Platform` share the neutral tone of `All` / `Other` |
-| `skills/SkillsExplorerTab.tsx` `SOURCE_COLORS` | 6 | `built-in` (sage), `optional` (primary) | The four remote catalogues print their own name; provenance tier is the distinction that matters |
-| `skills/SkillsExplorerTab.tsx` `FORMAT_MAP` | 5 rows, 3 tones | Hermes family (primary), ClawHub family (sage), `legacy` (amber) | Three tones fit under the ceiling, so nothing is lost |
-| `settings/panels/EventLogPanel.tsx` `DOMAIN_BADGE_COLORS` | 11 | `tool` (primary), `agent` (sage), `approval` (amber) | Who acted, and what waits on a human. Coral stays unassigned — no domain means failure |
-| `notifications/NotificationCard.tsx` provider badge | 6 | none | The importance badge in the same row already spends coral/amber/sage on high/medium/low; a coral provider would read as a failed notification |
+| Table                                                     | Rows            | Kept a hue                                                                                  | Why                                                                                                                                           |
+| --------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `skills/skillIcons.tsx` `CATEGORY_META`                   | 9               | `Built-in` (primary), `Productivity` (sage), `Social` (coral), `Tools & Automation` (amber) | `Channels`, `Chat` and `Platform` share the neutral tone of `All` / `Other`                                                                   |
+| `skills/SkillsExplorerTab.tsx` `SOURCE_COLORS`            | 6               | `built-in` (sage), `optional` (primary)                                                     | The four remote catalogues print their own name; provenance tier is the distinction that matters                                              |
+| `skills/SkillsExplorerTab.tsx` `FORMAT_MAP`               | 5 rows, 3 tones | Hermes family (primary), ClawHub family (sage), `legacy` (amber)                            | Three tones fit under the ceiling, so nothing is lost                                                                                         |
+| `settings/panels/EventLogPanel.tsx` `DOMAIN_BADGE_COLORS` | 11              | `tool` (primary), `agent` (sage), `approval` (amber)                                        | Who acted, and what waits on a human. Coral stays unassigned — no domain means failure                                                        |
+| `notifications/NotificationCard.tsx` provider badge       | 6               | none                                                                                        | The importance badge in the same row already spends coral/amber/sage on high/medium/low; a coral provider would read as a failed notification |
 
 ### Brand tints are a separate question
 
