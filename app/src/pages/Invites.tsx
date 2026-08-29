@@ -1,7 +1,7 @@
 import debugFactory from 'debug';
 import { useEffect, useRef, useState } from 'react';
 
-import { CenteredLoadingState, EmptyState } from '../components/ui';
+import { Card, CenteredLoadingState, EmptyState } from '../components/ui';
 import Button from '../components/ui/Button';
 import { useClipboardFeedback } from '../hooks/useClipboardFeedback';
 import { useUser } from '../hooks/useUser';
