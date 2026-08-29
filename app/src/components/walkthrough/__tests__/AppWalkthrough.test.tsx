@@ -607,10 +607,13 @@ describe('createWalkthroughSteps', () => {
       '[data-walkthrough="tab-chat"]',
       '[data-walkthrough="tab-brain"]',
       '[data-walkthrough="tab-connections"]',
-      '[data-walkthrough="tab-feedback"]',
       '[data-walkthrough="chat-agent-panel"]',
     ]);
     expect(targets).not.toContain('[data-walkthrough="tab-activity"]');
+    // The sidebar header's Feedback icon became the command-palette trigger and
+    // the board moved to `/settings/feedback`, so this anchor is gone from the
+    // DOM; a step still pointing at it would stall the tour.
+    expect(targets).not.toContain('[data-walkthrough="tab-feedback"]');
     // Human has no nav row — the chat composer's idle button opens it — so a
     // tour step pointing at one would stall on a target that never mounts.
     expect(targets).not.toContain('[data-walkthrough="tab-human"]');
