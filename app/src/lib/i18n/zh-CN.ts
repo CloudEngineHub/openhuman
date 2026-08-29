@@ -6524,7 +6524,8 @@ const messages: TranslationMap = {
   'settings.ai.loops.reflectionRebuild.name': '反思重建',
   'settings.ai.loops.cadence.thirtyMin': '30 分钟',
   'settings.ai.loops.reflectionRebuild.work': '在记忆活动发生后刷新反思状态。',
-  'settings.ai.loops.reflectionRebuild.risk': '每周唤醒 {count} 次；仅当重建需要反思时大模型才会工作。',
+  'settings.ai.loops.reflectionRebuild.risk':
+    '每周唤醒 {count} 次；仅当重建需要反思时大模型才会工作。',
   'settings.ai.loops.composioSync.name': 'Composio 同步',
   'settings.ai.loops.cadence.twentyMin': '20 分钟',
   'settings.ai.loops.composioSync.route': '集成 API',
@@ -6564,7 +6565,8 @@ const messages: TranslationMap = {
   'settings.mcpServer.tools.treeTopEntities': '获取记忆树中的热门实体',
   'settings.mcpServer.tools.treeListSources': '列出记忆树的来源',
   'settings.notifications.category.messages.title': '消息',
-  'settings.notifications.category.messages.desc': '来自内嵌 webview 账户（Slack、WhatsApp 等）的新消息。',
+  'settings.notifications.category.messages.desc':
+    '来自内嵌 webview 账户（Slack、WhatsApp 等）的新消息。',
   'settings.notifications.category.agents.title': '智能体活动',
   'settings.notifications.category.agents.desc': '智能体任务完成情况和长时间运行的响应。',
   'settings.notifications.category.skills.title': '技能',

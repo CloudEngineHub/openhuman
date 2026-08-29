@@ -5364,7 +5364,8 @@ const en: TranslationMap = {
   'settings.ai.memoryWorkerPolls': 'Memory worker polls',
   'settings.ai.resetsAt': 'resets {time}',
   'settings.ai.usedAmount': '{amount} used',
-  'settings.ai.inferenceIntegrationsBreakdown': 'inference {inference} + integrations {integrations}',
+  'settings.ai.inferenceIntegrationsBreakdown':
+    'inference {inference} + integrations {integrations}',
   'settings.ai.recentSpendRowsCount': '{count} recent spend rows',
   'settings.ai.perWeek': '{count}/week',
   'settings.ai.perWeekMax': '{count}/week max',

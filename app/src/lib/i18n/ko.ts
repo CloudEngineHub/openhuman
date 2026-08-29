@@ -6810,18 +6810,21 @@ const messages: TranslationMap = {
   'settings.ai.picker.claudeCodeHint': 'Claude Code 모델 별칭 또는 모델 ID를 사용하세요.',
   'settings.ai.loops.memoryTreeWorkers.name': '메모리 트리 워커',
   'settings.ai.loops.cadence.queue': '대기열',
-  'settings.ai.loops.memoryTreeWorkers.work': '청크를 추출하고, 브랜치를 봉인하고, 일일 요약을 실행하고, 주제를 라우팅합니다.',
+  'settings.ai.loops.memoryTreeWorkers.work':
+    '청크를 추출하고, 브랜치를 봉인하고, 일일 요약을 실행하고, 주제를 라우팅합니다.',
   'settings.ai.loops.memoryTreeWorkers.risk':
     '워커 {workers}개가 {seconds}초마다 대기열을 확인합니다. 대기열에 추출/봉인/요약/주제 작업이 있을 때만 LLM이 호출됩니다.',
   'settings.ai.loops.reflectionRebuild.name': '리플렉션 재구성',
   'settings.ai.loops.cadence.thirtyMin': '30분',
   'settings.ai.loops.reflectionRebuild.work': '메모리 활동 후 리플렉션 상태를 새로 고칩니다.',
-  'settings.ai.loops.reflectionRebuild.risk': '주당 {count}회 활성화되며, 재구성에 리플렉션이 필요할 때만 LLM이 작동합니다.',
+  'settings.ai.loops.reflectionRebuild.risk':
+    '주당 {count}회 활성화되며, 재구성에 리플렉션이 필요할 때만 LLM이 작동합니다.',
   'settings.ai.loops.composioSync.name': 'Composio 동기화',
   'settings.ai.loops.cadence.twentyMin': '20분',
   'settings.ai.loops.composioSync.route': '통합 API',
   'settings.ai.loops.composioSync.work': '제공업체 동기화 시점이 되면 연결된 도구를 확인합니다.',
-  'settings.ai.loops.composioSync.risk': '주당 {count}회 활성화되며, 활성 연결 {active}개를 검사합니다.',
+  'settings.ai.loops.composioSync.risk':
+    '주당 {count}회 활성화되며, 활성 연결 {active}개를 검사합니다.',
   'common.notAvailable': '해당 없음',
   'settings.ai.resetsAt': '{time}에 재설정',
   'settings.ai.usedAmount': '{amount} 사용됨',
@@ -6843,8 +6846,10 @@ const messages: TranslationMap = {
   'settings.ai.apiReadsFormula': '주당 백그라운드 API 읽기 / 남은 금액 = {reads} / {remaining}',
   'settings.ai.needUsageToEstimate': '추정하려면 사용량 응답이 필요합니다.',
   'settings.ai.composioSyncScansDetail': '활성 통합 연결 {count}개, 20분마다 스캔',
-  'settings.ai.totalApiReadBudgetDetail': '캘린더 플래너 읽기 + 주기적 통합 스캔; 사용자가 시작한 채팅 도구는 제외',
-  'settings.ai.memoryWorkerPollsDetail': '워커 4개가 5초마다 확인하며, 대기열에 있는 작업에만 LLM이 호출됩니다',
+  'settings.ai.totalApiReadBudgetDetail':
+    '캘린더 플래너 읽기 + 주기적 통합 스캔; 사용자가 시작한 채팅 도구는 제외',
+  'settings.ai.memoryWorkerPollsDetail':
+    '워커 4개가 5초마다 확인하며, 대기열에 있는 작업에만 LLM이 호출됩니다',
   'settings.mcpServer.tools.listTools': '사용 가능한 모든 MCP 도구를 나열합니다',
   'settings.mcpServer.tools.toolInstructions': '도구의 사용 지침을 가져옵니다',
   'settings.mcpServer.tools.listSubagents': '사용 가능한 서브에이전트를 나열합니다',
@@ -6856,7 +6861,8 @@ const messages: TranslationMap = {
   'settings.mcpServer.tools.treeTopEntities': '메모리 트리에서 상위 엔티티를 가져옵니다',
   'settings.mcpServer.tools.treeListSources': '메모리 트리 소스를 나열합니다',
   'settings.notifications.category.messages.title': '메시지',
-  'settings.notifications.category.messages.desc': '내장된 웹뷰 계정(Slack, WhatsApp 등)에서 온 새 메시지.',
+  'settings.notifications.category.messages.desc':
+    '내장된 웹뷰 계정(Slack, WhatsApp 등)에서 온 새 메시지.',
   'settings.notifications.category.agents.title': '에이전트 활동',
   'settings.notifications.category.agents.desc': '에이전트 작업 완료 및 장기 실행 응답.',
   'settings.notifications.category.skills.title': '스킬',
@@ -6864,11 +6870,13 @@ const messages: TranslationMap = {
   'settings.notifications.category.system.title': '시스템',
   'settings.notifications.category.system.desc': '연결 문제, 백그라운드 프로세스 오류, 업데이트.',
   'settings.notifications.category.meetings.title': '미팅',
-  'settings.notifications.category.meetings.desc': '하트비트가 감지한 예정된 미팅 및 캘린더 이벤트.',
+  'settings.notifications.category.meetings.desc':
+    '하트비트가 감지한 예정된 미팅 및 캘린더 이벤트.',
   'settings.notifications.category.reminders.title': '리마인더',
   'settings.notifications.category.reminders.desc': '예정된 리마인더 및 cron 작업에서 예약된 작업.',
   'settings.notifications.category.important.title': '중요한 이벤트',
-  'settings.notifications.category.important.desc': '연결된 소스에서 발생한 긴급하거나 시간에 민감한 이벤트.',
+  'settings.notifications.category.important.desc':
+    '연결된 소스에서 발생한 긴급하거나 시간에 민감한 이벤트.',
   'settings.notifications.categoryToggleAria': '{name} 알림 켜기 또는 끄기',
   'settings.cron.jobs.runFinishedAt': '{time}에 {status}',
   'settings.cron.jobs.scheduleAt': '{time}에',
