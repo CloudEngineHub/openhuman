@@ -233,6 +233,6 @@ export function CodingSessionsCard({ onToast }: CodingSessionsCardProps) {
           {error}
         </p>
       )}
-    </section>
+    </Card>
   );
 }
