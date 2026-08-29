@@ -1,15 +1,20 @@
 import debugFactory from 'debug';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import FeedbackFilterSelect from '../../feedback/FeedbackFilterSelect';
-import FeedbackItemRow from '../../feedback/FeedbackItemRow';
-import FeedbackSubmitForm from '../../feedback/FeedbackSubmitForm';
-import SettingsTabbedPage from '../layout/SettingsTabbedPage';
-import Button from '../../ui/Button';
 import { useUser } from '../../../hooks/useUser';
 import { useT } from '../../../lib/i18n/I18nContext';
 import { feedbackApi } from '../../../services/api/feedbackApi';
-import type { FeedbackItem, FeedbackSort, FeedbackStatus, FeedbackType } from '../../../types/feedback';
+import type {
+  FeedbackItem,
+  FeedbackSort,
+  FeedbackStatus,
+  FeedbackType,
+} from '../../../types/feedback';
+import FeedbackFilterSelect from '../../feedback/FeedbackFilterSelect';
+import FeedbackItemRow from '../../feedback/FeedbackItemRow';
+import FeedbackSubmitForm from '../../feedback/FeedbackSubmitForm';
+import Button from '../../ui/Button';
+import SettingsTabbedPage from '../layout/SettingsTabbedPage';
 
 const log = debugFactory('feedback:panel');
 
