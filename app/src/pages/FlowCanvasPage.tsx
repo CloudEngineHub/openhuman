@@ -1090,11 +1090,9 @@ function FlowEditor({
   const saveActions = (
     <div className="flex items-center gap-1.5">
       {saveMeta.dirty && (
-        <span
-          className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
-          data-testid="flow-editor-dirty">
+        <Badge variant="warning" className="rounded-full" data-testid="flow-editor-dirty">
           {t('flows.editor.unsaved')}
-        </span>
+        </Badge>
       )}
       <Button
         type="button"
