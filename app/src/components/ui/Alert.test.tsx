@@ -78,6 +78,38 @@ describe('Alert', () => {
     expect(screen.getByTestId('alert')).toHaveAttribute('role', 'status');
   });
 
+  it.each(['destructive', 'warning'] as const)(
+    'lets %s trade its assertive role for a polite one',
+    variant => {
+      // `McpServerPanel`'s open-config failure: an error, but one that arrives
+      // in response to a click and must not interrupt the reader.
+      render(
+        <Alert variant={variant} role="status" aria-live="polite" data-testid="alert">
+          Body
+        </Alert>
+      );
+
+      const el = screen.getByTestId('alert');
+      expect(el).toHaveAttribute('role', 'status');
+      expect(el).toHaveAttribute('aria-live', 'polite');
+    }
+  );
+
+  it.each(['destructive', 'warning'] as const)(
+    'drops the implicit role on a load-present %s notice',
+    variant => {
+      // The documented opt-out: presence of the prop decides, so an explicit
+      // `undefined` removes the live region instead of falling back to it.
+      render(
+        <Alert variant={variant} role={undefined} data-testid="alert">
+          Body
+        </Alert>
+      );
+
+      expect(screen.getByTestId('alert')).not.toHaveAttribute('role');
+    }
+  );
+
   it('forwards rest props and a ref onto the DOM node', () => {
     let node: HTMLDivElement | null = null;
     render(
