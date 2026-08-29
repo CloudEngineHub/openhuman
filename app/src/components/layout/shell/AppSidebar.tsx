@@ -3,10 +3,7 @@ import { useEffect } from 'react';
 import { LuPanelLeftOpen } from 'react-icons/lu';
 
 import { useT } from '../../../lib/i18n/I18nContext';
-import { APP_VERSION } from '../../../utils/config';
-import ConnectionIndicator from '../../ConnectionIndicator';
 import {
-  SidebarFooter,
   SidebarContent as SidebarScrollRegion,
   SidebarSeparator,
   SidebarTrigger,
