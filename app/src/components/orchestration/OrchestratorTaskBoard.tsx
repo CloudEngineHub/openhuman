@@ -148,12 +148,12 @@ export default function OrchestratorTaskBoard() {
       </div>
 
       {error ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-coral-200 bg-coral-50 px-3 py-2 text-xs text-coral-700 dark:border-coral-500/30 dark:bg-coral-500/10 dark:text-coral-300">
-          <span className="min-w-0 truncate">{error}</span>
+        <Alert variant="destructive" density="compact" className="items-center justify-between">
+          <AlertDescription className="min-w-0 truncate">{error}</AlertDescription>
           <Button variant="secondary" size="sm" onClick={() => void load()}>
             {t('common.retry')}
           </Button>
-        </div>
+        </Alert>
       ) : null}
 
       <form
