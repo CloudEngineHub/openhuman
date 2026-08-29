@@ -110,13 +110,13 @@ const EmbeddingsPanel = ({ embedded = false }: EmbeddingsPanelProps = {}) => {
         description={embedded ? undefined : t('pages.settings.ai.embeddingsDesc')}
         leading={embedded ? undefined : <SettingsBackButton onBack={navigateBack} />}>
         <div className={embedded ? '' : 'p-4'}>
-          <div className="rounded-xl border border-line bg-surface p-4 text-xs text-content-muted">
-            {status.kind === 'loading'
-              ? t('common.loading')
-              : status.kind === 'error'
-                ? status.message
-                : ''}
-          </div>
+          {status.kind === 'loading' ? (
+            <CenteredLoadingState label={t('common.loading')} />
+          ) : status.kind === 'error' ? (
+            <Alert variant="destructive" className="text-xs">
+              <AlertDescription>{status.message}</AlertDescription>
+            </Alert>
+          ) : null}
         </div>
       </PanelPage>
     );
