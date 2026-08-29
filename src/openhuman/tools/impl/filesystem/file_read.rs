@@ -4,7 +4,7 @@ use crate::openhuman::tools::traits::{Tool, ToolCallOptions, ToolResult};
 use async_trait::async_trait;
 use serde_json::json;
 use std::sync::Arc;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 const MAX_FILE_SIZE_BYTES: u64 = 10 * 1024 * 1024;
 

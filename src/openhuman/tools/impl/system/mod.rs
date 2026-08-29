@@ -21,7 +21,7 @@ mod workspace_state;
 use crate::openhuman::security::policy::{TrustedAccess, TrustedRoot};
 use crate::openhuman::security::SecurityPolicy;
 use std::path::Path;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 pub use current_time::CurrentTimeTool;
 pub use detect_tools::DetectToolsTool;

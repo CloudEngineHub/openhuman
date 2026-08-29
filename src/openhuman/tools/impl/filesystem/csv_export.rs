@@ -3,7 +3,7 @@ use crate::openhuman::tools::traits::{Tool, ToolCallOptions, ToolResult};
 use async_trait::async_trait;
 use serde_json::json;
 use std::sync::Arc;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// Export structured data (JSON array of objects) as a CSV file to the workspace.
 pub struct CsvExportTool {

@@ -8,6 +8,7 @@ use crate::openhuman::agent::harness::subagent_runner::{
 use crate::openhuman::agent::progress::AgentProgress;
 use crate::openhuman::tools::traits::{Tool as _, ToolCallOptions, ToolResult};
 use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// How a delegated sub-agent run should be scheduled relative to the parent
 /// turn.

@@ -14,7 +14,7 @@ mod update_memory_md;
 
 use crate::openhuman::security::policy::{TrustedAccess, TrustedRoot};
 use crate::openhuman::security::SecurityPolicy;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 #[cfg(test)]
 #[path = "mod_tests.rs"]

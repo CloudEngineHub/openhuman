@@ -27,6 +27,7 @@ use async_trait::async_trait;
 use serde_json::json;
 use std::fmt::Write as _;
 use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 use tinyagents::harness::workspace::WorkspaceDescriptor;
 
 /// The sub-agent archetype this tool drives.

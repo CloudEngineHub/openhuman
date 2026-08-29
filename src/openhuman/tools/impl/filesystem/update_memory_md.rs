@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, LazyLock, Mutex};
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// Allowed workspace markdown files this tool may modify.
 const ALLOWED_FILES: &[&str] = &["MEMORY.md", "SKILL.md"];

@@ -30,7 +30,7 @@ use glob::Pattern;
 use serde_json::json;
 use std::path::Path;
 use std::sync::Arc;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 use walkdir::WalkDir;
 
 const DEFAULT_MAX_RESULTS: usize = 500;

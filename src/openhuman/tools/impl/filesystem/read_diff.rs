@@ -4,7 +4,7 @@ use crate::openhuman::tools::traits::{PermissionLevel, Tool, ToolCallOptions, To
 use async_trait::async_trait;
 use serde_json::json;
 use std::path::PathBuf;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// Returns `git diff` output in a structured format.
 pub struct ReadDiffTool {

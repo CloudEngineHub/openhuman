@@ -31,7 +31,7 @@ use async_trait::async_trait;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// Absolute ceiling a caller may request via `timeout_secs`. There is **no**
 /// default timeout — `node_exec` runs scripts that legitimately take minutes

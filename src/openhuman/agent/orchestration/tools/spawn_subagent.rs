@@ -23,6 +23,7 @@ use async_trait::async_trait;
 use serde_json::json;
 use std::path::PathBuf;
 use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 use tinycortex::memory::conversations::{
     self as conversations, ConversationMessage, CreateConversationThread,
 };

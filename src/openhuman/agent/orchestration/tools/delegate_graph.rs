@@ -17,7 +17,7 @@ use crate::openhuman::tools::traits::{PermissionLevel, Tool, ToolCallOptions, To
 use async_trait::async_trait;
 use serde_json::json;
 use std::sync::Arc;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// Default reviewer-requested revision budget when the caller omits it.
 const DEFAULT_MAX_REVISIONS: usize = 2;

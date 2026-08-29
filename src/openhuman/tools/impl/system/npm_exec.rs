@@ -27,7 +27,7 @@ use async_trait::async_trait;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// Absolute ceiling callers can request via `timeout_secs`. There is **no**
 /// default timeout — `npm install`/build steps on a cold cache or slow network

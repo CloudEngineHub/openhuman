@@ -14,7 +14,7 @@ use serde_json::json;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 const MAX_FILE_BYTES: u64 = 5 * 1024 * 1024;
 const MAX_EDITS: usize = 50;

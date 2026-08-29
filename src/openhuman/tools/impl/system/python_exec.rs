@@ -26,7 +26,7 @@ use async_trait::async_trait;
 use serde_json::json;
 use std::sync::Arc;
 use std::time::Duration;
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 /// Absolute ceiling a caller may request via `timeout_secs`. No default timeout —
 /// Python scripts legitimately take minutes; a deadline applies only when

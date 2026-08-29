@@ -5,7 +5,7 @@ use serde_json::Value;
 use crate::openhuman::tools::traits::{
     PermissionLevel, Tool, ToolCallOptions, ToolCategory, ToolResult, ToolTimeout,
 };
-use tinyagents::harness::tool::ToolExecutionContext;
+use tinytools::ToolRunContext;
 
 pub struct ArchetypeDelegationTool {
     pub tool_name: String,
