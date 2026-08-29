@@ -615,7 +615,7 @@ export default function AgentChatPanel({
                     {t('orchPage.connections.status.needsYou')}
                   </span>
                 </span>
-                <span className="flex-none rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-white">
+                <span className="flex-none rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-semibold text-content-inverted">
                   {t('orchPage.agent.viewSession')}
                 </span>
               </Button>
