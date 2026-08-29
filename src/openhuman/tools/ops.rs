@@ -1371,7 +1371,7 @@ fn tool_group(name: &str) -> crate::core::all::DomainGroup {
     // ── Families carved out of Platform by the DomainGroup realignment ──────
     // Each of these previously fell through to Platform, which meant the tool
     // stayed callable when its family was gated off under a custom DomainSet —
-    // the leak the #4808 review flagged for whatsapp_data. Keep these in
+    // leak the #4808 review flagged. Keep these in
     // lockstep with the `push(...)` tags in `core::all`.
     //
     // Automation: scheduled jobs (`cron_*`) plus the subconscious monitor +

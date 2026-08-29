@@ -1112,8 +1112,7 @@ medulla = []
 # Channels domain: `openhuman::channels` (external-messaging providers — Telegram,
 # Discord, Slack, Signal, WhatsApp, iMessage, IRC, … — plus the channel runtime,
 # controllers, host, proactive messaging and inbound dispatch) together with the
-# `webview_accounts` / `webview_apis` / `webview_notifications` / `whatsapp_data`
-# webview-bridge domains. Default-ON — the desktop app always ships with
+# `webview_notifications` bridge domain. Default-ON — the desktop app always ships with
 # channels. Slim / headless builds opt out via `--no-default-features --features
 # "<explicit list without channels>"`. Composes with the runtime
 # `DomainSet::Channels` flag (#4796): this feature narrows the compile-time

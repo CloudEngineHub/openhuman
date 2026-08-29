@@ -431,32 +431,6 @@ describe('Mega flow — login + Gmail OAuth + Composio in one session', () => {
   });
 
   // -------------------------------------------------------------------------
-  // Scenario 7 — WhatsApp native read flow.
-  // Storage and frontend reads now live in the Tauri shell, so verify the
-  // renderer-to-native command and its list-shaped response.
-  // -------------------------------------------------------------------------
-  it('WhatsApp read-only: native list_chats returns expected shape', async () => {
-    await resetEverything('after Scenario 6');
-
-    await triggerDeepLink('openhuman://auth?token=mega-whatsapp-token');
-    await waitForMockRequest('POST', '/auth/login-token/consume', 15_000);
-    clearRequestLog();
-
-    // WhatsApp storage moved from core controllers to shell-native handlers.
-    // Exercise the renderer's production IPC boundary and assert the native
-    // list shape; an empty store is valid before a scanner has ingested data.
-    const list = await invokeTauri<unknown[]>('whatsapp_data_list_chats', { req: {} });
-    expect(list.__error).toBeUndefined();
-    const chats = list.__ok ?? [];
-    expect(Array.isArray(chats)).toBe(true);
-    console.log(`${LOG} whatsapp list_chats returned ${chats.length} chat(s)`);
-
-    // Session must still be healthy.
-    const ping = await callOpenhumanRpc('core.ping', {});
-    expect(ping.ok).toBe(true);
-  });
-
-  // -------------------------------------------------------------------------
   // Scenario 8 — Spawn-depth limit.
   // SKIPPED: `openhuman.agent_run` does not exist; the closest RPC methods
   // (`openhuman.agent_chat`, `openhuman.agent_chat_simple`) drive a single

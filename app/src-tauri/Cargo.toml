@@ -89,10 +89,10 @@ sentry = { version = "0.47.0", default-features = false, features = ["backtrace"
 
 # Used by the imessage_scanner module.
 anyhow = "1.0"
-# SQLite for the shell-side whatsapp_data store (relocated from the core). All
-# platforms — the store persists on Windows/Linux/macOS. Pinned to match the
-# core crate so a single bundled SQLite is linked. (The macOS-only iMessage
-# scanner also uses rusqlite; this general dep covers it too.)
+# SQLite for the macOS iMessage scanner, which reads ~/Library/Messages/chat.db
+# read-only. Declared in the general table rather than under the macOS target so
+# `cargo check` on Linux/Windows resolves the same graph. Pinned to match the
+# core crate so a single bundled SQLite is linked.
 rusqlite = { version = "=0.40.2", features = ["bundled"] }
 parking_lot = "0.12"
 chrono = "0.4"
