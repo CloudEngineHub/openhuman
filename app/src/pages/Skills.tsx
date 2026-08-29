@@ -871,7 +871,7 @@ export default function Skills() {
                 className={skillCategoryHeadingClassName(category)}
               />
             </span>
-            {category}
+            {t(SKILL_CATEGORY_LABEL_KEYS[category])}
           </h2>
         </div>
         <div className="space-y-2">
