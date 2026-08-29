@@ -136,7 +136,7 @@ export function MemoryControls({
     } finally {
       setBuilding(false);
     }
-  }, [onToast, onRefresh]);
+  }, [onToast, onRefresh, t]);
 
   const handleRefresh = useCallback(async () => {
     if (refreshing) return;
