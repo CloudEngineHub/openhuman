@@ -142,6 +142,12 @@ describe('Notifications page row wrapper', () => {
   });
 });
 
+/**
+ * The chip row migrated onto `ChipTabs as="tab"` (Radix Tabs), so the active
+ * chip is marked with `aria-selected` on a `role="tab"` rather than the old
+ * hand-rolled `aria-pressed` toggle. The assertions below are unchanged in
+ * meaning — only the attribute name moved with the primitive.
+ */
 describe('Notifications page category filter', () => {
   const mixed = () => [
     makeItem('m-1', 'msg one', { category: 'messages' }),
