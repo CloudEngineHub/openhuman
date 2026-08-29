@@ -141,12 +141,10 @@ export default function OrchestratorTaskBoard() {
   );
 
   return (
+    // No heading here: the only host (`OrchestrationView`) renders a
+    // `PageSectionHeader` with these exact two keys directly above this board,
+    // so an h2 of its own stacked the same title twice.
     <div className="space-y-4" data-testid="orch-task-board">
-      <div>
-        <h2 className="text-xl font-bold text-content">{t('orchPage.tasks.nav')}</h2>
-        <p className="mt-1 text-sm text-content-muted">{t('orchPage.tasks.subtitle')}</p>
-      </div>
-
       {error ? (
         <Alert variant="destructive" density="compact" className="items-center justify-between">
           <AlertDescription className="min-w-0 truncate">{error}</AlertDescription>
