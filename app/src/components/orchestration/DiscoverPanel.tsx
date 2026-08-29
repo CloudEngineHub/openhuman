@@ -108,9 +108,7 @@ export default function DiscoverPanel() {
       {/* Own identity / discoverability. */}
       <SectionCard title={t('orchPage.discover.identityTitle')} testId="orch-discover-identity">
         {identityLoading ? (
-          <p className="text-sm text-content-muted">
-            {t('tinyplaceOrchestration.identity.loading')}
-          </p>
+          <CenteredLoadingState label={t('tinyplaceOrchestration.identity.loading')} />
         ) : identity ? (
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
