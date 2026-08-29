@@ -455,7 +455,7 @@ describe('Mega flow — login + Gmail OAuth + Composio in one session', () => {
   // and that `threads_list` returns a valid (non-error) array.
   // -------------------------------------------------------------------------
   it('account switch: user A threads invisible to user B and still present after restore', async () => {
-    await resetEverything('after Scenario 7');
+    await resetEverything('after Scenario 6');
 
     // ── User A login ──────────────────────────────────────────────────────
     await triggerDeepLink('openhuman://auth?token=mega-acct-switch-user-a');
