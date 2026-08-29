@@ -77,8 +77,8 @@ function isCatalogEntryInstalled(entry: CatalogEntry, installedKeys: Set<string>
  * distinction a reader acts on (where does this skill come from: shipped with
  * the app, or fetched from a remote catalogue) rather than naming each
  * catalogue twice. The badge already prints the catalogue's name, so the four
- * remote rows take the neutral fallback this table already defines instead of
- * reaching for unthemeable ramps. See `gitbooks/developing/theming.md`.
+ * remote rows fall through to the shared neutral tone instead of reaching for
+ * unthemeable ramps. See `gitbooks/developing/theming.md`.
  */
 const BADGE_NEUTRAL_TONE = 'bg-surface-muted text-content-secondary border-line';
 
