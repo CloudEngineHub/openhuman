@@ -538,9 +538,11 @@ export default function AgentChatPanel({
           {showComposer ? (
             <>
               {masterError ? (
-                <p className="rounded-md bg-coral-50 px-2 py-1 text-xs text-coral-700 dark:bg-coral-500/10 dark:text-coral-300">
-                  {t('tinyplaceOrchestration.composer.sendFailed')}: {masterError}
-                </p>
+                <Alert variant="destructive" density="compact">
+                  <AlertDescription>
+                    {t('tinyplaceOrchestration.composer.sendFailed')}: {masterError}
+                  </AlertDescription>
+                </Alert>
               ) : null}
               <AgentComposer
                 value={composerBody}
