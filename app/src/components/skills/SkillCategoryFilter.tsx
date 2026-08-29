@@ -45,7 +45,7 @@ const SkillCategoryFilter = ({ categories, selected, onChange }: SkillCategoryFi
       })}
       value={selected}
       onChange={onChange}
-      className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
+      className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide"
     />
   );
 };
