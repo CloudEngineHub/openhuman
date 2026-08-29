@@ -63,18 +63,22 @@ const NotificationsPanel = ({ embedded = false }: NotificationsPanelProps = {}) 
         {CATEGORIES.map(cat => {
           const enabled = preferences[cat.id];
           const switchId = `switch-notif-${cat.id}`;
+          const title = t(cat.titleKey);
           return (
             <SettingsRow
               key={cat.id}
               htmlFor={switchId}
-              label={cat.title}
-              description={cat.description}
+              label={title}
+              description={t(cat.descKey)}
               control={
                 <SettingsSwitch
                   id={switchId}
                   checked={enabled}
                   onCheckedChange={() => handleToggle(cat.id)}
-                  aria-label={`Toggle ${cat.title} notifications`}
+                  aria-label={t('settings.notifications.categoryToggleAria').replace(
+                    '{name}',
+                    title
+                  )}
                 />
               }
             />
