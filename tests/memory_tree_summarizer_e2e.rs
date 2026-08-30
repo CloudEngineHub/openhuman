@@ -31,7 +31,6 @@ use chrono::{DateTime, TimeZone, Utc};
 use tempfile::tempdir;
 
 use openhuman_core::openhuman::config::Config;
-use openhuman_core::openhuman::memory::model_bridge::LegacyChatModelBridge;
 use openhuman_core::openhuman::memory::tree::tree_runtime::{engine, store};
 use tinyinference::model::{ChatModel, ModelRequest, ModelResponse};
 use tinyinference::Error as TinyAgentsError;
@@ -233,14 +232,13 @@ async fn builds_hour_day_month_year_chain() {
     // The hour summaries are short enough that day/month/year/root fit within
     // token budget and do NOT trigger additional LLM calls (propagate_node
     // short-circuits when combined children text fits the level budget).
-    let inner_provider = Arc::new(ScriptedProvider::new(vec![
+    let provider = Arc::new(ScriptedProvider::new(vec![
         Ok("User discussed deployment timeline".to_string()),
         Ok("Reviewed infrastructure PR".to_string()),
     ]));
-    let provider = LegacyChatModelBridge::new(inner_provider.clone());
 
     log::debug!("[memory_tree_summarizer_e2e] running summarization");
-    let result = engine::run_summarization(&config, &provider, NS, Utc::now()).await;
+    let result = engine::run_summarization(&config, provider.as_ref(), NS, Utc::now()).await;
 
     log::debug!(
         "[memory_tree_summarizer_e2e] run_summarization returned: {:?}",
@@ -381,9 +379,9 @@ async fn merges_into_existing_hour_node() {
     )
     .expect("buffer_write pass1");
 
-    let provider1 = LegacyChatModelBridge::new(Arc::new(ScriptedProvider::new(vec![Ok(
+    let provider1 = ScriptedProvider::new(vec![Ok(
         "First-run summary: deployment timeline discussed".to_string(),
-    )])));
+    )]);
 
     log::debug!("[memory_tree_summarizer_e2e] first run");
     let r1 = engine::run_summarization(&config, &provider1, NS, Utc::now())
@@ -417,9 +415,9 @@ async fn merges_into_existing_hour_node() {
     )
     .expect("buffer_write pass2");
 
-    let provider2 = LegacyChatModelBridge::new(Arc::new(ScriptedProvider::new(vec![Ok(
+    let provider2 = ScriptedProvider::new(vec![Ok(
         "Merged summary: deployment timeline and blockers".to_string(),
-    )])));
+    )]);
 
     log::debug!("[memory_tree_summarizer_e2e] second run (same hour)");
     let r2 = engine::run_summarization(&config, &provider2, NS, Utc::now())
@@ -505,14 +503,13 @@ async fn survives_llm_error_with_partial_progress() {
     .expect("buffer_write hour15");
 
     // Provider: call 1 succeeds, call 2 returns an error.
-    let inner_provider = Arc::new(ScriptedProvider::new(vec![
+    let provider = Arc::new(ScriptedProvider::new(vec![
         Ok("Hour-14 summary: deployment planning in progress".to_string()),
         Err("boom: simulated LLM failure on second call".to_string()),
     ]));
-    let provider = LegacyChatModelBridge::new(inner_provider.clone());
 
     log::debug!("[memory_tree_summarizer_e2e] running summarization expecting partial failure");
-    let result = engine::run_summarization(&config, &provider, NS, Utc::now()).await;
+    let result = engine::run_summarization(&config, provider.as_ref(), NS, Utc::now()).await;
 
     log::debug!(
         "[memory_tree_summarizer_e2e] run_summarization result: is_ok={}",
