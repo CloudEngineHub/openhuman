@@ -18,20 +18,20 @@ sub-agent loops.
 
 The intended canonical operations mirror Codex-style multi-agent controls:
 
-- `spawn_agent`: create a child record and run it through `agent::harness::run_subagent`.
+- `spawn_agent`: register a child in the TinyAgents `DetachedTaskRegistry` and run it through `agent::harness::run_subagent`.
+- `wait_agents`: wait for one or more children to reach a terminal state, optionally with a timeout. A terminal child is pruned from the registry by the wait that observed it.
+- `abort_all`: publish `cancelled` on every live child and hard-abort its task.
 
-
-- `wait_agents`: wait for one or more children to reach a terminal state, optionally with a timeout.
-
-
-
+The in-memory `list_agents` / `message_agent` / `close_agent` / `follow_up` /
+`resume_agent` / `events` mirror was removed — the durable equivalents live in
+`command_center::control`.
 
 ## State Model
 
 Each child has a stable `orchestration_id`, an `agent_id`, optional
-`parent_agent_id`, status, prompt, message log, result summary, error, timestamps,
-and metadata. Terminal statuses are `completed`, `failed`, `cancelled`, and
-`closed`.
+`parent_agent_id`, status, prompt, result summary, error, timestamps, and
+metadata. Status is TinyAgents' `OrchestrationTaskStatus`; the terminal values
+are `completed`, `failed`, `cancelled`, `timed_out`, and `abandoned`.
 
 ## Policy Inheritance
 
