@@ -502,6 +502,7 @@ async fn fetch_connected_integrations_uncached(
 /// whose catalogue hasn't been published yet). Returns `Err` only for
 /// transport / auth failures the caller should surface to the user.
 pub async fn fetch_toolkit_actions(
+    config: &Config,
     client: &ComposioClient,
     toolkit: &str,
     tags: Option<&[String]>,
