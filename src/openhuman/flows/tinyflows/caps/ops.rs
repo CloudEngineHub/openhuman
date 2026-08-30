@@ -214,7 +214,7 @@ async fn flow_tool_allowed(
     // classify_unknown heuristic (mirrors
     // `providers::is_action_visible_with_pref`'s uncurated branch), which the
     // pre-fix Path B never applied at all.
-    let pref = load_user_scope_pref(&toolkit).await;
+    let pref = load_user_scope_pref(config, &toolkit).await;
     let allowed = pref.allows(classify_unknown(slug));
     tracing::debug!(target: "flows", %slug, %toolkit, allowed, "[flows] tool_call curation: live catalog + scope decision");
     allowed
