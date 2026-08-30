@@ -273,9 +273,11 @@ pub(crate) struct SyncPassOutcome {
     pub records_read: usize,
     /// Of those, how many the driver actually wrote (the rest were already
     /// ingested and unchanged).
-    pub written: u64,
-    /// Records the driver had already ingested, unchanged.
-    pub already_ingested: u64,
+    pub written: u32,
+    /// Whether the driver treated this whole batch as already ingested and
+    /// unchanged (a no-op call) — `IngestOutcome::already_ingested` is a
+    /// batch-level flag, not a per-record count.
+    pub already_ingested: bool,
     /// Whether the module has more to read — the caller decides whether to
     /// call again.
     pub more_pending: bool,
