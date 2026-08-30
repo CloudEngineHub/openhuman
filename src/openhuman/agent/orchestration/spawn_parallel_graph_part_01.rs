@@ -14,7 +14,7 @@ use tinyagents_graph::{
 };
 use tinyagents_harness::retry::RetryPolicy;
 use tinyagents_harness::workspace::{WorkspaceDescriptor, WorkspaceIsolation};
-use tinyagents::{CancellationToken, TinyAgentsError};
+use tinyagents_harness::{CancellationToken, TinyAgentsError};
 
 use crate::openhuman::agent::file_state;
 use crate::openhuman::agent::harness::definition::{

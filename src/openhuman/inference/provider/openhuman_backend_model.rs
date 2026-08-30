@@ -33,7 +33,7 @@ use tinyinference::model::{
     ChatModel, Modalities, ModelProfile, ModelRequest, ModelResponse, ModelStream, ProviderError,
 };
 use tinyinference::providers::openai::OpenAiModel;
-use tinyagents::{Result as TaResult, TinyAgentsError};
+use tinyagents_harness::{Result as TaResult, TinyAgentsError};
 
 use super::ProviderRuntimeOptions;
 use crate::api::config::effective_api_url;

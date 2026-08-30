@@ -154,7 +154,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use tinyagents_harness::memory::ChatHistory;
 use tinyinference::message::Message;
-use tinyagents::{Result as TaResult, TinyAgentsError};
+use tinyagents_harness::{Result as TaResult, TinyAgentsError};
 
 use crate::openhuman::agent::message_convert::{history_to_messages, message_to_chat_message};
 use crate::openhuman::agent::messages::ChatMessage;
