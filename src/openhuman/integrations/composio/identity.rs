@@ -6,11 +6,14 @@
 //! compare the connected account against another subsystem (e.g. local
 //! `git config user.name`).
 //!
-//! The lookup goes through the per-toolkit
-//! [`ComposioProvider::fetch_user_profile`](crate::openhuman::integrations::composio::providers::ComposioProvider::fetch_user_profile)
-//! call, which already knows the right Composio action slug for each
-//! toolkit (`GITHUB_GET_THE_AUTHENTICATED_USER`,
-//! `GMAIL_GET_PROFILE`, …) and the JSON field that holds the username.
+//! The lookup goes through the `tinyconnectors` module's `GetUserProfile`
+//! member, which already knows the right Composio action slug for each
+//! toolkit (`GITHUB_GET_THE_AUTHENTICATED_USER`, `GMAIL_GET_PROFILE`, …) and
+//! the JSON field that holds the username. This used to go through the
+//! engine's per-toolkit `ComposioProvider::fetch_user_profile`, deleted by
+//! tinymemory v1.13.4 along with the rest of the in-process pipeline —
+//! `GetUserProfile` is the module-hosted equivalent, already used by
+//! `integrations::composio::ops::providers_ops::composio_get_user_profile`.
 //!
 //! ## Failure surface
 //!
