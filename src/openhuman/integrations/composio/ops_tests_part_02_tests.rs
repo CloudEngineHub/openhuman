@@ -245,7 +245,7 @@ async fn notion_cleanup_targets_include_synced_page_sources() {
         .kv_set(
             Some(tinycortex::memory::sync::state::STATE_NAMESPACE),
             "notion:conn-1",
-            &state,
+            &serde_json::to_value(&state).expect("sync state should serialize"),
         )
         .await
         .expect("sync state should save");
