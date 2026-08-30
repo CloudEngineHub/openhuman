@@ -43,7 +43,7 @@ use crate::openhuman::threads::todos::ops::{BoardLocation, CardPatch};
 use crate::openhuman::tools::traits::Tool;
 use tinyagents_harness::message::AssistantMessage;
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents_harness::tool::ToolCall;
+use tinyinference::tool::ToolCall;
 
 /// Serialize this module's tests (each touches process-global state).
 fn serial() -> &'static tokio::sync::Mutex<()> {

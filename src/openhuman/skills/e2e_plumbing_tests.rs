@@ -41,7 +41,7 @@ use crate::openhuman::skills::runtime::await_run_outcome;
 use crate::openhuman::tools::traits::Tool;
 use tinyagents_harness::message::AssistantMessage;
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents_harness::tool::ToolCall;
+use tinyinference::tool::ToolCall;
 
 // ── Mock LLM ─────────────────────────────────────────────────────────────
 // Minimal scripted model: pops queued ModelResponses in order. Mirrors the

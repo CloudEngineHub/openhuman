@@ -20,7 +20,7 @@
 //! maps that keep the wire bytes identical while the logic lives upstream.
 //!
 //! Second, the **[`Tool`] trait object**. The crate takes
-//! [`ToolSchema`](tinyagents_harness::tool::ToolSchema)s, never a host's tool
+//! [`ToolSchema`](tinyinference::tool::ToolSchema)s, never a host's tool
 //! type, for the reason the parse seam already documents: a crate that depended
 //! on OpenHuman's `Tool` could not be used by a second host. So
 //! [`ToolDispatcher::prompt_instructions`] reads names and schemas off the
@@ -39,7 +39,7 @@ use crate::openhuman::agent::pformat::PFormatRegistry;
 use crate::openhuman::inference::provider::{ChatResponse, ToolCall};
 use crate::openhuman::tools::{Tool, ToolSpec};
 use serde_json::Value;
-use tinyagents_harness::tool::ToolSchema;
+use tinyinference::tool::ToolSchema;
 use tinyagents_harness::tool_calling::dialect::{
     DialectMessage, DialectResponse, DialectRole, NativeDialect, NativeToolCall, PFormatDialect,
     ToolDialect, ToolOutcome, ToolResultEntry, TranscriptEntry, XmlDialect,

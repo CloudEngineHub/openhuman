@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use openhuman_core::openhuman::inference::provider::types::{ChatResponse, ToolCall};
 use tinyagents_harness::message::{AssistantMessage, ContentBlock, Message};
 use tinyinference::model::{ChatModel, ModelRequest, ModelResponse};
-use tinyagents_harness::tool::ToolCall as TinyAgentsToolCall;
+use tinyinference::tool::ToolCall as TinyAgentsToolCall;
 
 /// A plain `ChatResponse` carrying only text (no tool calls).
 pub fn response(text: &str) -> ChatResponse {

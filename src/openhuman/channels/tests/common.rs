@@ -7,7 +7,7 @@ use std::time::Duration;
 use tempfile::TempDir;
 use tinyagents_harness::message::{AssistantMessage, Message};
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents_harness::tool::ToolCall;
+use tinyinference::tool::ToolCall;
 
 fn message_role(message: &Message) -> &'static str {
     match message {

@@ -17,7 +17,7 @@
 use tinyagents_harness::message::{
     AssistantMessage, ContentBlock, ImageRef, Message, SystemMessage, ToolMessage, UserMessage,
 };
-use tinyagents_harness::tool::ToolCall as TaToolCall;
+use tinyinference::tool::ToolCall as TaToolCall;
 
 use crate::openhuman::agent::messages::{ChatMessage, ConversationMessage, ToolResultMessage};
 

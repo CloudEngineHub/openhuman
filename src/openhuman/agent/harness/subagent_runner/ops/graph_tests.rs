@@ -6,7 +6,7 @@ use tinyagents_harness::message::{AssistantMessage, MessageDelta};
 use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
-use tinyagents_harness::tool::ToolCall;
+use tinyinference::tool::ToolCall;
 
 fn native_tool_profile() -> &'static ModelProfile {
     static PROFILE: std::sync::LazyLock<ModelProfile> = std::sync::LazyLock::new(|| ModelProfile {

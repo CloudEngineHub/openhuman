@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use tinyagents_harness::message::AssistantMessage;
 use tinyinference::model::{ChatModel, ModelProfile, ModelResponse};
 use tinyagents_harness::testkit::ScriptedModel;
-use tinyagents_harness::tool::ToolCall;
+use tinyinference::tool::ToolCall;
 
 struct PingTool;
 #[async_trait]

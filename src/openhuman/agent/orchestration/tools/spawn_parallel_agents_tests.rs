@@ -26,7 +26,7 @@ use std::sync::{
 };
 use tinyagents_harness::message::{AssistantMessage, Message};
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents_harness::tool::ToolCall;
+use tinyinference::tool::ToolCall;
 use tokio::time::{sleep, timeout, Duration};
 
 const PARENT_PROMPT_CANARY: &str = "parallel-fanout-e2e-canary";

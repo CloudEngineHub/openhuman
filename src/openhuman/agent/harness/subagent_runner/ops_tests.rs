@@ -78,7 +78,7 @@ use tinyagents_harness::message::{AssistantMessage, ContentBlock, Message, Messa
 use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
-use tinyagents_harness::tool::ToolCall;
+use tinyinference::tool::ToolCall;
 
 /// Mock provider whose response queue can be inspected by the test
 /// to verify the bytes that arrive at the model.

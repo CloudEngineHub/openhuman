@@ -12,7 +12,7 @@ use super::render_helpers::{
 use super::types::*;
 use anyhow::Result;
 use std::fmt::Write;
-use tinyagents_harness::tool::ToolSchema;
+use tinyinference::tool::ToolSchema;
 use tinyagents_harness::tool_calling::dialect::render_pformat_catalogue;
 
 // ─────────────────────────────────────────────────────────────────────────────
