@@ -26,7 +26,7 @@ impl ChatModel<()> for MockCalendarModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let mut count = self.iter_count.lock();
         *count += 1;
 
