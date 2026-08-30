@@ -389,9 +389,10 @@ fn team_view(config: &Config, team_id: &str) -> Result<TeamView> {
 /// Validate a new task's dependency edges against the team's existing tasks.
 ///
 /// Rejects self-dependency, unknown dependency ids, and any edge that would
-/// introduce a cycle. The cycle check builds the full graph (existing tasks +
-/// the new task with its proposed deps) and runs Kahn's algorithm — the same
-/// shape used for workflow phase graphs in `workflow_runs::ops::has_cycle`.
+/// introduce a cycle. The self and unknown checks stay here because they are
+/// scoped to the *new* task: a pre-existing task carrying a dangling edge is
+/// not this caller's fault and must not block the assignment. The cycle check
+/// delegates to `tinyagents::graph::dag`.
 fn validate_dependencies(
     new_task_id: &str,
     depends_on: &[String],
@@ -419,59 +420,25 @@ fn validate_dependencies(
     Ok(())
 }
 
-/// Kahn's-algorithm cycle check over the task dependency graph (existing tasks
-/// plus the candidate new task). Edge `dep -> task` means `task` depends on
-/// `dep`. Edges pointing at unknown ids are ignored here (rejected separately).
+/// Cycle check over the task dependency graph (existing tasks plus the
+/// candidate new task), delegating to `tinyagents::graph::dag::has_cycle`.
+///
+/// Edge `dep -> task` means `task` depends on `dep`. Edges pointing at unknown
+/// ids are ignored by the shared validator (they are rejected separately).
 fn has_task_cycle(
     new_task_id: &str,
     new_depends_on: &[String],
     existing: &[AgentTeamTask],
 ) -> bool {
-    // Node set: every existing task id plus the new one.
-    let mut nodes: HashSet<&str> = existing.iter().map(|t| t.id.as_str()).collect();
-    nodes.insert(new_task_id);
-
-    let mut indegree: HashMap<&str, usize> = nodes.iter().map(|&n| (n, 0)).collect();
-    let mut adjacency: HashMap<&str, Vec<&str>> = HashMap::new();
-
-    // Existing edges.
-    for task in existing {
-        for dep in &task.depends_on {
-            let dep = dep.as_str();
-            if nodes.contains(dep) {
-                adjacency.entry(dep).or_default().push(task.id.as_str());
-                *indegree.entry(task.id.as_str()).or_insert(0) += 1;
-            }
-        }
-    }
-    // Candidate edges for the new task.
-    for dep in new_depends_on {
-        let dep = dep.as_str();
-        if nodes.contains(dep) {
-            adjacency.entry(dep).or_default().push(new_task_id);
-            *indegree.entry(new_task_id).or_insert(0) += 1;
-        }
-    }
-
-    let mut queue: VecDeque<&str> = indegree
+    let mut nodes: Vec<DagNode<'_>> = existing
         .iter()
-        .filter(|(_, &d)| d == 0)
-        .map(|(&n, _)| n)
+        .map(|t| DagNode::new(t.id.as_str(), t.depends_on.iter().map(String::as_str)))
         .collect();
-    let mut visited = 0usize;
-    while let Some(node) = queue.pop_front() {
-        visited += 1;
-        if let Some(children) = adjacency.get(node) {
-            for &child in children {
-                let entry = indegree.get_mut(child).expect("child in indegree");
-                *entry -= 1;
-                if *entry == 0 {
-                    queue.push_back(child);
-                }
-            }
-        }
-    }
-    visited != indegree.len()
+    nodes.push(DagNode::new(
+        new_task_id,
+        new_depends_on.iter().map(String::as_str),
+    ));
+    has_cycle(&nodes)
 }
 
 #[cfg(test)]
