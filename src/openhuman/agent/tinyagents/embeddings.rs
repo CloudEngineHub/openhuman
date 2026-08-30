@@ -91,7 +91,7 @@ impl TaEmbeddingModel for ProviderEmbeddingModel {
             // OpenHuman providers surface `anyhow::Error`; the crate expects its
             // own error type. Carry the full chain into the crate's embedding
             // error variant so nothing is lost.
-            TinyAgentsError::Embedding(format!("{e:#}"))
+            TiError::Embedding(format!("{e:#}"))
         })?;
         tracing::debug!(
             provider = self.provider.name(),
