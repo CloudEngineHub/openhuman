@@ -113,38 +113,30 @@ pub async fn sync_trigger_rpc(
     let considered = candidates.len();
     let mut outcomes: Vec<SyncOutcome> = Vec::with_capacity(considered);
 
-    // Resolved once, outside the loop: the binding is cached per workspace, but
-    // a driver that serves no sync should refuse the whole request rather than
-    // once per connection.
-    let binding = crate::openhuman::memory::binding::for_config(config)?;
-    let sync = binding.provider().as_source_sync().ok_or_else(|| {
-        format!(
-            "the bound memory driver '{}' does not serve source sync",
-            binding.driver_id()
-        )
-    })?;
-
     for conn in candidates {
         let started_at_ms = now_ms();
-        match sync
-            .run_connection_sync("slack", &conn.id)
+        // Reads through the `tinyconnectors` module and ingests through the
+        // bound driver's `MemorySourceSink` — see the module doc comment for
+        // why this no longer goes through `MemorySourceSync::run_connection_sync`.
+        match run_sync_pass(config, "slack", &conn.id, "manual")
             .await
             .map_err(|error| error.to_string())
         {
-            Ok(outcome) => outcomes.push(SyncOutcome {
+            Ok(pass) => outcomes.push(SyncOutcome {
                 toolkit: "slack".to_string(),
                 connection_id: Some(conn.id.clone()),
                 reason: "manual".to_string(),
-                items_ingested: outcome.records_ingested as usize,
+                items_ingested: pass.records_read,
                 started_at_ms,
                 finished_at_ms: now_ms(),
-                summary: outcome
-                    .note
-                    .unwrap_or_else(|| "Slack sync completed".to_string()),
+                summary: format!(
+                    "Slack sync completed ({} written, {} already ingested)",
+                    pass.written, pass.already_ingested
+                ),
                 details: serde_json::json!({
-                    "more_pending": outcome.more_pending,
-                    "actions_called": outcome.actions_called,
-                    "provider_cost_usd": outcome.provider_cost_usd,
+                    "more_pending": pass.more_pending,
+                    "written": pass.written,
+                    "already_ingested": pass.already_ingested,
                 }),
             }),
             Err(err) => {
