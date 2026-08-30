@@ -427,3 +427,100 @@ async fn e2e_orchestrator_waits_for_multiple_parallel_coding_subagents() {
     assert!(prompts.contains("PARALLEL_BETA"));
     assert!(prompts.contains("PARALLEL_GAMMA"));
 }
+
+/// A model that parks long enough for `abort_all` to land while the child is
+/// still running.
+#[derive(Clone, Default)]
+struct BlockingModel;
+
+#[async_trait]
+impl ChatModel<()> for BlockingModel {
+    async fn invoke(
+        &self,
+        _state: &(),
+        _request: ModelRequest,
+    ) -> tinyagents::Result<ModelResponse> {
+        tokio::time::sleep(Duration::from_secs(60)).await;
+        Ok(text_response("NEVER_REACHED"))
+    }
+}
+
+#[tokio::test]
+async fn unit_wait_agents_with_no_ids_returns_an_empty_complete_response() {
+    let session = AgentOrchestrationSession::new("empty-session");
+    let response = session
+        .wait_agents(WaitAgentOptions::default())
+        .await
+        .expect("empty wait succeeds");
+
+    assert!(response.completed);
+    assert!(response.agents.is_empty());
+}
+
+#[tokio::test]
+async fn unit_wait_agents_rejects_an_unknown_child() {
+    let session = AgentOrchestrationSession::new("unknown-session");
+    let error = session
+        .wait_agents(WaitAgentOptions {
+            orchestration_ids: vec!["agent-does-not-exist".to_string()],
+            timeout_ms: Some(50),
+        })
+        .await
+        .unwrap_err();
+
+    assert!(
+        matches!(&error, OrchestrationError::AgentNotFound(id) if id == "agent-does-not-exist"),
+        "unexpected error: {error:?}"
+    );
+}
+
+/// `abort_all` must publish a terminal `Cancelled` status on each live child's
+/// watch channel *before* the crate registry hard-aborts it, so a waiter in
+/// flight resolves with a cancellation rather than a closed status channel.
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn e2e_abort_all_cancels_an_in_flight_child_for_a_concurrent_waiter() {
+    AgentDefinitionRegistry::init_global_builtins().unwrap();
+    let parent = parent_context(Arc::new(BlockingModel));
+    let session = AgentOrchestrationSession::new("abort-session");
+
+    let spawned = with_parent_context(parent, async {
+        session
+            .spawn_agent(SpawnAgentRequest {
+                agent_id: "code_executor".to_string(),
+                prompt: "Park until the orchestrator interrupts".to_string(),
+                model: Some("test-model".to_string()),
+                ..Default::default()
+            })
+            .await
+    })
+    .await
+    .expect("spawn blocking child");
+
+    let waiter = {
+        let session = session.clone();
+        let id = spawned.orchestration_id.clone();
+        tokio::spawn(async move {
+            session
+                .wait_agents(WaitAgentOptions {
+                    orchestration_ids: vec![id],
+                    timeout_ms: Some(30_000),
+                })
+                .await
+        })
+    };
+
+    // Let the waiter register on the watch channel before cancelling.
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    session.abort_all().await;
+
+    let response = waiter
+        .await
+        .expect("waiter task")
+        .expect("wait resolves after abort_all");
+    assert!(response.completed);
+    assert_eq!(response.agents.len(), 1);
+    assert_eq!(
+        response.agents[0].status,
+        OrchestrationTaskStatus::Cancelled
+    );
+}
