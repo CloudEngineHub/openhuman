@@ -162,17 +162,24 @@ pub async fn composio_delete_connection(
     }
     resp.memory_chunks_deleted = memory_chunks_deleted;
     if let Some(toolkit) = toolkit.as_deref() {
-        let deleted = super::super::providers::profile::delete_connected_identity_facets(
-            toolkit,
-            connection_id,
-        );
+        let deleted = delete_connected_identity_facets(config, toolkit, connection_id)
+            .await
+            .unwrap_or_else(|error| {
+                tracing::warn!(
+                    toolkit = %toolkit,
+                    connection_id = %connection_id,
+                    %error,
+                    "[composio] delete_connected_identity_facets failed (non-fatal)"
+                );
+                0
+            });
         tracing::debug!(
             toolkit = %toolkit,
             connection_id = %connection_id,
             facets_deleted = deleted,
             "[composio] deleted connected identity facets after connection removal"
         );
-        if let Err(e) = super::super::providers::profile_md::remove_provider_from_profile_md(
+        if let Err(e) = super::super::profile_md::remove_provider_from_profile_md(
             &config.workspace_dir,
             toolkit,
             connection_id,
