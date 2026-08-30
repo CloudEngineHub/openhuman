@@ -31,12 +31,8 @@ pub enum OrchestrationError {
     DefinitionNotFound(String),
     #[error("orchestration agent '{0}' not found")]
     AgentNotFound(String),
-    #[error("orchestration agent '{0}' is already terminal")]
-    AgentTerminal(String),
     #[error("agent_id and prompt are required")]
     InvalidSpawnRequest,
-    #[error("message content is required")]
-    InvalidMessage,
 }
 
 #[derive(Clone)]

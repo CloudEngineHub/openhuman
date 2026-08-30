@@ -120,12 +120,6 @@ pub enum DomainEvent {
         agent_id: String,
         error: String,
     },
-    /// High-level orchestration closed or cancelled a child agent.
-    AgentOrchestrationClosed {
-        session_id: String,
-        orchestration_id: String,
-        reason: Option<String>,
-    },
     /// A tiny.place contact edge changed for a wrapped orchestration session.
     /// Payload is intentionally metadata only; contact graph details stay behind
     /// the signed tiny.place API.
@@ -1294,7 +1288,6 @@ impl DomainEvent {
             | Self::AgentOrchestrationSpawned { .. }
             | Self::AgentOrchestrationCompleted { .. }
             | Self::AgentOrchestrationFailed { .. }
-            | Self::AgentOrchestrationClosed { .. }
             | Self::OrchestrationPairingChanged { .. }
             | Self::RunQueueMessageQueued { .. }
             | Self::RunQueueFollowupDispatched { .. }
@@ -1447,7 +1440,6 @@ impl DomainEvent {
             Self::AgentOrchestrationSpawned { .. } => "AgentOrchestrationSpawned",
             Self::AgentOrchestrationCompleted { .. } => "AgentOrchestrationCompleted",
             Self::AgentOrchestrationFailed { .. } => "AgentOrchestrationFailed",
-            Self::AgentOrchestrationClosed { .. } => "AgentOrchestrationClosed",
             Self::OrchestrationPairingChanged { .. } => "OrchestrationPairingChanged",
             Self::SubconsciousTriggerProcessed { .. } => "SubconsciousTriggerProcessed",
             Self::RunQueueMessageQueued { .. } => "RunQueueMessageQueued",
@@ -1579,9 +1571,6 @@ impl DomainEvent {
             | Self::AgentOrchestrationSpawned { agent_id, .. }
             | Self::AgentOrchestrationCompleted { agent_id, .. }
             | Self::AgentOrchestrationFailed { agent_id, .. } => Some(agent_id.as_str()),
-            Self::AgentOrchestrationClosed {
-                orchestration_id, ..
-            } => Some(orchestration_id.as_str()),
             Self::ChannelMessageReceived { channel, .. }
             | Self::ChannelConnected { channel, .. }
             | Self::ChannelDisconnected { channel, .. } => Some(channel.as_str()),
