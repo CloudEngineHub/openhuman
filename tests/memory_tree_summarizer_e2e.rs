@@ -31,6 +31,7 @@ use chrono::{DateTime, TimeZone, Utc};
 use tempfile::tempdir;
 
 use openhuman_core::openhuman::config::Config;
+use openhuman_core::openhuman::memory::model_bridge::LegacyChatModelBridge;
 use openhuman_core::openhuman::memory::tree::tree_runtime::{engine, store};
 use tinyinference::model::{ChatModel, ModelRequest, ModelResponse};
 use tinyinference::Error as TinyAgentsError;
