@@ -172,24 +172,18 @@ pub async fn preview_filter(
             provider.as_str()
         ));
     }
-    let provider_impl = get_provider(provider.as_str())
-        .ok_or_else(|| format!("no native provider registered for '{}'", provider.as_str()))?;
-    let ctx = ProviderContext {
-        config: Arc::new(config.clone()),
-        toolkit: provider.as_str().to_string(),
-        connection_id: connection_id.filter(|s| !s.trim().is_empty()),
-        usage: Default::default(),
-        max_items: None,
-        sync_depth_days: None,
-    };
+    let _ = config;
+    let _ = connection_id;
     let max = max.unwrap_or(config.task_sources.max_tasks_per_fetch);
-    let fetch_filter = filter::to_fetch_filter(&filter_spec, max);
-    let tasks = provider_impl
-        .fetch_tasks(&ctx, &fetch_filter)
-        .await
-        .map_err(|e| format!("preview fetch failed: {e}"))?;
-    tracing::debug!(count = tasks.len(), "[task_sources:ops] preview_filter");
-    Ok(RpcOutcome::new(tasks, vec![]))
+    let _fetch_filter = filter::to_fetch_filter(&filter_spec, max);
+    // `ComposioProvider::fetch_tasks` has no replacement — see
+    // `pipeline::fetch_tasks_unavailable`'s doc comment for why.
+    Err(format!(
+        "task_sources preview for toolkit '{}' is unavailable: tinymemory v1.13.4 deleted \
+         ComposioProvider::fetch_tasks with no replacement, and the tinyconnectors module \
+         exposes no structured task-fetch surface to reimplement it against",
+        provider.as_str()
+    ))
 }
 
 /// List the selectable containers (today: Notion databases) a connected
