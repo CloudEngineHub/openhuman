@@ -11,10 +11,10 @@ use std::sync::{Arc, Mutex, PoisonError};
 use async_trait::async_trait;
 use tinyagents_harness::steering::{SteeringCommand, SteeringHandle};
 use tinyagents_harness::tool::{
-    SandboxMode, Tool, ToolAccess, ToolCall as TaToolCall, ToolExecutionContext, ToolPolicy,
-    ToolResult as TaToolResult, ToolRuntime, ToolSchema, ToolSideEffects,
-    ToolTimeout as TaToolTimeout, WorkspaceAccess,
+    SandboxMode, Tool, ToolAccess, ToolExecutionContext, ToolPolicy, ToolResult as TaToolResult,
+    ToolRuntime, ToolSideEffects, ToolTimeout as TaToolTimeout, WorkspaceAccess,
 };
+use tinyinference::tool::{ToolCall as TaToolCall, ToolSchema};
 use tinytools::ToolRunContext;
 
 /// A captured early-exit: a sub-agent invoked an early-exit tool (e.g.
