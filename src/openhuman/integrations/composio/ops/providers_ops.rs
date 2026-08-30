@@ -225,10 +225,13 @@ pub async fn composio_sync(
         )
         .await;
         match outcome {
-            Ok(ingested) => tracing::info!(
+            Ok(pass) => tracing::info!(
                 toolkit = %toolkit_for_task,
                 connection_id = %connection_for_task,
-                items_ingested = ingested,
+                items_ingested = pass.records_read,
+                written = pass.written,
+                already_ingested = pass.already_ingested,
+                more_pending = pass.more_pending,
                 "[composio] background sync ok"
             ),
             Err(error) => {
