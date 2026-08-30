@@ -32,7 +32,7 @@ use tinyinference::message::Message;
 use tinyinference::model::{
     ChatModel, Modalities, ModelProfile, ModelRequest, ModelResponse, ModelStream, ProviderError,
 };
-use tinyagents_harness::providers::openai::OpenAiModel;
+use tinyinference::providers::openai::OpenAiModel;
 use tinyagents::{Result as TaResult, TinyAgentsError};
 
 use super::ProviderRuntimeOptions;

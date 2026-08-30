@@ -12,7 +12,7 @@ use crate::openhuman::inference::local::ollama::{
 use crate::openhuman::inference::local::provider::{provider_from_config, LocalAiProvider};
 use tinyinference::message::Message;
 use tinyinference::model::{ChatModel, ModelRequest};
-use tinyagents_harness::providers::openai::OpenAiModel;
+use tinyinference::providers::openai::OpenAiModel;
 
 pub(super) struct ModelRpcOutcome {
     pub reply: String,
