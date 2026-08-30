@@ -353,7 +353,7 @@ async fn fetch_connected_integrations_uncached(
                 // know the gated action exists at all and will tell the user
                 // "I don't support that" — technically correct about its
                 // callable surface, but misleading about the toolkit.
-                let pref = super::ops::load_user_scope_pref(slug).await;
+                let pref = super::ops::load_user_scope_pref(config, slug).await;
                 let mut visible: Vec<ConnectedIntegrationTool> = Vec::new();
                 let mut gated: Vec<GatedIntegrationTool> = Vec::new();
                 for t in tools_by_toolkit
