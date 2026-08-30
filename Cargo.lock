@@ -370,7 +370,7 @@ dependencies = [
  "serde_json",
  "serde_path_to_error",
  "serde_urlencoded",
- "sha1",
+ "sha1 0.10.6",
  "sync_wrapper",
  "tokio",
  "tokio-tungstenite 0.29.0",
@@ -440,6 +440,12 @@ name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
+
+[[package]]
+name = "base64"
+version = "0.23.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac07cdecf99051d9a5238b80f35af32cdeba5b336e55d957b318b50137e18da5"
 
 [[package]]
 name = "base64ct"
@@ -2670,7 +2676,7 @@ dependencies = [
  "js-sys",
  "log",
  "wasm-bindgen",
- "windows-core 0.57.0",
+ "windows-core 0.58.0",
 ]
 
 [[package]]
@@ -4150,7 +4156,11 @@ dependencies = [
  "tar",
  "tempfile",
  "thiserror 2.0.18",
- "tinyagents",
+ "tinyagents-graph",
+ "tinyagents-harness",
+ "tinyagents-language",
+ "tinyagents-registry",
+ "tinyagents-session",
  "tinybus",
  "tinychannels",
  "tinychannels-bus",
@@ -4164,6 +4174,7 @@ dependencies = [
  "tinyflows-sqlite",
  "tinyhosts",
  "tinyhumans-sdk",
+ "tinyinference 0.2.1",
  "tinyjuice-bus",
  "tinymcp",
  "tinymcp-bus",
@@ -5760,6 +5771,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha1"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aacc4cc499359472b4abe1bf11d0b12e688af9a805fa5e3016f9a386dc2d0214"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.3.0",
+ "digest 0.11.3",
+]
+
+[[package]]
 name = "sha2"
 version = "0.10.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6323,6 +6345,46 @@ dependencies = [
 [[package]]
 name = "tinyagents"
 version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f0c44e010c8c98ce8e61ff7116d87095234c1f415a2a9d35532bbfec974a1bc"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "chrono",
+ "futures",
+ "regex",
+ "reqwest",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror 2.0.18",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "tinyagents-graph"
+version = "2.1.2"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "futures",
+ "reqwest",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "tinyagents-harness",
+ "tinyagents-language",
+ "tinyagents-tracing",
+ "tinyinference 0.2.1",
+ "tokio",
+]
+
+[[package]]
+name = "tinyagents-harness"
+version = "2.1.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -6337,14 +6399,52 @@ dependencies = [
  "serde_json",
  "sha2 0.11.0",
  "thiserror 2.0.18",
+ "tinyagents-tracing",
+ "tinyinference 0.2.1",
  "tinytools",
  "tokio",
- "tracing",
 ]
 
 [[package]]
+name = "tinyagents-language"
+version = "2.1.2"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tinyagents-harness",
+]
+
+[[package]]
+name = "tinyagents-registry"
+version = "2.1.2"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tinyagents-graph",
+ "tinyagents-harness",
+ "tinyagents-language",
+ "tinyinference 0.2.1",
+]
+
+[[package]]
+name = "tinyagents-session"
+version = "2.1.2"
+dependencies = [
+ "chrono",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "tinyagents-harness",
+ "tinyagents-tracing",
+]
+
+[[package]]
+name = "tinyagents-tracing"
+version = "2.1.2"
+
+[[package]]
 name = "tinybus"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async-trait",
  "flate2",
@@ -6363,7 +6463,7 @@ dependencies = [
 
 [[package]]
 name = "tinybus-macros"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6372,7 +6472,7 @@ dependencies = [
 
 [[package]]
 name = "tinychannels"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-imap",
@@ -6398,7 +6498,7 @@ dependencies = [
  "serde",
  "serde-big-array",
  "serde_json",
- "sha1",
+ "sha1 0.10.6",
  "sha2 0.10.9",
  "thiserror 2.0.18",
  "tinychannels-bus",
@@ -6418,7 +6518,7 @@ dependencies = [
 
 [[package]]
 name = "tinychannels-bus"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6440,7 +6540,7 @@ dependencies = [
 
 [[package]]
 name = "tinyconnectors-bus"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -6448,13 +6548,13 @@ dependencies = [
 
 [[package]]
 name = "tinycortex"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-trait",
  "block2 0.6.2",
  "chrono",
- "dirs 5.0.1",
+ "dirs 6.0.0",
  "futures",
  "log",
  "objc2 0.6.4",
@@ -6470,8 +6570,8 @@ dependencies = [
  "serde_json",
  "sha2 0.10.9",
  "thiserror 2.0.18",
- "tinyagents",
  "tinycortex-api",
+ "tinyinference 0.2.1 (git+https://github.com/tinyhumansai/tinyinference?rev=cc8aca484bb995fbab3b7358f0d72ab5056b587c)",
  "tokio",
  "toml 1.1.2+spec-1.1.0",
  "tracing",
@@ -6488,7 +6588,7 @@ dependencies = [
 
 [[package]]
 name = "tinydocs-bus"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "serde",
  "thiserror 2.0.18",
@@ -6496,7 +6596,7 @@ dependencies = [
 
 [[package]]
 name = "tinyflows"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "async-trait",
  "futures-timer",
@@ -6550,16 +6650,16 @@ dependencies = [
 
 [[package]]
 name = "tinyhosts"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "async-trait",
- "base64 0.22.1",
+ "base64 0.23.1",
  "hex",
  "percent-encoding",
  "reqwest",
  "serde",
  "serde_json",
- "sha1",
+ "sha1 0.11.0",
  "thiserror 2.0.18",
 ]
 
@@ -6579,26 +6679,59 @@ dependencies = [
 ]
 
 [[package]]
+name = "tinyinference"
+version = "0.2.1"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "futures",
+ "httpdate",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "tinyinference"
+version = "0.2.1"
+source = "git+https://github.com/tinyhumansai/tinyinference?rev=cc8aca484bb995fbab3b7358f0d72ab5056b587c#cc8aca484bb995fbab3b7358f0d72ab5056b587c"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "futures",
+ "httpdate",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
 name = "tinyjuice-bus"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "tinymcp"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "anyhow",
- "base64 0.22.1",
- "dirs 5.0.1",
+ "base64 0.23.1",
+ "dirs 6.0.0",
  "futures-util",
  "parking_lot",
  "reqwest",
  "rusqlite",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2 0.11.0",
  "thiserror 2.0.18",
  "tinymcp-bus",
  "tokio",
@@ -6608,7 +6741,7 @@ dependencies = [
 
 [[package]]
 name = "tinymcp-bus"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "schemars",
  "serde",
@@ -6617,7 +6750,7 @@ dependencies = [
 
 [[package]]
 name = "tinymemory"
-version = "1.13.3"
+version = "1.13.4"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6737,7 +6870,7 @@ dependencies = [
 
 [[package]]
 name = "tinyruntime-bus"
-version = "0.2.2"
+version = "0.2.4"
 dependencies = [
  "serde",
  "serde_json",
@@ -6796,7 +6929,7 @@ dependencies = [
 
 [[package]]
 name = "tinywallet"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "coins-bip32 0.13.1",
  "coins-bip39 0.13.1",
@@ -6812,7 +6945,7 @@ dependencies = [
 
 [[package]]
 name = "tinywallet-bus"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "async-trait",
  "bech32 0.12.0",
@@ -7179,7 +7312,7 @@ dependencies = [
  "httparse",
  "log",
  "rand 0.8.6",
- "sha1",
+ "sha1 0.10.6",
  "thiserror 1.0.69",
  "utf-8",
 ]
@@ -7199,7 +7332,7 @@ dependencies = [
  "rand 0.9.4",
  "rustls",
  "rustls-pki-types",
- "sha1",
+ "sha1 0.10.6",
  "thiserror 2.0.18",
 ]
 
@@ -7485,7 +7618,7 @@ dependencies = [
  "serde",
  "serde-big-array",
  "serde_json",
- "sha1",
+ "sha1 0.10.6",
  "sha2 0.10.9",
  "thiserror 2.0.18",
  "typed-builder",
@@ -7567,7 +7700,7 @@ dependencies = [
  "prost",
  "rand 0.10.1",
  "serde",
- "sha1",
+ "sha1 0.10.6",
  "sha2 0.10.9",
  "subtle",
  "thiserror 2.0.18",
@@ -7983,7 +8116,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
