@@ -128,9 +128,8 @@ pub async fn tree_summarizer_rebuild(
     store::validate_namespace(namespace)?;
 
     let (provider, _model) = create_provider(config)?;
-    let provider = crate::openhuman::memory::model_bridge::LegacyChatModelBridge::new(provider);
 
-    let status = engine::rebuild_tree(config, &provider, namespace.trim())
+    let status = engine::rebuild_tree(config, provider.as_ref(), namespace.trim())
         .await
         .map_err(|e| format!("rebuild failed: {e:#}"))?;
 
