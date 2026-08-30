@@ -1056,17 +1056,21 @@ pub(crate) async fn graph_wiring_warnings(config: &Config, graph: &WorkflowGraph
 /// a nonsense path (e.g. suggesting `.item.json.data.successful`).
 async fn graph_output_field_warnings(config: &Config, graph: &WorkflowGraph) -> Vec<String> {
     use crate::openhuman::flows::tinyflows::caps::fetch_live_toolkit_catalog;
+    // Reading a graph's `=`-bindings is the engine's grammar, not this host's:
+    // both helpers were a private copy here until the gates moved upstream.
+    use tinyflows::bindings::{collect_expressions, parse_node_binding};
     use tinymemory_api::composio::toolkit_from_slug;
 
     let mut warnings = Vec::new();
     for node in &graph.nodes {
         for (location, expr) in collect_expressions(&node.config) {
-            let Some((ref_id, has_json, field_path)) = parse_node_binding(&expr) else {
+            let Some(binding) = parse_node_binding(&expr) else {
                 continue;
             };
-            if !has_json {
+            if !binding.through_envelope {
                 continue;
             }
+            let (ref_id, field_path) = (binding.node_id, binding.field_path);
             let Some(ref_node) = graph.node(&ref_id) else {
                 continue;
             };
