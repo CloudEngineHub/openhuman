@@ -312,7 +312,20 @@ tinymcp = { path = "vendor/tinymcp/crates/tinymcp", default-features = false, fe
     "rustls-tls",
 ] }
 tinymcp-bus = { path = "vendor/tinymcp/crates/tinymcp-bus", features = ["schemars"] }
-tinychannels = { version = "0.1", features = ["relay-websocket"] }
+# The transport-free channel vocabulary: inbound envelopes, outbound intents,
+# the config schema, controller metadata, relay frames and the session-key
+# rules. UNCONDITIONAL, and deliberately so — `DomainEvent` embeds
+# `ChannelInboundEnvelope`, `config/schema/channels.rs` re-exports the config
+# types and `security/pairing.rs` re-exports the pairing helpers, so this
+# vocabulary is always-on kernel surface. It costs serde/schemars and nothing
+# this build did not already have.
+tinychannels-bus = { version = "0.1", path = "vendor/tinychannels/crates/tinychannels-bus" }
+# The provider stack that IMPLEMENTS that vocabulary — Telegram, Discord,
+# Slack, IMAP, WhatsApp, the relay transport loop. Optional: it owns the
+# `reqwest` / `rusqlite` / `rustls` / `tokio-tungstenite` cohort, which a
+# workflow-only build has no use for. Enabled by `channels`, and by `voice`
+# for `EmailChannel` alone.
+tinychannels = { version = "0.1", features = ["relay-websocket"], optional = true }
 # tinybus — the message bus. Owns what `src/core/event_bus/` used to: the typed
 # pub/sub surface (`EventBus`, `EventHandler`, `SubscriptionHandle`), the
 # in-process zero-serialization request registry (`NativeRegistry`), and peer
@@ -894,7 +907,10 @@ voice = [
     "dep:enigo",
     "dep:rdev",
     # `audio_toolkit::ops` delivers generated podcasts through tinychannels'
-    # EmailChannel, so the provider has to exist even in a channels-less build.
+    # EmailChannel, so the provider — and therefore the implementation crate —
+    # has to exist even in a channels-less build. This is the ONE reason a
+    # channels-less build still links the provider stack.
+    "dep:tinychannels",
     "tinychannels/email",
 ]
 # Web3 family: openhuman::web3 + web3::wallet + web3::x402 — the
@@ -1149,7 +1165,7 @@ medulla = []
 # dropped (DomainEvent embeds its inbound envelope, config re-exports its
 # provider types, security::pairing re-exports its helpers), which is why
 # gating the providers rather than the crate is the right seam.
-channels = ["tinychannels/email", "tinychannels/lark"]
+channels = ["dep:tinychannels", "tinychannels/email", "tinychannels/lark"]
 sandbox-landlock = ["dep:landlock"]
 sandbox-bubblewrap = []
 peripheral-rpi = ["dep:rppal"]
