@@ -318,7 +318,7 @@ pub(crate) async fn run_sync_pass(
         return Ok(SyncPassOutcome {
             records_read: 0,
             written: 0,
-            already_ingested: 0,
+            already_ingested: false,
             more_pending: !response.batch.complete,
         });
     }
