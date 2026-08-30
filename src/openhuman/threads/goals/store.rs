@@ -19,7 +19,7 @@ use std::path::Path;
 
 use super::migration::{delete_legacy_goal_file, goals_store};
 use super::ThreadGoal;
-use ::tinyagents::graph::goals::store as crate_store;
+use tinyagents_graph::goals::store as crate_store;
 
 /// Set (create or replace) the thread's goal. A changed objective mints a fresh
 /// goal and resets counters; an unchanged objective preserves counters and
