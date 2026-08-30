@@ -1,6 +1,6 @@
 use super::*;
 use crate::openhuman::inference::embeddings::NoopEmbedding;
-use crate::openhuman::integrations::composio::providers::sync_state::KV_NAMESPACE;
+use tinycortex::memory::sync::state::STATE_NAMESPACE as KV_NAMESPACE;
 use chrono::{TimeZone, Utc};
 use rusqlite::params;
 use std::sync::Arc;
