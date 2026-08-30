@@ -1362,10 +1362,23 @@ motosan-ai-oauth = { path = "vendor/motosan-ai-oauth" }
 # tinyagents is a workspace of several crates now (see the dependency block
 # above), each depended on directly by path, so there is nothing to patch here
 # for tinyagents itself — a path dependency already points at this checkout.
-# `tinyinference` is a normal crates-io-shaped dependency though (declared by
-# path above but not by a plain `path = ...` requirement inside the tinyagents
-# workspace's own Cargo.toml — it is a git submodule under vendor/tinyagents),
-# so nothing to patch there either since we depend on it directly by path too.
+# `tinyinference` is a normal crates-io-shaped dependency, declared by path
+# above (vendor/tinyagents/vendor/tinyinference/crates/tinyinference) but not
+# by a plain `path = ...` requirement inside the tinyagents workspace's own
+# Cargo.toml — it is a git submodule under vendor/tinyagents. `tinymemory-core`
+# ALSO declares `tinyinference = "0.2"` (crates-io-shaped) in its own
+# Cargo.toml, and because tinymemory is consumed here as a path dependency, its
+# own `[patch]` table (which points at tinymemory's own vendored copy) does not
+# apply — only this crate's `[patch.crates-io]` governs the build. Without an
+# entry here, tinymemory-core would resolve `tinyinference` from crates.io
+# while this crate uses the vendored path: two separately compiled, nominally
+# distinct copies of the same types (`tinyinference::model::ChatModel` from one
+# would not satisfy a trait bound written against the other), exactly the
+# "one checkout, one type identity" hazard the `tinytools` note above
+# describes. Patched onto the SAME checkout openhuman already depends on by
+# path (tinyagents' crates are built against it too), so `cargo tree -i
+# tinyinference` resolves to exactly one package.
+tinyinference = { path = "vendor/tinyagents/vendor/tinyinference/crates/tinyinference" }
 # TinyFlows, TinyCortex, and TinyChannels are vendored beside
 # TinyAgents so integration work can test crate changes against OpenHuman before
 # publishing.
