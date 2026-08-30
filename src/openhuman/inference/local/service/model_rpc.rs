@@ -82,14 +82,18 @@ fn local_model(config: &Config, model_id: &str) -> Result<OpenAiModel, String> {
 
 pub(super) async fn invoke(
     config: &Config,
-    client: reqwest::Client,
     messages: Vec<Message>,
     max_tokens: Option<u32>,
     temperature: f32,
     allow_empty: bool,
 ) -> Result<ModelRpcOutcome, String> {
     let model_id = crate::openhuman::inference::model_ids::effective_chat_model_id(config);
-    let model = local_model(config, &model_id)?.with_client(client);
+    // `OpenAiModel` no longer exposes `with_client`/injects an external
+    // `reqwest::Client` — each model now builds and owns its own client
+    // internally (`OpenAiModel::new`). This host no longer shares its app-wide
+    // HTTP client (connection pooling, proxy config) with local-inference
+    // calls as a result; there is no replacement hook upstream.
+    let model = local_model(config, &model_id)?;
     let provider = provider_from_config(config);
     tracing::debug!(
         provider = provider.as_str(),
