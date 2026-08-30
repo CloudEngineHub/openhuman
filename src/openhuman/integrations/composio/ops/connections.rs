@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 
 use crate::openhuman::config::Config;
+use crate::openhuman::modules::connectors::{self, methods};
 use crate::rpc::RpcOutcome;
 
 use super::super::client::{
@@ -39,39 +40,19 @@ pub async fn composio_list_connections(
             vec!["composio: direct mode — no api key configured yet, 0 connection(s)".to_string()],
         ));
     }
-    let kind =
-        create_composio_client(config).map_err(|e| format!("[composio] list_connections: {e}"))?;
-    let client = match kind {
-        ComposioClientKind::Backend(client) => {
-            tracing::debug!("[composio] list_connections: backend variant");
-            client
-        }
-        ComposioClientKind::Direct(direct) => {
-            tracing::info!(
-                "[composio-direct] list_connections: fetching v3 \
-                 /connected_accounts for the user's personal Composio tenant"
-            );
-            let resp = direct_list_connections(&direct).await.map_err(|e| {
-                let rendered = format!("[composio-direct] list_connections failed: {e:#}");
-                report_composio_op_error("list_connections", &rendered);
-                rendered
-            })?;
-            let active = resp.connections.iter().filter(|c| c.is_active()).count();
-            let total = resp.connections.len();
-            sync_cache_with_connections(&resp.connections);
-            let resp = enrich_connections_with_identity(resp);
-            return Ok(RpcOutcome::new(
-                resp,
-                vec![format!(
-                    "composio: direct mode — {total} connection(s) listed ({active} active)"
-                )],
-            ));
-        }
-    };
-    let resp = client.list_connections().await.map_err(|e| {
-        report_composio_op_error("list_connections", &e);
-        format!("[composio] list_connections failed: {e:#}")
+    // One call for both routes: the module owns the difference between the
+    // proxy's envelope and Composio's v3 shape, so the host no longer branches
+    // on which is live.
+    let resp = connectors::call_bare::<ComposioConnectionsResponse>(
+        config,
+        methods::LIST_CONNECTIONS,
+    )
+    .await
+    .map_err(|error| {
+        report_composio_op_error("list_connections", &anyhow::anyhow!("{error}"));
+        format!("[composio] list_connections failed: {error}")
     })?;
+
     let active = resp.connections.iter().filter(|c| c.is_active()).count();
     let total = resp.connections.len();
     sync_cache_with_connections(&resp.connections);
