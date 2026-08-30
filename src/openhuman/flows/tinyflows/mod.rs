@@ -16,6 +16,9 @@
 //! [`langfuse_export::export_flow_run_trace`] after it settles.
 
 pub mod caps;
+#[cfg(test)]
+#[path = "checkpoint_compat_tests.rs"]
+mod checkpoint_compat_tests;
 pub mod langfuse_export;
 pub mod memory_adapter;
 /// End-to-end coverage for the `memory` node through the REAL engine + real

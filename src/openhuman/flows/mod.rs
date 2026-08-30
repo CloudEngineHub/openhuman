@@ -30,6 +30,9 @@
 
 pub mod agents;
 pub mod builder_tools;
+#[cfg(test)]
+#[path = "import_tests.rs"]
+mod import_tests;
 pub mod bus;
 pub mod discovery_tools;
 mod draft_store;
