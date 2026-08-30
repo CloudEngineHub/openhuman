@@ -172,7 +172,6 @@ pub async fn preview_filter(
             provider.as_str()
         ));
     }
-    let _ = config;
     let _ = connection_id;
     let max = max.unwrap_or(config.task_sources.max_tasks_per_fetch);
     let _fetch_filter = filter::to_fetch_filter(&filter_spec, max);
