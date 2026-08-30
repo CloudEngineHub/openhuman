@@ -428,8 +428,8 @@ fn maybe_publish_local_session_expiry() {
 /// model call with `401`/`403` Unauthorized — mirroring the check in
 /// [`CrateBackedProvider::invoke`](super::CrateBackedProvider) which the
 /// crate-native path bypasses.
-fn maybe_publish_session_expired(err: &TinyAgentsError, operation: &str) {
-    if let TinyAgentsError::Provider(pe) = err {
+fn maybe_publish_session_expired(err: &TiError, operation: &str) {
+    if let TiError::Provider(pe) = err {
         if pe.provider.as_str() == "OpenHuman" && matches!(pe.status, Some(401 | 403)) {
             let reason =
                 crate::openhuman::inference::provider::ops::sanitize_api_error(&pe.message);
