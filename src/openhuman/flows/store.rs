@@ -18,7 +18,7 @@ use tinyflows_catalog::{
     Flow, FlowRevision, FlowRun, FlowRunStep, FlowSuggestion, SuggestionStatus,
 };
 
-pub use tinyflows_sqlite::flows::FlowUpdateError;
+pub use tinyflows_sqlite::flows::{FlowUpdateError, MAX_FLOW_RUNS_PER_FLOW};
 
 /// Where this host keeps the flow catalog: `<workspace_dir>/flows`.
 ///
@@ -155,12 +155,20 @@ pub fn list_running_run_ids(config: &Config, started_before: &str) -> Result<Vec
 }
 
 /// Binds [`tinyflows_sqlite::flows::force_run_status_for_test`] to this host's catalog directory.
+///
+/// Test-only: the crate exposes it behind its `test-fixtures` feature, which
+/// this crate turns on as a dev-dependency and never in a shipped build.
+#[cfg(test)]
 #[inline]
 pub fn force_run_status_for_test(config: &Config, id: &str, status: &str, error: Option<&str>) -> Result<()> {
     tinyflows_sqlite::flows::force_run_status_for_test(&dir(config), id, status, error)
 }
 
 /// Binds [`tinyflows_sqlite::flows::force_corrupt_graph_json_for_test`] to this host's catalog directory.
+///
+/// Test-only: the crate exposes it behind its `test-fixtures` feature, which
+/// this crate turns on as a dev-dependency and never in a shipped build.
+#[cfg(test)]
 #[inline]
 pub fn force_corrupt_graph_json_for_test(config: &Config, flow_id: &str, raw_graph_json: &str) -> Result<()> {
     tinyflows_sqlite::flows::force_corrupt_graph_json_for_test(&dir(config), flow_id, raw_graph_json)
