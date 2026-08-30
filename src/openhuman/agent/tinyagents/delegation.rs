@@ -112,7 +112,8 @@ where
     F: Fn(DelegationStage, DelegationState) -> Fut + Clone + Send + Sync + 'static,
     Fut: Future<Output = Result<DelegationStageOutput, String>> + Send + 'static,
 {
-    tinyagents::graph::delegation::run_delegation_durable(with_tracing_sink(config), run_stage).await
+    tinyagents::graph::delegation::run_delegation_durable(with_tracing_sink(config), run_stage)
+        .await
 }
 
 /// Resume a delegation graph parked on a durable human-approval interrupt,
@@ -133,12 +134,8 @@ where
     F: Fn(DelegationStage, DelegationState) -> Fut + Clone + Send + Sync + 'static,
     Fut: Future<Output = Result<DelegationStageOutput, String>> + Send + 'static,
 {
-    tinyagents::graph::delegation::resume_delegation(
-        with_tracing_sink(config),
-        decision,
-        run_stage,
-    )
-    .await
+    tinyagents::graph::delegation::resume_delegation(with_tracing_sink(config), decision, run_stage)
+        .await
 }
 
 /// Run the delegation graph, resuming from the last checkpoint boundary when the
