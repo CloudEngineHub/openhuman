@@ -308,7 +308,12 @@ pub(crate) async fn run_sync_pass(
 
     let count = response.batch.records.len();
     if count == 0 {
-        return Ok(0);
+        return Ok(SyncPassOutcome {
+            records_read: 0,
+            written: 0,
+            already_ingested: 0,
+            more_pending: !response.batch.complete,
+        });
     }
 
     let binding = crate::openhuman::memory::binding::for_config(config)?;
