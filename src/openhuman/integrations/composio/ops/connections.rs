@@ -6,9 +6,7 @@ use crate::openhuman::config::Config;
 use crate::openhuman::modules::connectors::{self, methods};
 use crate::rpc::RpcOutcome;
 
-use super::super::client::{
-    create_composio_client, direct_list_connections, ComposioClient, ComposioClientKind,
-};
+use super::super::client::ComposioClient;
 use super::super::connected_integrations::{
     fetch_connected_integrations_status, invalidate_connected_integrations_cache,
     sync_cache_with_connections, FetchConnectedIntegrationsStatus,
@@ -44,15 +42,13 @@ pub async fn composio_list_connections(
     // One call for both routes: the module owns the difference between the
     // proxy's envelope and Composio's v3 shape, so the host no longer branches
     // on which is live.
-    let resp = connectors::call_bare::<ComposioConnectionsResponse>(
-        config,
-        methods::LIST_CONNECTIONS,
-    )
-    .await
-    .map_err(|error| {
-        report_composio_op_error("list_connections", &anyhow::anyhow!("{error}"));
-        format!("[composio] list_connections failed: {error}")
-    })?;
+    let resp =
+        connectors::call_bare::<ComposioConnectionsResponse>(config, methods::LIST_CONNECTIONS)
+            .await
+            .map_err(|error| {
+                report_composio_op_error("list_connections", &anyhow::anyhow!("{error}"));
+                format!("[composio] list_connections failed: {error}")
+            })?;
 
     let active = resp.connections.iter().filter(|c| c.is_active()).count();
     let total = resp.connections.len();
