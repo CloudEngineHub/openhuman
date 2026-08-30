@@ -11,7 +11,7 @@ impl ChatModel<()> for SuccessfulModel {
         &self,
         _state: &(),
         _request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         Ok(ModelResponse::assistant("ok"))
     }
 }

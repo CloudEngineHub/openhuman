@@ -107,8 +107,8 @@ pub enum ControlError {
 /// module's callers speak `anyhow`. Without this the `#[from] anyhow::Error`
 /// variant does not apply, because `TinyAgentsError` is a distinct type — so
 /// every ledger call in this file would need its own `map_err`.
-impl From<tinyagents::TinyAgentsError> for ControlError {
-    fn from(err: tinyagents::TinyAgentsError) -> Self {
+impl From<tinyagents_harness::TinyAgentsError> for ControlError {
+    fn from(err: tinyagents_harness::TinyAgentsError) -> Self {
         Self::Storage(err.into())
     }
 }

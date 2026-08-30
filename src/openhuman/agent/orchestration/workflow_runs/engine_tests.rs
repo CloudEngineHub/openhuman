@@ -136,7 +136,7 @@ impl ChatModel<()> for PeakModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         self.calls.fetch_add(1, Ordering::SeqCst);
         let current = self.active.fetch_add(1, Ordering::SeqCst) + 1;
         self.record_peak(current);
@@ -152,7 +152,7 @@ impl ChatModel<()> for PeakModel {
 
         if let Some(needle) = self.fail_on.lock().as_ref() {
             if flattened.contains(needle.as_str()) {
-                return Err(tinyagents::TinyAgentsError::Model(
+                return Err(tinyagents_harness::TinyAgentsError::Model(
                     "mock model forced failure".to_string(),
                 ));
             }

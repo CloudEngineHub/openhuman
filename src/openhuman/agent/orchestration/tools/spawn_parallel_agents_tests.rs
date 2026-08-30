@@ -322,7 +322,7 @@ impl ParallelHarnessProvider {
         }
     }
 
-    async fn respond_for_subagent(&self, flattened: &str) -> tinyagents::Result<ModelResponse> {
+    async fn respond_for_subagent(&self, flattened: &str) -> tinyagents_harness::Result<ModelResponse> {
         let current = self
             .state
             .active_subagent_calls
@@ -345,7 +345,7 @@ impl ParallelHarnessProvider {
             sleep(Duration::from_millis(5)).await;
         }
 
-        let response = (|| -> tinyagents::Result<ModelResponse> {
+        let response = (|| -> tinyagents_harness::Result<ModelResponse> {
             if flattened.contains(RESEARCH_PROMPT_CANARY) {
                 if flattened.contains("research-step-3-ok") {
                     Ok(text_response(RESEARCH_DONE_CANARY))
@@ -385,7 +385,7 @@ impl ParallelHarnessProvider {
                     ))
                 }
             } else {
-                Err(tinyagents::TinyAgentsError::Model(format!(
+                Err(tinyagents_harness::TinyAgentsError::Model(format!(
                     "unexpected subagent payload: {flattened}"
                 )))
             }
@@ -415,7 +415,7 @@ impl ChatModel<()> for ParallelHarnessProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         self.state.total_calls.fetch_add(1, Ordering::SeqCst);
         let flattened = request
             .messages

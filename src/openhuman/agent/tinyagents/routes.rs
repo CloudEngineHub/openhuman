@@ -133,7 +133,7 @@ impl ModelMiddleware<()> for RequiredCapabilitiesMiddleware {
         state: &(),
         mut request: ModelRequest,
         next: ModelHandler<'_, (), ()>,
-    ) -> tinyagents::Result<MiddlewareModelOutcome> {
+    ) -> tinyagents_harness::Result<MiddlewareModelOutcome> {
         if request.required_capabilities.is_none() {
             request = request.with_required_capabilities(self.required.clone());
         }
@@ -204,7 +204,7 @@ impl ModelMiddleware<()> for FallbackObserverMiddleware {
         state: &(),
         request: ModelRequest,
         next: ModelHandler<'_, (), ()>,
-    ) -> tinyagents::Result<MiddlewareModelOutcome> {
+    ) -> tinyagents_harness::Result<MiddlewareModelOutcome> {
         let outcome = next.run(ctx, state, request).await?;
         let response = outcome.into_response();
         if let Some(resolved) = response.resolved_model.as_ref() {
@@ -261,7 +261,7 @@ impl ModelMiddleware<()> for UsageCarryMiddleware {
         state: &(),
         request: ModelRequest,
         next: ModelHandler<'_, (), ()>,
-    ) -> tinyagents::Result<MiddlewareModelOutcome> {
+    ) -> tinyagents_harness::Result<MiddlewareModelOutcome> {
         let outcome = next.run(ctx, state, request).await?;
         let response = outcome.into_response();
         if let Some(usage) = super::model::usage_info_from_response(&response) {

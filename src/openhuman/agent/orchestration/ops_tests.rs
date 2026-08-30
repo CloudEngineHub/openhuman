@@ -135,7 +135,7 @@ impl ChatModel<()> for CodingQuestionModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         let flattened = request
             .messages
             .iter()
@@ -225,7 +225,7 @@ impl ChatModel<()> for ParallelCodingModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         self.state.calls.fetch_add(1, Ordering::SeqCst);
         let current = self.state.active.fetch_add(1, Ordering::SeqCst) + 1;
         self.record_peak(current);
@@ -439,7 +439,7 @@ impl ChatModel<()> for BlockingModel {
         &self,
         _state: &(),
         _request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         tokio::time::sleep(Duration::from_secs(60)).await;
         Ok(text_response("NEVER_REACHED"))
     }

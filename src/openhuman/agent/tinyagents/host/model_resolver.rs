@@ -72,7 +72,7 @@ use tinyagents_harness::host::{ModelResolveRequest, ModelResolver};
 use tinyagents_harness::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream,
 };
-use tinyagents::Result as TaResult;
+use tinyagents_harness::Result as TaResult;
 
 use crate::openhuman::config::Config;
 use crate::openhuman::inference::provider::{create_chat_model_with_model_id, role_for_model_tier};

@@ -115,7 +115,7 @@ impl WorkspaceIsolation for OpenHumanWorktreeIsolation {
         &self,
         run_id: &str,
         agent: Option<&str>,
-    ) -> tinyagents::Result<WorkspaceDescriptor> {
+    ) -> tinyagents_harness::Result<WorkspaceDescriptor> {
         tracing::debug!(
             run_id,
             agent = agent.unwrap_or(""),
@@ -147,7 +147,7 @@ impl WorkspaceIsolation for OpenHumanWorktreeIsolation {
         Ok(descriptor)
     }
 
-    async fn cleanup(&self, descriptor: &WorkspaceDescriptor) -> tinyagents::Result<()> {
+    async fn cleanup(&self, descriptor: &WorkspaceDescriptor) -> tinyagents_harness::Result<()> {
         tracing::debug!(
             root = %descriptor.root.display(),
             policy_id = %descriptor.policy_id,

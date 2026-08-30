@@ -29,7 +29,7 @@ use crate::openhuman::config::Config;
 use tinyagents_graph::checkpoint::Checkpointer;
 use tinyagents_graph::SqliteCheckpointer;
 use tinyagents_harness::workspace::WorkspaceDescriptor;
-use tinyagents::CancellationToken;
+use tinyagents_harness::CancellationToken;
 
 const LOG_TARGET: &str = "agent_orchestration::delegation";
 

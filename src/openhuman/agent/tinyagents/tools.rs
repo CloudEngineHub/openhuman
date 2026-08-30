@@ -108,7 +108,7 @@ impl Tool<()> for ToolAdapter {
         tool_policy_from_openhuman_tool(self.inner.as_ref())
     }
 
-    async fn call(&self, _state: &(), call: TaToolCall) -> tinyagents::Result<TaToolResult> {
+    async fn call(&self, _state: &(), call: TaToolCall) -> tinyagents_harness::Result<TaToolResult> {
         Ok(execute_openhuman_tool(self.inner.as_ref(), call, None).await)
     }
 
@@ -117,7 +117,7 @@ impl Tool<()> for ToolAdapter {
         _state: &(),
         call: TaToolCall,
         context: ToolExecutionContext,
-    ) -> tinyagents::Result<TaToolResult> {
+    ) -> tinyagents_harness::Result<TaToolResult> {
         Ok(execute_openhuman_tool(self.inner.as_ref(), call, Some(&context)).await)
     }
 }
@@ -376,7 +376,7 @@ impl Tool<()> for SharedToolAdapter {
         self.policy.clone()
     }
 
-    async fn call(&self, _state: &(), call: TaToolCall) -> tinyagents::Result<TaToolResult> {
+    async fn call(&self, _state: &(), call: TaToolCall) -> tinyagents_harness::Result<TaToolResult> {
         self.call_openhuman_tool(call, None).await
     }
 
@@ -385,7 +385,7 @@ impl Tool<()> for SharedToolAdapter {
         _state: &(),
         call: TaToolCall,
         context: ToolExecutionContext,
-    ) -> tinyagents::Result<TaToolResult> {
+    ) -> tinyagents_harness::Result<TaToolResult> {
         self.call_openhuman_tool(call, Some(&context)).await
     }
 }
@@ -395,7 +395,7 @@ impl SharedToolAdapter {
         &self,
         call: TaToolCall,
         context: Option<&dyn ToolRunContext>,
-    ) -> tinyagents::Result<TaToolResult> {
+    ) -> tinyagents_harness::Result<TaToolResult> {
         let found = self
             .sets
             .iter()

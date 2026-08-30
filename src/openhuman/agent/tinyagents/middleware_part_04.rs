@@ -100,7 +100,7 @@ impl Middleware<()> for CostBudgetMiddleware {
                     %current_usd, %limit_usd, ?period,
                     "[tinyagents::mw] cost budget exceeded — failing before model call"
                 );
-                Err(tinyagents::TinyAgentsError::LimitExceeded(format!(
+                Err(tinyagents_harness::TinyAgentsError::LimitExceeded(format!(
                     "cost budget exceeded: {period:?} spend ${current_usd:.4} \u{2265} limit ${limit_usd:.4}"
                 )))
             }

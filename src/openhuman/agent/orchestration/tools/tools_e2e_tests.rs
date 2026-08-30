@@ -491,7 +491,7 @@ impl ChatModel<()> for ScriptedModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         let flattened = flatten_messages(&request.messages);
         self.seen.lock().push(flattened.clone());
         for (needle, answer) in &self.responses {
@@ -499,7 +499,7 @@ impl ChatModel<()> for ScriptedModel {
                 return Ok(ModelResponse::assistant(*answer));
             }
         }
-        Err(tinyagents::TinyAgentsError::Model(format!(
+        Err(tinyagents_harness::TinyAgentsError::Model(format!(
             "unexpected model request: {flattened}"
         )))
     }

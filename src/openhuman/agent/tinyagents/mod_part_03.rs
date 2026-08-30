@@ -1,10 +1,10 @@
 
 fn tinyagents_depth_error(
-    err: &tinyagents::TinyAgentsError,
+    err: &tinyagents_harness::TinyAgentsError,
 ) -> Option<crate::openhuman::agent::harness::subagent_runner::SubagentRunError> {
     match err {
-        tinyagents::TinyAgentsError::SubAgentDepth(max_depth)
-        | tinyagents::TinyAgentsError::RecursionLimit(max_depth) => {
+        tinyagents_harness::TinyAgentsError::SubAgentDepth(max_depth)
+        | tinyagents_harness::TinyAgentsError::RecursionLimit(max_depth) => {
             Some(
                 crate::openhuman::agent::harness::subagent_runner::SubagentRunError::SpawnDepthExceeded {
                     attempted_depth: max_depth.saturating_add(1),

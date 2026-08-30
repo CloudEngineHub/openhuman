@@ -44,7 +44,7 @@ enum ResearcherGraphUpdate {
 }
 
 type ResearcherGraphNodeFuture =
-    Pin<Box<dyn Future<Output = tinyagents::Result<NodeResult<ResearcherGraphUpdate>>> + Send>>;
+    Pin<Box<dyn Future<Output = tinyagents_harness::Result<NodeResult<ResearcherGraphUpdate>>> + Send>>;
 
 fn phase_node(
     phase: &'static str,
@@ -82,7 +82,7 @@ fn build_researcher_graph(
                     .lock()
                     .await
                     .take()
-                    .ok_or_else(|| tinyagents::TinyAgentsError::Graph(
+                    .ok_or_else(|| tinyagents_harness::TinyAgentsError::Graph(
                         "researcher graph missing turn request".to_string(),
                     ))?;
                 tracing::debug!(

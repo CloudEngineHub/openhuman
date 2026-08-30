@@ -88,7 +88,7 @@ where
         _ctx: &mut RunContext<Ctx>,
         _state: &State,
         response: &mut ModelResponse,
-    ) -> tinyagents::Result<()> {
+    ) -> tinyagents_harness::Result<()> {
         // Already paused: nothing more to do (Pause is latched once).
         if self.stopped.load(Ordering::SeqCst) {
             return Ok(());

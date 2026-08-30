@@ -219,7 +219,7 @@ impl ChatModel<()> for ClaudeCodeProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyagents_harness::Result<ModelResponse> {
         let messages = crate::openhuman::agent::tinyagents::model::native_chat_messages(&request);
         let response = self
             .run_chat(
@@ -236,7 +236,7 @@ impl ChatModel<()> for ClaudeCodeProvider {
         Ok(crate::openhuman::agent::tinyagents::model::native_model_response(&response))
     }
 
-    async fn stream(&self, _state: &(), request: ModelRequest) -> tinyagents::Result<ModelStream> {
+    async fn stream(&self, _state: &(), request: ModelRequest) -> tinyagents_harness::Result<ModelStream> {
         let provider = self.clone();
         let label = self.model.clone();
         let (item_tx, item_rx) = tokio::sync::mpsc::unbounded_channel::<ModelStreamItem>();

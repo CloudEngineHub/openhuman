@@ -129,16 +129,16 @@ impl ToolResultArtifactIndexStore {
 
 #[async_trait]
 impl Store for ToolResultArtifactIndexStore {
-    async fn get(&self, namespace: &str, key: &str) -> tinyagents::Result<Option<Value>> {
+    async fn get(&self, namespace: &str, key: &str) -> tinyagents_harness::Result<Option<Value>> {
         let guard = self.data.lock().map_err(|_| {
-            tinyagents::TinyAgentsError::Memory("tool artifact index poisoned".into())
+            tinyagents_harness::TinyAgentsError::Memory("tool artifact index poisoned".into())
         })?;
         Ok(guard.get(namespace).and_then(|ns| ns.get(key).cloned()))
     }
 
-    async fn put(&self, namespace: &str, key: &str, value: Value) -> tinyagents::Result<()> {
+    async fn put(&self, namespace: &str, key: &str, value: Value) -> tinyagents_harness::Result<()> {
         let mut guard = self.data.lock().map_err(|_| {
-            tinyagents::TinyAgentsError::Memory("tool artifact index poisoned".into())
+            tinyagents_harness::TinyAgentsError::Memory("tool artifact index poisoned".into())
         })?;
         guard
             .entry(namespace.to_string())
@@ -147,9 +147,9 @@ impl Store for ToolResultArtifactIndexStore {
         Ok(())
     }
 
-    async fn delete(&self, namespace: &str, key: &str) -> tinyagents::Result<()> {
+    async fn delete(&self, namespace: &str, key: &str) -> tinyagents_harness::Result<()> {
         let mut guard = self.data.lock().map_err(|_| {
-            tinyagents::TinyAgentsError::Memory("tool artifact index poisoned".into())
+            tinyagents_harness::TinyAgentsError::Memory("tool artifact index poisoned".into())
         })?;
         if let Some(ns) = guard.get_mut(namespace) {
             ns.remove(key);
@@ -157,9 +157,9 @@ impl Store for ToolResultArtifactIndexStore {
         Ok(())
     }
 
-    async fn list(&self, namespace: &str) -> tinyagents::Result<Vec<String>> {
+    async fn list(&self, namespace: &str) -> tinyagents_harness::Result<Vec<String>> {
         let guard = self.data.lock().map_err(|_| {
-            tinyagents::TinyAgentsError::Memory("tool artifact index poisoned".into())
+            tinyagents_harness::TinyAgentsError::Memory("tool artifact index poisoned".into())
         })?;
         Ok(guard
             .get(namespace)
