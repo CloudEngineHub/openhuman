@@ -335,7 +335,7 @@ async fn builds_hour_day_month_year_chain() {
 
     // Exactly 2 LLM calls: one per hour leaf.
     assert_eq!(
-        inner_provider.call_count(),
+        provider.call_count(),
         2,
         "expected exactly 2 LLM calls (one per hour leaf)"
     );
@@ -538,7 +538,7 @@ async fn survives_llm_error_with_partial_progress() {
 
     // Exactly 2 LLM calls were made.
     assert_eq!(
-        inner_provider.call_count(),
+        provider.call_count(),
         2,
         "expected 2 LLM calls (1 success + 1 error)"
     );
