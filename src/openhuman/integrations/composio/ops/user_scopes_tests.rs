@@ -38,8 +38,7 @@ fn user_scopes_namespace_is_the_engine_literal_and_not_sync_state() {
         "must stay the literal tinymemory-core's user_scopes::KV_NAMESPACE holds"
     );
     assert_ne!(
-        KV_NAMESPACE,
-        engine_sync_state::KV_NAMESPACE,
+        KV_NAMESPACE, ENGINE_SYNC_STATE_NAMESPACE,
         "prefs must not share a namespace with Composio sync state"
     );
 }
