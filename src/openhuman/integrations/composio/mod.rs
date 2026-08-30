@@ -51,6 +51,7 @@ pub mod identity;
 pub mod module_client;
 pub mod oauth_handoff;
 pub mod ops;
+pub mod identity_store;
 pub mod periodic;
 pub mod profile_md;
 pub mod providers;
