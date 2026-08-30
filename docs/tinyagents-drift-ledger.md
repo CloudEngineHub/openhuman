@@ -228,6 +228,17 @@ it still serves every Bearer cloud slug, `openai_codex`, and the `create_chat_pr
 callers that have not moved to `create_chat_model` — and cannot be deleted until
 Phase 3 completes.
 
+## `agent/learning/` Ownership Audit
+
+No prior row covered this domain (~29 files, ~6.6k production lines excluding
+`*_tests.rs`), which left the question re-derived from scratch on every pass.
+
+| Surface | Status | Ownership / exit evidence |
+| --- | --- | --- |
+| Ambient personalization cache, stability detector, candidate producers, `PROFILE.md` rendering, LinkedIn enrichment, transcript ingestion (`src/openhuman/agent/learning/`) | **HOST-OWNED** | The runtime-learns-nothing boundary is already drawn upstream: `vendor/tinyagents/src/harness/host/learning_sink.rs` states "The runtime itself learns nothing … what counts as a lesson, where it is stored, whether it is redacted first — is host policy and stays host-side," and OpenHuman implements that seam at `src/openhuman/agent/tinyagents/host/learning_sink.rs`. `vendor/tinymemory/crates/tinymemory-bus/src/learning.rs` separately declines to own the stability formula by name. |
+| Structural blocker on porting the stability formula onto `tinymemory-api` | **HOST-OWNED (one-package rule, not a dependency cycle)** | No cargo cycle exists — `tinymemory-api` depends only on `tinymemory-bus` plus leaf crates (`vendor/tinymemory/crates/tinymemory-api/Cargo.toml:47-52`). The real blocker: `tinymemory` vendors `tinyagents` as its own submodule (`vendor/tinymemory/vendor/tinyagents`), `tinymemory-api` is unpublished (no `source` entry in `Cargo.lock`), and adding it as a second path dependency here would make `FacetClass` two incompatible types under cargo's package identity rules — the same trap documented for `tinytools` in the root `CLAUDE.md`. |
+| `TurnSummary::tools_invoked` names-only | **UPSTREAM GAP (tinyagents issue, not a host move)** | `vendor/tinyagents/src/harness/host/learning_sink.rs:91` types it `Vec<String>` — no arguments, no result. `ToolTrackerHook` (`src/openhuman/agent/learning/tool_tracker.rs`) and `AgentExperienceCaptureHook` (`src/openhuman/agent/experience/capture.rs`) silently self-disable on the crate-driven turn path because they need call arguments/results to do anything. File upstream; do not attempt a host workaround that reconstructs the missing data. |
+
 ## Phase 3 — RouterProvider → crate registry (host-only)
 
 Per `docs/tinyagents-phase3-router-registry-design.md` §1, Phase 3 is **host-only**
