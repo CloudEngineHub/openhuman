@@ -19,9 +19,8 @@ use tinyagents_harness::no_progress::{
 };
 use tinyagents_harness::runtime::AgentHarness;
 use tinyagents_harness::steering::{SteeringCommand, SteeringHandle};
-use tinyagents_harness::tool::{
-    ToolCall as TaToolCall, ToolPolicy as TaToolPolicy, ToolResult as TaToolResult, ToolSchema,
-};
+use tinyagents_harness::tool::{ToolPolicy as TaToolPolicy, ToolResult as TaToolResult};
+use tinyinference::tool::{ToolCall as TaToolCall, ToolSchema};
 
 use crate::openhuman::agent::context::CLEARED_PLACEHOLDER;
 use crate::openhuman::agent::harness::tool_result_artifacts::{
