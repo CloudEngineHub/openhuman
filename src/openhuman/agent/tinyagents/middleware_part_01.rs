@@ -13,7 +13,7 @@ use tinyagents_harness::middleware::{
     AgentRun, BudgetTracker, ContextualToolSelectionMiddleware, MicrocompactMiddleware, Middleware,
     MiddlewareToolOutcome, ToolAllowlistMiddleware, ToolHandler, ToolMiddleware,
 };
-use tinyagents_harness::model::{ModelRequest, ModelResponse, PromptSegment, SegmentRole};
+use tinyinference::model::{ModelRequest, ModelResponse, PromptSegment, SegmentRole};
 use tinyagents_harness::no_progress::{
     NoProgress, NoProgressTracker, SuccessfulRepeat, SuccessfulRepeatTracker, ToolAttempt,
 };

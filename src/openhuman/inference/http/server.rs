@@ -34,7 +34,7 @@ use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tinyagents_harness::message::Message;
-use tinyagents_harness::model::{ModelRequest, ModelStreamItem};
+use tinyinference::model::{ModelRequest, ModelStreamItem};
 use tracing::{debug, warn};
 
 use super::types::{

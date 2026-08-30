@@ -1,7 +1,7 @@
 use super::*;
 use serde_json::json;
 use tinyagents_harness::context::{RunConfig, RunContext};
-use tinyagents_harness::model::ModelRequest;
+use tinyinference::model::ModelRequest;
 use tinyagents_harness::no_progress::{
     DEFAULT_REPEAT_CALL_THRESHOLD, DEFAULT_REPEAT_OUTPUT_THRESHOLD,
 };

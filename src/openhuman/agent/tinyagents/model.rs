@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 use tinyagents_harness::message::{AssistantMessage, ContentBlock, MessageDelta};
-use tinyagents_harness::model::{
+use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tinyagents_harness::tool::{ToolCall as TaToolCall, ToolDelta};

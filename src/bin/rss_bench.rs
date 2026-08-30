@@ -41,7 +41,7 @@ use std::process::Stdio;
 use std::sync::Arc;
 use std::time::Duration;
 use tempfile::TempDir;
-use tinyagents_harness::model::{ChatModel, ModelRequest, ModelResponse};
+use tinyinference::model::{ChatModel, ModelRequest, ModelResponse};
 
 /// Roster sizes measured by default: the 1-agent baseline and the
 /// representative 8-agent company roster from #5046.

@@ -42,7 +42,7 @@ use crate::openhuman::threads::todos::ops as board_ops;
 use crate::openhuman::threads::todos::ops::{BoardLocation, CardPatch};
 use crate::openhuman::tools::traits::Tool;
 use tinyagents_harness::message::AssistantMessage;
-use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyagents_harness::tool::ToolCall;
 
 /// Serialize this module's tests (each touches process-global state).

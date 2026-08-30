@@ -25,7 +25,7 @@ use std::sync::{
     Arc,
 };
 use tinyagents_harness::message::{AssistantMessage, Message};
-use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyagents_harness::tool::ToolCall;
 use tokio::time::{sleep, timeout, Duration};
 
@@ -107,7 +107,7 @@ fn parent_context(max_parallel_tools: usize) -> ParentExecutionContext {
         max_parallel_tools,
         ..Default::default()
     };
-    let model: Arc<dyn tinyagents_harness::model::ChatModel<()>> =
+    let model: Arc<dyn tinyinference::model::ChatModel<()>> =
         Arc::new(tinyagents_harness::testkit::ScriptedModel::replies(vec![
             "ok",
         ]));

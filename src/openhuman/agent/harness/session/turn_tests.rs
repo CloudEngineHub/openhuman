@@ -20,7 +20,7 @@ use std::collections::HashSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use tinyagents_harness::message::Message;
-use tinyagents_harness::model::{
+use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tokio::sync::Mutex as AsyncMutex;

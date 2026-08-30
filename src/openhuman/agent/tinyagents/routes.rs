@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use tinyagents_harness::context::RunContext;
 use tinyagents_harness::events::AgentEvent;
 use tinyagents_harness::middleware::{MiddlewareModelOutcome, ModelHandler, ModelMiddleware};
-use tinyagents_harness::model::{CapabilitySet, ModelRequest};
+use tinyinference::model::{CapabilitySet, ModelRequest};
 use tinyagents_harness::retry::FallbackPolicy;
 use tinyagents_registry::{ModelRouter, WorkloadRoute};
 

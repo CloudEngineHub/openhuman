@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use tinyagents_harness::message::Message;
-use tinyagents_harness::model::{ChatModel, ModelRequest};
+use tinyinference::model::{ChatModel, ModelRequest};
 
 /// Tool that delegates a subtask to a named agent with a different
 /// provider/model configuration. Enables multi-agent workflows where

@@ -666,7 +666,7 @@ impl Agent {
                 // For cloud reflection, wrap the provider in an Arc.
                 // For local, no provider needed.
                 let reflection_provider: Option<
-                    Arc<dyn tinyagents_harness::model::ChatModel<()>>,
+                    Arc<dyn tinyinference::model::ChatModel<()>>,
                 > = if config.learning.reflection_source
                     == crate::openhuman::config::ReflectionSource::Cloud
                 {

@@ -11,7 +11,7 @@ use crate::openhuman::inference::local::ollama::{
 };
 use crate::openhuman::inference::local::provider::{provider_from_config, LocalAiProvider};
 use tinyagents_harness::message::Message;
-use tinyagents_harness::model::{ChatModel, ModelRequest};
+use tinyinference::model::{ChatModel, ModelRequest};
 use tinyagents_harness::providers::openai::OpenAiModel;
 
 pub(super) struct ModelRpcOutcome {
@@ -126,7 +126,7 @@ pub(super) async fn invoke(
 }
 
 fn model_outcome(
-    response: tinyagents_harness::model::ModelResponse,
+    response: tinyinference::model::ModelResponse,
     allow_empty: bool,
 ) -> Result<ModelRpcOutcome, String> {
     let mut reply = response.text();

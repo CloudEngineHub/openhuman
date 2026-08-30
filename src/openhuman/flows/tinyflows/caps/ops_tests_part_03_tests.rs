@@ -167,7 +167,7 @@ fn resolve_completion_model_leaves_managed_tier_and_hint_node_models_untouched()
 #[test]
 fn crate_model_response_preserves_flow_completion_contract() {
     use tinyagents_harness::message::{AssistantMessage, ContentBlock};
-    use tinyagents_harness::model::ModelResponse;
+    use tinyinference::model::ModelResponse;
     use tinyagents_harness::tool::ToolCall;
     use tinyagents_harness::usage::Usage;
 

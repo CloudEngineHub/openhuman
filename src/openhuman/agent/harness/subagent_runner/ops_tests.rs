@@ -75,7 +75,7 @@ use crate::openhuman::agent::harness::run_queue::{QueueMode, QueuedMessage, RunQ
 use parking_lot::Mutex;
 use std::sync::Arc;
 use tinyagents_harness::message::{AssistantMessage, ContentBlock, Message, MessageDelta};
-use tinyagents_harness::model::{
+use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tinyagents_harness::tool::ToolCall;

@@ -34,7 +34,7 @@ use crate::openhuman::agent::bus::{mock_agent_run_turn, AgentTurnResponse};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
-use tinyagents_harness::model::{ChatModel, ModelRequest, ModelResponse};
+use tinyinference::model::{ChatModel, ModelRequest, ModelResponse};
 
 // ── Test helpers ────────────────────────────────────────────────────────────
 

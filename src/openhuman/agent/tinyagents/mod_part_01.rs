@@ -16,7 +16,7 @@ use tinyagents_harness::middleware::{
     BudgetLimits, BudgetMiddleware, ContextCompressionMiddleware, PromptCacheGuardMiddleware,
     ToolPolicyMiddleware as TaToolPolicyMiddleware,
 };
-use tinyagents_harness::model::CapabilitySet;
+use tinyinference::model::CapabilitySet;
 use tinyagents_harness::retry::RetryPolicy;
 use tinyagents_harness::runtime::{AgentHarness, InvalidArgsPolicy, RunPolicy, UnknownToolPolicy};
 use tinyagents_harness::steering::SteeringHandle;

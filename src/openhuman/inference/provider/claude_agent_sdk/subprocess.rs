@@ -4,7 +4,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use tinyagents_harness::error::TinyAgentsError;
 use tinyagents_harness::message::Message;
-use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyagents_harness::tool::{coalesce_prompt_tool_results, with_prompt_tool_instructions};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::Command;

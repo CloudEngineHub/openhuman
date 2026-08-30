@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tempfile::TempDir;
 use tinyagents_harness::message::{AssistantMessage, Message};
-use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyagents_harness::tool::ToolCall;
 
 fn message_role(message: &Message) -> &'static str {

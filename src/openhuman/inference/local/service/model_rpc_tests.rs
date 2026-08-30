@@ -1,7 +1,7 @@
 use super::{local_model, model_outcome, throughput};
 use crate::openhuman::config::Config;
 use tinyagents_harness::message::{AssistantMessage, ContentBlock};
-use tinyagents_harness::model::ModelResponse;
+use tinyinference::model::ModelResponse;
 use tinyagents_harness::usage::Usage;
 
 #[test]

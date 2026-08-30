@@ -2,7 +2,7 @@ use super::*;
 use crate::openhuman::tools::ToolResult;
 use async_trait::async_trait;
 use tinyagents_harness::message::AssistantMessage;
-use tinyagents_harness::model::{ChatModel, ModelProfile, ModelResponse};
+use tinyinference::model::{ChatModel, ModelProfile, ModelResponse};
 use tinyagents_harness::testkit::ScriptedModel;
 use tinyagents_harness::tool::ToolCall;
 

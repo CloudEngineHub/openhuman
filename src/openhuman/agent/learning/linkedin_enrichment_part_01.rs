@@ -331,7 +331,7 @@ Rules:\n\
     );
 
     use tinyagents_harness::message::Message;
-    use tinyagents_harness::model::ModelRequest;
+    use tinyinference::model::ModelRequest;
     let summary = model_chat
         .invoke(
             &(),

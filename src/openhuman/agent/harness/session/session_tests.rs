@@ -17,7 +17,7 @@ use async_trait::async_trait;
 use parking_lot::Mutex;
 use std::sync::Arc;
 use tinyagents_harness::message::Message;
-use tinyagents_harness::model::{
+use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 

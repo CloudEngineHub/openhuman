@@ -34,7 +34,7 @@ use tinyagents_harness::summarization::{
 };
 
 use tinyagents_harness::message::Message as HarnessMessage;
-use tinyagents_harness::model::{ChatModel, ModelRequest};
+use tinyinference::model::{ChatModel, ModelRequest};
 
 /// Fraction of the model's context window at which summarization fires.
 ///

@@ -9,7 +9,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use parking_lot::Mutex;
 use std::sync::Arc;
-use tinyagents_harness::model::{
+use tinyinference::model::{
     ChatModel, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tokio::sync::Mutex as AsyncMutex;
