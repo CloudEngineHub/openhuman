@@ -524,7 +524,7 @@ pub async fn fetch_toolkit_actions(
     let action_prefix = format!("{}_", toolkit_slug.to_uppercase());
     // Apply curated whitelist + user scope so spawn-time tool
     // discovery agrees with the bulk path and the meta-tool layer.
-    let pref = super::ops::load_user_scope_pref(toolkit_slug).await;
+    let pref = super::ops::load_user_scope_pref(config, toolkit_slug).await;
     let actions: Vec<ConnectedIntegrationTool> = resp
         .tools
         .into_iter()
