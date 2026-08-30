@@ -21,7 +21,7 @@
 //! than they did before v1.13.4.
 
 use crate::openhuman::config::Config;
-use crate::openhuman::memory::api::provider::{FacetType, MemoryProfile};
+use crate::openhuman::memory::api::provider::FacetType;
 use tinymemory_api::composio::{canonicalize, normalize_connection_identifier, ConnectedIdentity, IdentityKind, ProviderUserProfile};
 
 /// Persist one [`ProviderUserProfile`] as identity facets, returning how many
