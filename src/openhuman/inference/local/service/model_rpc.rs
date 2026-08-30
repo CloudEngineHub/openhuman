@@ -42,10 +42,21 @@ fn local_model(config: &Config, model_id: &str) -> Result<OpenAiModel, String> {
                 model = %model_id,
                 "[local_ai:model_rpc] selecting LM Studio RPC model"
             );
-            OpenAiModel::lm_studio(
-                base,
+            // `OpenAiModel::lm_studio` no longer exists as a named preset; go
+            // through `from_spec` with `ProviderKind::LmStudio` instead, which
+            // routes to the same private `local_runtime` construction
+            // (auth-style none, vision/native-tool-choice/json-object off,
+            // context probing enabled) that the old preset used.
+            OpenAiModel::from_spec(
+                ProviderSpec {
+                    kind: ProviderKind::LmStudio,
+                    provider: "lm_studio".to_string(),
+                    model: model_id.to_string(),
+                    base_url: base,
+                    api_key_env: None,
+                    requires_api_key: false,
+                },
                 config.local_ai.api_key.as_deref().unwrap_or_default(),
-                model_id,
             )
         }
         LocalAiProvider::Ollama => {
