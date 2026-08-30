@@ -155,10 +155,10 @@ impl OpenHumanBackendModel {
 
     /// Resolve the current JWT + base URL and build a fresh crate `OpenAiModel`
     /// (Bearer). Rebuilt per call because the session JWT rotates.
-    fn build_wire_model(&self) -> TaResult<OpenAiModel> {
+    fn build_wire_model(&self) -> tinyinference::Result<OpenAiModel> {
         let token = self
             .resolve_bearer()
-            .map_err(|e| TinyAgentsError::Model(e.to_string()))?;
+            .map_err(|e| TiError::Model(e.to_string()))?;
         let base_url = self.base_url();
         // The hosted API is chat-completions only (no `/v1/responses`); auth is a
         // plain bearer JWT. The tier/model rides `request.model`, which the backend
