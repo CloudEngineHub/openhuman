@@ -1010,7 +1010,10 @@ async fn run_typed_mode(
                 let fresh_actions = match &client_kind {
                     Some(ComposioClientKind::Backend(client)) => {
                         match crate::openhuman::integrations::composio::fetch_toolkit_actions(
-                            client, tk, None,
+                            arc_config.as_ref(),
+                            client,
+                            tk,
+                            None,
                         )
                         .await
                         {
