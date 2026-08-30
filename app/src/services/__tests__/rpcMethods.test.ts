@@ -129,11 +129,17 @@ describe('rpcMethods catalog', () => {
         'utf8'
       ),
       fs.readFileSync(
-        path.resolve(__dirname, '../../../../src/openhuman/config/schemas/schemas_schema_part_01.rs'),
+        path.resolve(
+          __dirname,
+          '../../../../src/openhuman/config/schemas/schemas_schema_part_01.rs'
+        ),
         'utf8'
       ),
       fs.readFileSync(
-        path.resolve(__dirname, '../../../../src/openhuman/config/schemas/schemas_schema_part_02.rs'),
+        path.resolve(
+          __dirname,
+          '../../../../src/openhuman/config/schemas/schemas_schema_part_02.rs'
+        ),
         'utf8'
       ),
       fs.readFileSync(
