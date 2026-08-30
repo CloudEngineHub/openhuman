@@ -355,3 +355,37 @@ fn repro_3152_create_page_reachable_in_top_k() {
         "#3152 notion create-page",
     );
 }
+
+// TEMP baseline capture — removed after migration.
+#[test]
+fn zz_baseline_ranking_capture() {
+    let cases: &[(&str, &str, usize)] = &[
+        ("github", "Create a pull request from feature/auth-fix to main in the openhuman repo", 15),
+        ("github", "Find all open pull requests assigned to the current user in the openhuman repo", 15),
+        ("gmail", "Send an email to john@example.com with subject 'Q2 Report' and body attached", 10),
+        ("gmail", "Delete all promotional emails received in the last week", 10),
+        ("slack", "Post a message to the #general channel saying the deploy is complete", 15),
+        ("notion", "Create a new page in the Engineering workspace titled 'Sprint Plan'", 15),
+        ("notion", "create a notion page with the meeting notes and give me the link", 12),
+        ("googlesheets", "add a row with today's sales to the revenue sheet", 15),
+        ("googledrive", "upload a file to the shared design folder", 15),
+        ("reddit", "comment on the top post in r/rust", 15),
+        ("facebook", "post a status update to my page", 15),
+        ("instagram", "schedule a post with this photo and caption", 15),
+    ];
+    for (tk, q, k) in cases {
+        let actions = load_real_toolkit(tk);
+        let hits = filter_actions_by_prompt(q, &actions, *k);
+        println!("CASE {tk} | {q} | k={k}");
+        for &i in &hits {
+            println!("  {i} {}", actions[i].name);
+        }
+    }
+    // synthetic
+    let syn = github_sample();
+    for q in ["create a PR from my feature branch to main", "list open PRs assigned to me", "delete a review comment", "merge pull request 42"] {
+        let hits = filter_actions_by_prompt(q, &syn, 10);
+        println!("SYN | {q}");
+        for &i in &hits { println!("  {i} {}", syn[i].name); }
+    }
+}
