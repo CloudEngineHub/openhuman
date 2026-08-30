@@ -234,7 +234,7 @@ impl OpenHumanBackendModel {
                 );
                 Ok(())
             }
-            Err(TinyAgentsError::Provider(err)) => {
+            Err(TiError::Provider(err)) => {
                 if is_provider_not_configured_error(&err) {
                     log::warn!(
                         "[flows][inference-probe] model={} backend reports no provider configured: {}",
