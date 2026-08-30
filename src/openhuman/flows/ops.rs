@@ -10,6 +10,15 @@ use chrono::Utc;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use tinyflows::model::{NodeKind, TriggerKind, WorkflowGraph};
+// The save/run safety predicates are `tinyflows-catalog`'s: whether a graph
+// fires unattended, whether it can act on the world, whether it has anything to
+// do at all are properties of the graph, not of this host. Re-exported at
+// `ops::` scope because the agent tools and this module's tests already name
+// them there.
+pub(crate) use tinyflows_catalog::graph_policy::{
+    enforce_side_effect_approval, graph_has_actionable_nodes, graph_has_outbound_side_effect,
+    trigger_is_automatic,
+};
 use tokio_util::sync::CancellationToken;
 
 use crate::openhuman::agent::turn_origin::{with_origin, AgentTurnOrigin, TrustedAutomationSource};
