@@ -7,7 +7,7 @@ use tinyinference::message::{AssistantMessage, ContentBlock, MessageDelta};
 use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
-use tinyagents_harness::tool::{ToolCall as TaToolCall, ToolDelta};
+use tinyinference::tool::{ToolCall as TaToolCall, ToolDelta};
 use tinyinference::usage::Usage;
 use tokio::sync::mpsc::UnboundedSender;
 
