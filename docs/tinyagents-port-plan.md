@@ -168,7 +168,7 @@ The endgame of #4249's Workstream 11:
 
 ### Phase 5 — Workflow/team generic slices (optional, evaluate after Phase 4)
 
-1. Upstream the **validation** slices: workflow phase-DAG structural/cycle validation (`workflow_runs/{types,ops}`), team dependency validation + atomic CAS claim + quality-gate state machine (`agent_teams/ops.rs`) — as `graph/` extensions if they generalize cleanly; otherwise leave host-side. Durability (`session_db::run_ledger`) and `command_center/` stay host-side regardless.
+1. Upstream the **validation** slices: workflow phase-DAG structural/cycle validation (`workflow_runs/{types,ops}`), ~~team dependency validation + atomic CAS claim + quality-gate state machine (`agent_teams/ops.rs`)~~ — as `graph/` extensions if they generalize cleanly; otherwise leave host-side. Durability (`session_db::run_ledger`) and `command_center/` stay host-side regardless. **The atomic CAS claim + quality-gate state machine is DONE (2026-08-30 audit):** `vendor/tinyagents/src/session/run_ledger/ops.rs` owns `claim_agent_team_task` (line 935), `complete_agent_team_task` (line 1040), and `evaluate_completion_gate` (line 1157), with tests in `run_ledger/test.rs`. The host (`src/openhuman/agent/orchestration/agent_teams/ops.rs`) retains only delegation wrappers (`claim_task` at line 181 calls `run_ledger::claim_agent_team_task`; `complete_task` at line 325 calls `run_ledger::complete_agent_team_task`).
 2. `*_topology()` exports already funnel through seam `topology.rs::all_graph_topologies` — keep that pattern for anything upstreamed.
 
 ### Phase 6 — Cleanup & docs
