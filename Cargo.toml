@@ -1357,7 +1357,7 @@ motosan-ai-oauth = { path = "vendor/motosan-ai-oauth" }
 # TinyFlows, TinyCortex, and TinyChannels are vendored beside
 # TinyAgents so integration work can test crate changes against OpenHuman before
 # publishing.
-tinyflows = { path = "vendor/tinyflows" }
+tinyflows = { path = "vendor/tinyflows/crates/tinyflows" }
 tinycortex = { path = "vendor/tinycortex" }
 # `tinymemory-core` names `tinycortex-api` by version requirement (this crate
 # depends on it by path, above). Patch it onto the same checkout so both see one
