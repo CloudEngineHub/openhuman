@@ -22,8 +22,18 @@
 //! startup config: a mid-session settings change is *not* reflected, which
 //! matches how the pre-extraction call sites behaved — they read the same
 //! ambient config — but is worth knowing before adding a seam method that
-//! should be live. Seams that must be live (`ComposioHost`, `ConfigLoader`)
-//! take a `&Config` argument and re-read instead.
+//! should be live. Seams that must be live (`ConfigLoader`) take a `&Config`
+//! argument and re-read instead.
+//!
+//! # Composio no longer has a seam here
+//!
+//! `tinymemory_core::composio_host` was deleted in tinymemory v1.13.4 along
+//! with the whole in-process Composio sync pipeline: reaching a connected
+//! account needs a credential this crate must not hold. Composio sync is now
+//! host-initiated — `memory::sync::composio` drives it through the
+//! `tinyconnectors` module (see `modules::connectors`) and hands the resulting
+//! records to the driver through `MemorySourceSink::accept_source_items`,
+//! rather than the driver calling back into a host-installed seam.
 
 use std::sync::Arc;
 
