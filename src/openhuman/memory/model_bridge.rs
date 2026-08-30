@@ -124,13 +124,13 @@ fn bridge_error_to_old(error: tinyinference::Error) -> tinyagents::TinyAgentsErr
 /// bridge exists for (`tinymemory_core::tree::tree_runtime::engine::{run_summarization,
 /// rebuild_tree}`) only call `invoke`, so a real streaming bridge is not
 /// needed today — add one if a legacy call site starts streaming.
-pub(crate) struct LegacyChatModelBridge {
+pub struct LegacyChatModelBridge {
     inner: Arc<dyn tinyinference::model::ChatModel<()>>,
     profile: Option<tinyagents::harness::model::ModelProfile>,
 }
 
 impl LegacyChatModelBridge {
-    pub(crate) fn new(inner: Arc<dyn tinyinference::model::ChatModel<()>>) -> Self {
+    pub fn new(inner: Arc<dyn tinyinference::model::ChatModel<()>>) -> Self {
         let profile = inner.profile().and_then(|profile| {
             bridge_profile_to_old(profile)
                 .inspect_err(|error| {
