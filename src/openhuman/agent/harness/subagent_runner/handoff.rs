@@ -29,9 +29,8 @@
 //! runtime cost.
 
 pub(crate) use tinyagents::harness::handoff::{
-    build_handoff_placeholder, chunk_content, clean_tool_output, CachedResult,
-    ResultHandoffCache, HANDOFF_MAX_ENTRIES, HANDOFF_OVERSIZE_THRESHOLD_TOKENS,
-    HANDOFF_PREVIEW_CHARS,
+    build_handoff_placeholder, chunk_content, clean_tool_output, CachedResult, ResultHandoffCache,
+    HANDOFF_MAX_ENTRIES, HANDOFF_OVERSIZE_THRESHOLD_TOKENS, HANDOFF_PREVIEW_CHARS,
 };
 
 /// Apply the progressive-disclosure handoff to a tool result. Resolves the
