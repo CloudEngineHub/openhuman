@@ -126,7 +126,9 @@ pub async fn composio_refresh_all_identities(
         // A toolkit the module read but this build has no facet schema for is
         // not a failure — it is the same "no native provider" case the loop
         // used to skip before fetching, now discovered one step later.
-        if super::super::providers::get_provider(toolkit).is_none() {
+        // `has_native_provider` replaces the deleted engine registry's
+        // `get_provider(toolkit).is_none()` — see `providers`'s module docs.
+        if !super::super::providers::has_native_provider(toolkit) {
             report.skipped_no_provider += 1;
             messages.push(format!(
                 "{toolkit}/{connection_id}: skipped (no native provider)"
@@ -134,7 +136,7 @@ pub async fn composio_refresh_all_identities(
             continue;
         }
 
-        let rows = persist_identity(profile)?;
+        let rows = persist_identity(config, profile).await?;
         report.refreshed += 1;
         report.rows_written += rows;
         tracing::debug!(
