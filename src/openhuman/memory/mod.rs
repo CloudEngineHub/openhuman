@@ -47,11 +47,6 @@ pub mod host;
 /// legitimate, because `tinymemory-core` is a dev-dependency there and a
 /// dev-dependency is not linked into the shipped binary.
 pub mod host_impls;
-/// Bridges `tinymemory-core`'s still-pre-split `tinyagents::harness::model`
-/// vocabulary onto this crate's `tinyinference::model` types. See its module
-/// docs for why the two are separately compiled, structurally-identical type
-/// graphs rather than the same type.
-pub mod model_bridge;
 /// Host desktop policy: is the memory content root a vault Obsidian already
 /// knows about? See the module docs for why this is OpenHuman's and not the
 /// engine's.
