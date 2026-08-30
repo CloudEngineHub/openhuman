@@ -35,6 +35,7 @@ use tinyconnectors_bus::names;
 
 use super::{ops, registry};
 use crate::openhuman::config::Config;
+use crate::openhuman::config::schema::{COMPOSIO_MODE_BACKEND, COMPOSIO_MODE_DIRECT};
 
 /// The module's id in [`registry`].
 pub const MODULE_ID: &str = "tinyconnectors";
@@ -45,6 +46,70 @@ pub const MODULE_ID: &str = "tinyconnectors";
 /// as a string literal: a renamed member is then a compile error here instead
 /// of an "unknown method" at runtime on a user's machine.
 pub use names::methods;
+
+/// The configuration blob the module is loaded with.
+///
+/// This is where "which route" is decided, and it is the whole of the host's
+/// say in the matter: the module implements both routes and chooses neither.
+/// Everything it needs to reach Composio arrives here, and it reads a
+/// credential from nowhere else.
+///
+/// # Errors
+///
+/// Returns a message when the configured mode cannot be honoured — direct mode
+/// with no key, or a mode string that is neither. A typo in `config.toml` fails
+/// loudly rather than silently downgrading to the other route, which would send
+/// a user's requests somewhere they did not choose.
+pub fn module_config(config: &Config) -> Result<serde_json::Value, String> {
+    let state_dir = config.workspace_dir.join("state");
+
+    match config.composio.mode.trim() {
+        // Empty is the default, for hand-edited configs that omit the field.
+        "" | COMPOSIO_MODE_BACKEND => {
+            let client = crate::openhuman::integrations::build_client(config).ok_or_else(|| {
+                "composio backend mode is unavailable: no backend session token. Sign in first."
+                    .to_string()
+            })?;
+            Ok(serde_json::json!({
+                "route": "proxy",
+                "base_url": client.backend_url,
+                "auth_token": client.auth_token,
+                "state_dir": state_dir,
+            }))
+        }
+        COMPOSIO_MODE_DIRECT => {
+            // The keychain wins over `config.toml`: the encrypted store is the
+            // source of truth, and the file is a fallback for power users.
+            let stored = crate::openhuman::security::credentials::get_composio_api_key(config)
+                .map_err(|error| format!("failed to read the stored composio api key: {error}"))?;
+            let api_key = stored
+                .or_else(|| {
+                    config
+                        .composio
+                        .api_key
+                        .as_ref()
+                        .map(|key| key.trim().to_string())
+                        .filter(|key| !key.is_empty())
+                })
+                .ok_or_else(|| {
+                    "composio direct mode is selected but no api key is configured (set it via \
+                     composio.set_api_key or config.composio.api_key)"
+                        .to_string()
+                })?;
+
+            Ok(serde_json::json!({
+                "route": "direct",
+                "api_key": api_key,
+                "entity_id": config.composio.entity_id,
+                "state_dir": state_dir,
+            }))
+        }
+        unknown => Err(format!(
+            "unknown composio mode: \"{unknown}\". Supported: \"{COMPOSIO_MODE_BACKEND}\", \
+             \"{COMPOSIO_MODE_DIRECT}\""
+        )),
+    }
+}
 
 /// A proxy to the connector module, loading it if this is the first call.
 ///
