@@ -46,7 +46,7 @@ pub use providers_ops::{
 };
 // The tinyconnectors-mediated sync pass, shared with
 // `memory::sync::composio::providers::slack::rpc` — see its doc comment.
-pub(crate) use providers_ops::{run_sync_pass, SyncPassOutcome};
+pub(crate) use providers_ops::run_sync_pass;
 pub use toolkits::{
     composio_list_agent_ready_toolkits, composio_list_capabilities, composio_list_toolkits,
 };
