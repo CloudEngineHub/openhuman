@@ -92,6 +92,7 @@ impl Tool for ComposioExecuteTool {
         // tests) pass through unchanged.
         if matches!(current_sandbox_mode(), Some(SandboxMode::ReadOnly)) {
             let scope = resolve_action_scope(&tool).await;
+            let _ = &scope;
             if matches!(scope, ToolScope::Write | ToolScope::Admin) {
                 tracing::info!(
                     tool = %tool,
