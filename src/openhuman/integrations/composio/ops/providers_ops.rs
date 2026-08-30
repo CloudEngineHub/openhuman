@@ -80,7 +80,7 @@ pub async fn composio_get_user_profile(
         format!("[composio] get_user_profile({toolkit}) failed: {error}")
     })?;
 
-    let facets = persist_identity(&profile)?;
+    let facets = persist_identity(config, &profile).await?;
     tracing::debug!(
         toolkit = %toolkit,
         facets_written = facets,
