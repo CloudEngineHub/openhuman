@@ -6,15 +6,12 @@
 //! call boundary: any error is captured into [`FetchOutcome::error`] so
 //! the scheduler loop never unwinds.
 
-use std::sync::Arc;
-
 use chrono::Utc;
 use std::collections::HashSet;
 
 use crate::core::bus::BUS;
 use crate::core::events::DomainEvent;
 use crate::openhuman::config::Config;
-use crate::openhuman::integrations::composio::providers::{get_provider, ProviderContext};
 
 use super::types::{FetchOutcome, FetchReason, TaskSource};
 use super::{enrich, filter, route, store};
