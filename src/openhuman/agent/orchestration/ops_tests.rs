@@ -258,7 +258,7 @@ impl ChatModel<()> for ParallelCodingModel {
 
 #[test]
 fn unit_status_serializes_as_snake_case() {
-    let value = serde_json::to_value(AgentStatus::Completed).expect("serialize status");
+    let value = serde_json::to_value(OrchestrationTaskStatus::Completed).expect("serialize status");
     assert_eq!(value, serde_json::json!("completed"));
 }
 
@@ -295,7 +295,7 @@ async fn e2e_orchestrator_answers_coding_agent_question_and_resumes_child() {
         .await
         .expect("wait first child");
     let first_child = &first_wait.agents[0];
-    assert_eq!(first_child.status, AgentStatus::Completed);
+    assert_eq!(first_child.status, OrchestrationTaskStatus::Completed);
     assert!(first_child
         .result_summary
         .as_deref()
@@ -333,7 +333,7 @@ async fn e2e_orchestrator_answers_coding_agent_question_and_resumes_child() {
         final_child.parent_agent_id.as_deref(),
         Some(first.orchestration_id.as_str())
     );
-    assert_eq!(final_child.status, AgentStatus::Completed);
+    assert_eq!(final_child.status, OrchestrationTaskStatus::Completed);
     assert!(final_child
         .result_summary
         .as_deref()
@@ -406,7 +406,7 @@ async fn e2e_orchestrator_waits_for_multiple_parallel_coding_subagents() {
     assert!(waited
         .agents
         .iter()
-        .all(|agent| agent.status == AgentStatus::Completed));
+        .all(|agent| agent.status == OrchestrationTaskStatus::Completed));
     let outputs = waited
         .agents
         .iter()

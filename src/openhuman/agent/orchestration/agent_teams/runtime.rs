@@ -306,13 +306,11 @@ async fn drive_member(
                     | OrchestrationTaskStatus::Cancelled
                     | OrchestrationTaskStatus::CancelRequested
                     | OrchestrationTaskStatus::TimedOut
-                    | OrchestrationTaskStatus::Abandoned => {
-                        super::graph::MemberOutcome::Failed {
-                            reason: snapshot
-                                .error
-                                .unwrap_or_else(|| "worker ended without completing".to_string()),
-                        }
-                    }
+                    | OrchestrationTaskStatus::Abandoned => super::graph::MemberOutcome::Failed {
+                        reason: snapshot
+                            .error
+                            .unwrap_or_else(|| "worker ended without completing".to_string()),
+                    },
                     // `wait_agents` with no timeout only returns on terminal
                     // status, so this is purely defensive — treat as a failure.
                     other => super::graph::MemberOutcome::Failed {

@@ -537,7 +537,11 @@ fn mark_running(status_tx: &watch::Sender<ChildState>) {
     });
 }
 
-fn snapshot_of(orchestration_id: &str, metadata: &ChildMetadata, state: &ChildState) -> AgentSnapshot {
+fn snapshot_of(
+    orchestration_id: &str,
+    metadata: &ChildMetadata,
+    state: &ChildState,
+) -> AgentSnapshot {
     AgentSnapshot {
         orchestration_id: orchestration_id.to_string(),
         agent_id: metadata.agent_id.clone(),
