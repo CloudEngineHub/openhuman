@@ -263,20 +263,6 @@ fn unit_status_serializes_as_snake_case() {
 }
 
 #[tokio::test]
-async fn unit_message_agent_rejects_empty_parent_reply() {
-    let session = AgentOrchestrationSession::new("unit-session");
-    let error = session
-        .message_agent(MessageAgentRequest {
-            orchestration_id: "agent-1".to_string(),
-            content: "   ".to_string(),
-        })
-        .await
-        .unwrap_err();
-
-    assert!(matches!(error, OrchestrationError::InvalidMessage));
-}
-
-#[tokio::test]
 async fn e2e_orchestrator_answers_coding_agent_question_and_resumes_child() {
     AgentDefinitionRegistry::init_global_builtins().unwrap();
     let provider = CodingQuestionModel::default();
@@ -316,26 +302,19 @@ async fn e2e_orchestrator_answers_coding_agent_question_and_resumes_child() {
         .unwrap_or_default()
         .contains("CODE_AGENT_QUESTION"));
 
-    let answered_snapshot = session
-        .message_agent(MessageAgentRequest {
-            orchestration_id: first.orchestration_id.clone(),
-            content: "ORCH_ANSWER_USE_RPC: use controller registry, not direct jsonrpc branch"
-                .to_string(),
-        })
-        .await
-        .expect("orchestrator records answer");
-    assert_eq!(answered_snapshot.status, AgentStatus::Completed);
-    assert_eq!(answered_snapshot.messages.len(), 1);
-    assert!(answered_snapshot.messages[0]
-        .content
-        .contains("ORCH_ANSWER_USE_RPC"));
-
+    // `message_agent`/`follow_up` are gone (superseded by the durable verbs in
+    // `command_center::control`). The orchestrator now records its answer by
+    // spawning the linked continuation child directly — the same thing
+    // `follow_up` did internally.
     let follow_up = with_parent_context(parent, async {
         session
-            .follow_up(FollowUpRequest {
-                orchestration_id: first.orchestration_id.clone(),
+            .spawn_agent(SpawnAgentRequest {
+                agent_id: "code_executor".to_string(),
                 prompt: "Continue after the orchestrator answered: ORCH_ANSWER_USE_RPC".to_string(),
                 context: Some("Parent answered: use controller registry".to_string()),
+                model: Some("test-model".to_string()),
+                parent_agent_id: Some(first.orchestration_id.clone()),
+                ..Default::default()
             })
             .await
     })

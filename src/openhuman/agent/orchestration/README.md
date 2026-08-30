@@ -19,12 +19,12 @@ sub-agent loops.
 The intended canonical operations mirror Codex-style multi-agent controls:
 
 - `spawn_agent`: create a child record and run it through `agent::harness::run_subagent`.
-- `list_agents`: return child snapshots ordered by creation time.
-- `message_agent`: record parent-to-child communication for the orchestration record. Live mid-turn input is not yet injected into the running harness loop.
+
+
 - `wait_agents`: wait for one or more children to reach a terminal state, optionally with a timeout.
-- `close_agent`: close the orchestration record and abort the background run when one exists.
-- `resume_agent`: spawn a linked continuation child from an existing child record.
-- `follow_up`: spawn a linked child using the prior child result as context unless explicit context is supplied.
+
+
+
 
 ## State Model
 
