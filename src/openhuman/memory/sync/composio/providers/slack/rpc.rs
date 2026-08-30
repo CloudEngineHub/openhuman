@@ -4,11 +4,32 @@
 //! entire Slack integration lives under `composio::providers::slack`.
 //!
 //! Public JSON-RPC surface:
-//! - `openhuman.slack_memory_sync_trigger` — run `SlackProvider::sync()`
-//!   once for each active Slack connection (or just one, if
-//!   `connection_id` is supplied).
-//! - `openhuman.slack_memory_sync_status` — list the per-connection
-//!   sync cursors + last-synced timestamps.
+//! - `openhuman.slack_memory_sync_trigger` — read each active Slack
+//!   connection through the `tinyconnectors` module and ingest what it
+//!   returns (or just one connection, if `connection_id` is supplied).
+//! - `openhuman.slack_memory_sync_status` — list the connections a trigger
+//!   would act on.
+//!
+//! # Where the sync actually happens now
+//!
+//! tinymemory v1.13.4 deleted the in-process `SlackProvider` along with the
+//! rest of the Composio pipeline: `MemorySourceSync::run_connection_sync` and
+//! `::source_sync_state` now unconditionally refuse for every toolkit,
+//! because reaching a connected account needs a credential the engine must
+//! not hold. `sync_trigger_rpc` below reads through the connector module and
+//! writes into the bound memory driver via `MemorySourceSink::accept_source_items`
+//! instead — the same `run_sync_pass` helper
+//! `integrations::composio::ops::composio_sync` uses, called synchronously
+//! here rather than fired into a background task, because this RPC's
+//! contract is "return the outcome", not "return that a run started".
+//!
+//! `sync_status_rpc` genuinely lost capability it cannot honestly recover:
+//! the module keeps its sync cursor and daily-request budget internally and
+//! exposes neither outside of a `Sync` call, so the per-connection detail
+//! `ConnectionStatus` used to report (cursor JSON, synced-id count, requests
+//! used today) has no source any more. The rows below still report which
+//! connections a trigger would act on, with the detail fields at their zero
+//! value rather than removed from the wire shape.
 
 use serde::{Deserialize, Serialize};
 
@@ -16,8 +37,9 @@ use crate::openhuman::config::Config;
 use crate::openhuman::integrations::composio::client::{
     create_composio_client, direct_list_connections, ComposioClientKind,
 };
+use crate::openhuman::integrations::composio::ops::run_sync_pass;
+use crate::openhuman::integrations::composio::providers::SyncOutcome;
 use crate::openhuman::integrations::composio::types::ComposioConnectionsResponse;
-use crate::openhuman::memory::sync::composio::providers::SyncOutcome;
 use crate::rpc::RpcOutcome;
 
 /// Optional connection-id override for the trigger. When absent, all
