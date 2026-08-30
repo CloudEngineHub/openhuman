@@ -293,9 +293,7 @@ pub(crate) async fn fetch_live_toolkit_catalog(
     tracing::debug!(target: "flows", toolkit = %key, "[flows] live catalog: fetching (cache miss or expired)");
     let resp = fetch_raw_toolkit_tools(config, &key).await?;
 
-    let curated_catalog = get_provider(&key)
-        .and_then(|p| p.curated_tools())
-        .or_else(|| catalog_for_toolkit(&key));
+    let curated_catalog = catalog_for_toolkit(&key);
 
     let contracts: Vec<ToolContract> = resp
         .tools
