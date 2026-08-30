@@ -135,7 +135,7 @@ impl LegacyChatModelBridge {
             bridge_profile_to_old(profile)
                 .inspect_err(|error| {
                     tracing::warn!(
-                        error,
+                        error = %error,
                         "[memory][model_bridge] failed to bridge ModelProfile to the legacy type; \
                          reporting no profile to tinymemory-core"
                     );
