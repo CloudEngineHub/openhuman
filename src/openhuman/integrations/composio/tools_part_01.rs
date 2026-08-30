@@ -62,12 +62,12 @@ pub(super) async fn resolve_action_scope(slug: &str) -> ToolScope {
 /// Decide whether a Composio action slug should be visible / executable
 /// for the current user, given the registered provider's curated list
 /// (if any) and the user's stored scope preference.
-async fn evaluate_tool_visibility(slug: &str) -> ToolDecision {
+async fn evaluate_tool_visibility(config: &Config, slug: &str) -> ToolDecision {
     let Some(toolkit) = toolkit_from_slug(slug) else {
         // Unparseable slug — let the backend return its own error.
         return ToolDecision::Allow;
     };
-    let pref = load_user_scope_pref(&toolkit).await;
+    let pref = load_user_scope_pref(config, &toolkit).await;
     // The catalog covers every catalogued toolkit directly now — the
     // engine's `get_provider(toolkit).curated_tools()` hop this used to
     // prefer was pure indirection, verified identical to `catalog_for_toolkit`
