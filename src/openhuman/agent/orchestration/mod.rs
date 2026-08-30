@@ -54,8 +54,8 @@ pub use subagent_control::{
     all_registered_controllers as all_subagent_control_registered_controllers,
 };
 pub use types::{
-    AgentSnapshot, AgentStatus, SpawnAgentRequest, SpawnAgentResponse, WaitAgentOptions,
-    WaitAgentResponse,
+    AgentSnapshot, OrchestrationTaskStatus, SpawnAgentRequest, SpawnAgentResponse,
+    WaitAgentOptions, WaitAgentResponse,
 };
 pub use workflow_runs::{
     all_workflow_run_controller_schemas, all_workflow_run_registered_controllers,

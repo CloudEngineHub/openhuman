@@ -507,7 +507,7 @@ pub(super) async fn execute_phase(
     total_spawned: u32,
 ) -> Result<PhaseExecOutcome> {
     use crate::openhuman::agent::orchestration::{
-        AgentStatus, SpawnAgentRequest, WaitAgentOptions,
+        OrchestrationTaskStatus, SpawnAgentRequest, WaitAgentOptions,
     };
 
     // Reload so the phase state we mutate + persist is the latest projection.
@@ -644,7 +644,7 @@ pub(super) async fn execute_phase(
                 };
                 Ok(match wait.agents.into_iter().next() {
                     Some(s) => match s.status {
-                        AgentStatus::Completed => PhaseWorkerOutcome {
+                        OrchestrationTaskStatus::Completed => PhaseWorkerOutcome {
                             orchestration_id: Some(oid),
                             output: Some(json!({
                                 "orchestrationId": s.orchestration_id,
@@ -653,7 +653,11 @@ pub(super) async fn execute_phase(
                             })),
                             error: None,
                         },
-                        AgentStatus::Failed | AgentStatus::Cancelled | AgentStatus::Closed => {
+                        OrchestrationTaskStatus::Failed
+                        | OrchestrationTaskStatus::Cancelled
+                        | OrchestrationTaskStatus::CancelRequested
+                        | OrchestrationTaskStatus::TimedOut
+                        | OrchestrationTaskStatus::Abandoned => {
                             PhaseWorkerOutcome {
                                 orchestration_id: Some(oid),
                                 output: None,
@@ -669,7 +673,9 @@ pub(super) async fn execute_phase(
                                 )),
                             }
                         }
-                        AgentStatus::Pending | AgentStatus::Running | AgentStatus::Waiting => {
+                        OrchestrationTaskStatus::Pending
+                        | OrchestrationTaskStatus::Running
+                        | OrchestrationTaskStatus::Awaiting => {
                             PhaseWorkerOutcome {
                                 orchestration_id: Some(oid),
                                 output: None,
