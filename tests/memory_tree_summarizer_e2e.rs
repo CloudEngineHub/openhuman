@@ -416,9 +416,9 @@ async fn merges_into_existing_hour_node() {
     )
     .expect("buffer_write pass2");
 
-    let provider2 = ScriptedProvider::new(vec![Ok(
+    let provider2 = LegacyChatModelBridge::new(Arc::new(ScriptedProvider::new(vec![Ok(
         "Merged summary: deployment timeline and blockers".to_string(),
-    )]);
+    )])));
 
     log::debug!("[memory_tree_summarizer_e2e] second run (same hour)");
     let r2 = engine::run_summarization(&config, &provider2, NS, Utc::now())
