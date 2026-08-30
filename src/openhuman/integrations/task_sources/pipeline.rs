@@ -90,37 +90,9 @@ async fn run_inner(
     _reason: FetchReason,
     outcome: &mut FetchOutcome,
 ) -> Result<(), String> {
-    // `ComposioProvider::fetch_tasks` — the per-toolkit "read a filtered set
-    // of work items as structured `NormalizedTask`s" call this pipeline used
-    // to make — was deleted outright by tinymemory v1.13.4 along with the
-    // rest of the in-process Composio pipeline (72 files, ~18.3k lines), with
-    // no replacement upstream. Unlike the record-sync path (`ConnectorRecordBatch`
-    // via the `tinyconnectors` module's `Sync` member, which this domain's
-    // sibling `memory::sync::composio` now uses), tinyconnectors exposes no
-    // structured task-fetch surface — only `Execute` (run one named action)
-    // and `Sync` (memory records, not board items). Reimplementing
-    // `fetch_tasks` faithfully means re-deriving each toolkit's action
-    // selection and response-shape parsing (Notion's `NOTION_QUERY_DATABASE`
-    // vs `NOTION_FETCH_DATA`, GitHub's issue listing, …) against `Execute`
-    // from scratch, which is real provider work rather than a seam
-    // migration. Rather than half-porting some toolkits and silently
-    // dropping others, this refuses cleanly for every toolkit — the same
-    // shape of decision `refuse_composio_dispatch` makes in the engine for
-    // the sync path it could not carry forward either.
-    let _ = &source.filter;
-    return Err(format!(
-        "task_sources fetch for toolkit '{}' is unavailable: tinymemory v1.13.4 deleted \
-         ComposioProvider::fetch_tasks with no replacement, and the tinyconnectors module \
-         exposes no structured task-fetch surface to reimplement it against",
-        source.provider.as_str()
-    ));
-
-    #[allow(unreachable_code)]
-    {
-        let fetch_filter = filter::to_fetch_filter(&source.filter, source.max_tasks_per_fetch);
-        let tasks: Vec<tinymemory_api::composio::NormalizedTask> = Vec::new();
-        let _ = fetch_filter;
-        outcome.fetched = tasks.len();
+    let fetch_filter = filter::to_fetch_filter(&source.filter, source.max_tasks_per_fetch);
+    let tasks = fetch_tasks_unavailable(source, &fetch_filter)?;
+    outcome.fetched = tasks.len();
     let current_external_ids: HashSet<String> =
         tasks.iter().map(|task| task.external_id.clone()).collect();
 
