@@ -87,4 +87,5 @@ mod tests {
         });
         let resolved = tinyflows::expr::evaluate(&http_node.config["url"], &scope);
         assert_eq!(resolved, json!("https://example.com/hook"));
-    }}
+    }
+}
