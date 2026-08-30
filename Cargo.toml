@@ -200,7 +200,6 @@ tinyflows-copilot = { path = "vendor/tinyflows/crates/tinyflows-copilot", option
 tinyagents-harness = { path = "vendor/tinyagents/crates/tinyagents-harness", features = [
     "sqlite",
     "multimodal",
-    "tools",
 ] }
 tinyagents-graph = { path = "vendor/tinyagents/crates/tinyagents-graph", features = [
     "sqlite",
