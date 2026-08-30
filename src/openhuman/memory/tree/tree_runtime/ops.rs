@@ -46,10 +46,9 @@ pub async fn tree_summarizer_run(
     store::validate_namespace(namespace)?;
 
     let (provider, _model) = create_provider(config)?;
-    let provider = crate::openhuman::memory::model_bridge::LegacyChatModelBridge::new(provider);
     let ts = Utc::now();
 
-    match engine::run_summarization(config, &provider, namespace.trim(), ts).await {
+    match engine::run_summarization(config, provider.as_ref(), namespace.trim(), ts).await {
         Ok(Some(node)) => Ok(RpcOutcome::single_log(
             serde_json::to_value(&node).map_err(|e| e.to_string())?,
             format!(
