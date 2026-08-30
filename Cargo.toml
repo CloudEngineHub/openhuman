@@ -157,6 +157,12 @@ tinyflows = { version = "0.8", features = ["mock"], optional = true }
 # same reason the engine is.
 tinyflows-catalog = { path = "vendor/tinyflows/crates/tinyflows-catalog", optional = true }
 tinyflows-sqlite = { path = "vendor/tinyflows/crates/tinyflows-sqlite", optional = true }
+# The authoring copilot's words: the `workflow_builder` / `flow_discovery`
+# standing archetypes and the turn brief that opens a builder turn. Harness-free
+# by construction — it names no tool trait and no model client — so this host
+# keeps only the wiring: the `Tool` impls, the agent registry entries, and the
+# prompt assembly that appends its own runtime sections.
+tinyflows-copilot = { path = "vendor/tinyflows/crates/tinyflows-copilot", optional = true }
 # TinyAgents — Rust LLM orchestration framework (LangGraph/LangChain-style):
 # durable state graphs, agent-loop harness, model/tool registries, REPL +
 # `.rag` workflow language. openhuman's agent engine + orchestration run on this
@@ -1026,7 +1032,7 @@ media = []
 # runtime `DomainSet::flows` flag (#4796): the feature narrows the compile-time
 # surface, `DomainSet` gates it at runtime.
 # NOTE: this gate does NOT drop `tinyagents` itself — 26+ domains consume it.
-flows = ["dep:tinyflows", "dep:tinyflows-catalog", "dep:tinyflows-sqlite"]
+flows = ["dep:tinyflows", "dep:tinyflows-catalog", "dep:tinyflows-copilot", "dep:tinyflows-sqlite"]
 # Skills domains: `openhuman::skills` (metadata/discovery/install),
 # `openhuman::skill_runtime` (SKILL.md execution + the skill_executor agent),
 # and `openhuman::skill_registry` (remote catalogs + the skill_setup agent).

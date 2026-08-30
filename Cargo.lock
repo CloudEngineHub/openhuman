@@ -4158,6 +4158,7 @@ dependencies = [
  "tinydocs-bus",
  "tinyflows",
  "tinyflows-catalog",
+ "tinyflows-copilot",
  "tinyflows-sqlite",
  "tinyhosts",
  "tinyhumans-sdk",
@@ -6487,6 +6488,14 @@ dependencies = [
  "tinyflows",
  "tokio-util",
  "tracing",
+]
+
+[[package]]
+name = "tinyflows-copilot"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
