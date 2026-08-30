@@ -23,7 +23,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use tinyinference::embeddings::EmbeddingModel as TaEmbeddingModel;
-use tinyagents_harness::{Result as TaResult, TinyAgentsError};
+use tinyinference::{Error as TiError, Result as TaResult};
 
 use crate::openhuman::inference::embeddings::EmbeddingProvider;
 
