@@ -169,17 +169,22 @@ impl ChatHost for OpenHumanChatHost {
         role: &str,
         config: &SeamConfig,
         temperature: f64,
-    ) -> Result<(Arc<dyn ChatModel<()>>, String), String> {
-        crate::openhuman::inference::provider::create_chat_model_with_model_id(
+    ) -> Result<(Arc<dyn tinyagents::harness::model::ChatModel<()>>, String), String> {
+        let (model, model_id) = crate::openhuman::inference::provider::create_chat_model_with_model_id(
             role,
             host_config(config, &self.config),
             temperature,
         )
-        .map_err(|e| format!("{e:#}"))
+        .map_err(|e| format!("{e:#}"))?;
+        Ok((Arc::new(LegacyChatModelBridge::new(model)), model_id))
     }
 
-    fn usage_from_response(&self, response: &ModelResponse) -> Option<UsageInfo> {
-        crate::openhuman::agent::tinyagents::model::usage_info_from_response(response)
+    fn usage_from_response(
+        &self,
+        response: &tinyagents::harness::model::ModelResponse,
+    ) -> Option<UsageInfo> {
+        let response = bridge_response_to_new(response).ok()?;
+        crate::openhuman::agent::tinyagents::model::usage_info_from_response(&response)
     }
 
     fn summarizer_available(&self, config: &SeamConfig) -> (bool, &'static str) {
