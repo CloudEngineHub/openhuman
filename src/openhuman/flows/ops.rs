@@ -634,6 +634,11 @@ pub(crate) async fn run_builder_gates(config: &Config, graph: &WorkflowGraph) ->
 /// contributes is the one thing the crate cannot know: which slug prefix marks
 /// a tool of *ours*, which has no external provider to reject the call and so
 /// is skipped.
+// Named at `ops::` scope because this module's tests already reach it there,
+// and they are what proves this host's native-slug prefix reaches the gate.
+#[cfg(test)]
+pub(crate) use tinyflows::preflight::mock_opaque_tool_call_upstream_ref;
+
 pub(crate) async fn validate_required_arg_resolvability(graph: &WorkflowGraph) -> Vec<String> {
     tinyflows::preflight::unresolvable_tool_args(
         graph,
