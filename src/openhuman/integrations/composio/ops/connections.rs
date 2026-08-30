@@ -17,7 +17,8 @@ use super::super::providers::profile::{
     load_connected_identities, normalize_connection_identifier,
 };
 use super::super::types::{
-    ComposioAuthorizeResponse, ComposioConnectionsResponse, ComposioDeleteResponse,
+    ComposioAuthorizeRequest, ComposioAuthorizeResponse, ComposioConnectionsResponse,
+    ComposioDeleteResponse,
 };
 use super::error_utils::{
     direct_mode_without_key, report_composio_op_error, resolve_client, OpResult,
@@ -71,47 +72,23 @@ pub async fn composio_authorize(
     extra_params: Option<serde_json::Value>,
 ) -> OpResult<RpcOutcome<ComposioAuthorizeResponse>> {
     tracing::debug!(toolkit = %toolkit, has_extra_params = extra_params.is_some(), "[composio] rpc authorize");
-    let kind = create_composio_client(config).map_err(|e| format!("[composio] authorize: {e}"))?;
-    let resp = match kind {
-        ComposioClientKind::Backend(client) => {
-            tracing::debug!(toolkit = %toolkit, "[composio] authorize: backend variant");
-            super::super::oauth_handoff::authorize_with_meta_guard(&client, toolkit, extra_params)
-                .await
-                .map_err(|e| {
-                    report_composio_op_error("authorize", &e);
-                    let wrapped =
-                        super::super::oauth_handoff::wrap_authorize_rate_limit_error(toolkit, e);
-                    format!("[composio] authorize failed: {wrapped:#}")
-                })?
-        }
-        ComposioClientKind::Direct(direct) => {
-            tracing::info!(
-                toolkit = %toolkit,
-                "[composio-direct] authorize: routing to user's personal Composio tenant"
-            );
-            if extra_params.is_some() {
-                tracing::warn!(
-                    toolkit = %toolkit,
-                    "[composio-direct] authorize: extra_params is set but direct mode does \
-                     not propagate it — configure toolkit-specific fields via \
-                     app.composio.dev for your auth config"
-                );
-            }
-            super::super::oauth_handoff::direct_authorize_with_meta_guard(
-                &direct,
-                toolkit,
-                &config.composio.entity_id,
-            )
-            .await
-            .map_err(|e| {
-                let wrapped =
-                    super::super::oauth_handoff::wrap_authorize_rate_limit_error(toolkit, e);
-                let rendered = format!("[composio-direct] authorize failed: {wrapped:#}");
-                report_composio_op_error("authorize", &rendered);
-                rendered
-            })?
-        }
-    };
+    // The module owns the whole handoff: the Meta pre-clean, the 429 backoff,
+    // and the guidance message that replaces an unhelpful rate-limit error.
+    // It also owns the difference between the proxy's authorize body and v3's
+    // link call, so `extra_params` no longer needs a per-route caveat here.
+    let resp = connectors::call::<_, ComposioAuthorizeResponse>(
+        config,
+        methods::AUTHORIZE,
+        ComposioAuthorizeRequest {
+            toolkit: toolkit.to_string(),
+            extra_params,
+        },
+    )
+    .await
+    .map_err(|error| {
+        report_composio_op_error("authorize", &anyhow::anyhow!("{error}"));
+        format!("[composio] authorize failed: {error}")
+    })?;
 
     crate::core::bus::BUS.publish(
         crate::core::events::DomainEvent::ComposioConnectionCreated {
