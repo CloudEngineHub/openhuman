@@ -668,6 +668,12 @@ landlock = { version = "0.4", optional = true }
 rppal = { version = "0.22", optional = true }
 
 [dev-dependencies]
+# Turns on `tinyflows-sqlite`'s `test-fixtures` gate for test builds only: the
+# flows test suite stages a terminal run flipped back to `running` and a
+# `graph_json` column that does not deserialize, neither of which any production
+# write path can produce. Declared here rather than in `[dependencies]` so the
+# shipped binary never carries those two writers.
+tinyflows-sqlite = { path = "vendor/tinyflows/crates/tinyflows-sqlite", features = ["test-fixtures"] }
 # Test fixtures derive a known account from the BIP-39 vector phrase. Production
 # does not derive at all — see the note on the main `tinywallet` entry. Cargo
 # does not link dev-dependency features into the shipped binary, so enabling
