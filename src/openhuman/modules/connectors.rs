@@ -34,8 +34,8 @@ use tinybus::Proxy;
 use tinyconnectors_bus::names;
 
 use super::{ops, registry};
-use crate::openhuman::config::Config;
 use crate::openhuman::config::schema::{COMPOSIO_MODE_BACKEND, COMPOSIO_MODE_DIRECT};
+use crate::openhuman::config::Config;
 
 /// The module's id in [`registry`].
 pub const MODULE_ID: &str = "tinyconnectors";

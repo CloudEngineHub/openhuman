@@ -67,7 +67,6 @@ fn every_member_this_host_names_is_one_the_module_serves() {
     }
 }
 
-
 // ── the route blob ───────────────────────────────────────────────────
 
 /// A config with no backend session and no stored key.
