@@ -84,6 +84,44 @@ pub async fn run_source_once(
     outcome
 }
 
+/// `ComposioProvider::fetch_tasks` — the per-toolkit "read a filtered set of
+/// work items as structured `NormalizedTask`s" call this pipeline used to
+/// make through the engine's provider registry (`get_provider(toolkit)`) —
+/// was deleted outright by tinymemory v1.13.4 along with the rest of the
+/// in-process Composio pipeline (72 files, ~18.3k lines), with no
+/// replacement upstream.
+///
+/// Unlike the record-sync path (`ConnectorRecordBatch` via the
+/// `tinyconnectors` module's `Sync` member, which this domain's sibling
+/// `memory::sync::composio` now uses through `run_sync_pass`), tinyconnectors
+/// exposes no structured task-fetch surface — only `Execute` (run one named
+/// action) and `Sync` (memory records shaped for ingestion, not board
+/// items). Reimplementing `fetch_tasks` faithfully means re-deriving each
+/// toolkit's action selection and response-shape parsing (Notion's
+/// `NOTION_QUERY_DATABASE` vs `NOTION_FETCH_DATA`, GitHub's issue listing,
+/// Linear's/ClickUp's task queries, …) against `Execute` from scratch, which
+/// is real per-provider work rather than a seam migration.
+///
+/// Rather than half-porting some toolkits' response parsing (unverifiable
+/// without the toolkits' actual API responses to test against) and silently
+/// dropping the rest, this refuses cleanly for every toolkit — the same
+/// shape of decision `refuse_composio_dispatch` makes in the engine for the
+/// composio-connection sync path it could not carry forward either. Every
+/// other stage of this pipeline (dedup, enrichment, routing, storage,
+/// reconciliation) is untouched and would work the moment this returns real
+/// tasks.
+fn fetch_tasks_unavailable(
+    source: &TaskSource,
+    _filter: &tinymemory_api::composio::TaskFetchFilter,
+) -> Result<Vec<tinymemory_api::composio::NormalizedTask>, String> {
+    Err(format!(
+        "task_sources fetch for toolkit '{}' is unavailable: tinymemory v1.13.4 deleted \
+         ComposioProvider::fetch_tasks with no replacement, and the tinyconnectors module \
+         exposes no structured task-fetch surface to reimplement it against",
+        source.provider.as_str()
+    ))
+}
+
 async fn run_inner(
     config: &Config,
     source: &TaskSource,
