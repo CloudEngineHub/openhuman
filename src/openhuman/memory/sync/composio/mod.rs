@@ -68,7 +68,7 @@ pub struct SyncTarget {
 /// construction, since the catalog's `NATIVE_PROVIDERS` table was always kept
 /// in step with the registry it described.
 pub async fn list_sync_targets(config: &Config) -> Result<Vec<SyncTarget>, String> {
-    let registry_sources = crate::openhuman::memory::sources::list_enabled_by_kind(
+    let registry_sources = crate::openhuman::memory::sources::registry::list_enabled_by_kind(
         crate::openhuman::memory::sources::SourceKind::Composio,
     )
     .await
