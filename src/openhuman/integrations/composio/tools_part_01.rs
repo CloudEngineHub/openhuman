@@ -156,7 +156,10 @@ fn empty_uncurated_toolkits_message(toolkits: &[String]) -> Option<String> {
 /// Filter a freshly-fetched [`super::types::ComposioToolsResponse`] in
 /// place: drop tools that aren't curated for their toolkit and tools
 /// whose scope is disabled in the user's pref.
-async fn filter_list_tools_response(resp: &mut super::types::ComposioToolsResponse) {
+async fn filter_list_tools_response(
+    config: &Config,
+    resp: &mut super::types::ComposioToolsResponse,
+) {
     let before = resp.tools.len();
     // Compute keep/drop decisions sequentially (the await means we
     // can't fold this into a single sync `retain` closure). Then zip
@@ -164,7 +167,7 @@ async fn filter_list_tools_response(resp: &mut super::types::ComposioToolsRespon
     // than juggling a parallel index alongside `Vec::retain`.
     let mut keep: Vec<bool> = Vec::with_capacity(before);
     for t in &resp.tools {
-        let decision = evaluate_tool_visibility(&t.function.name).await;
+        let decision = evaluate_tool_visibility(config, &t.function.name).await;
         keep.push(matches!(
             decision,
             ToolDecision::Allow | ToolDecision::PassthroughCheckScope { .. }
