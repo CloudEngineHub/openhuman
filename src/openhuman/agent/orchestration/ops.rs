@@ -1,8 +1,8 @@
 //! High-level orchestration control plane over TinyAgents' detached-task registry.
 //!
 //! This session used to own a second, bespoke process-local task table
-//! (`HashMap<String, AgentRecord>` + `HashMap<String, JoinHandle>` + a `Notify`
-//! + a hand-rolled terminal sweep). TinyAgents'
+//! (`HashMap<String, AgentRecord>` + `HashMap<String, JoinHandle>` plus a
+//! `Notify` plus a hand-rolled terminal sweep). TinyAgents'
 //! [`DetachedTaskRegistry`] is a strict superset of that: it owns the status
 //! watch channels, cooperative cancellation tokens, hard-abort handles,
 //! owner-scoped lookup, the wait/timeout loop, and the soft-cap terminal sweep.
