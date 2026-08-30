@@ -454,9 +454,9 @@ fn maybe_publish_session_expired(err: &TiError, operation: &str) {
 /// where the diagnostic belongs. Structured fields (`status`/`code`/`provider`/
 /// `retryable`) are low-cardinality; the message is secret-scrubbed and capped
 /// by [`sanitize_api_error`] before it's logged — no tokens, no full PII.
-fn log_managed_dispatch_error(err: &TinyAgentsError, operation: &str) {
+fn log_managed_dispatch_error(err: &TiError, operation: &str) {
     match err {
-        TinyAgentsError::Provider(pe) => {
+        TiError::Provider(pe) => {
             log::warn!(
                 "[providers][openhuman-backend] managed {operation} failed: status={:?} code={:?} provider={} retryable={} detail={}",
                 pe.status,
