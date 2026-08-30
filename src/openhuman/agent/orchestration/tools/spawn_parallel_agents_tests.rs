@@ -24,7 +24,7 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use tinyagents_harness::message::{AssistantMessage, Message};
+use tinyinference::message::{AssistantMessage, Message};
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyinference::tool::ToolCall;
 use tokio::time::{sleep, timeout, Duration};

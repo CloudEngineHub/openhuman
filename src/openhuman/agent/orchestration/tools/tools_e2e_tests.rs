@@ -12,7 +12,7 @@ use parking_lot::Mutex;
 use serde_json::json;
 use std::path::Path;
 use std::sync::Arc;
-use tinyagents_harness::message::Message;
+use tinyinference::message::Message;
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinycortex::memory::conversations;
 

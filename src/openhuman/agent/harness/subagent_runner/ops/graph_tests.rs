@@ -2,7 +2,7 @@ use super::*;
 use crate::openhuman::tools::ToolResult;
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use tinyagents_harness::message::{AssistantMessage, MessageDelta};
+use tinyinference::message::{AssistantMessage, MessageDelta};
 use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };

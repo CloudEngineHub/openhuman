@@ -15,7 +15,7 @@ use crate::openhuman::agent::tinyagents::orchestration::{
     SteeringCommandKind, TaskStore, TaskStoreRegistry,
 };
 use tinyagents_harness::ids::TaskId;
-use tinyagents_harness::message::Message as TaMessage;
+use tinyinference::message::Message as TaMessage;
 use tinyagents_harness::CancellationToken;
 
 /// Where a workspace's detached-task ledger lives.

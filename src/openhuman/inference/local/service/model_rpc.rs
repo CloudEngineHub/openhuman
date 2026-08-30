@@ -10,7 +10,7 @@ use crate::openhuman::inference::local::ollama::{
     ollama_base_url_from_config, redact_ollama_base_url,
 };
 use crate::openhuman::inference::local::provider::{provider_from_config, LocalAiProvider};
-use tinyagents_harness::message::Message;
+use tinyinference::message::Message;
 use tinyinference::model::{ChatModel, ModelRequest};
 use tinyagents_harness::providers::openai::OpenAiModel;
 
@@ -136,7 +136,7 @@ fn model_outcome(
             .content
             .iter()
             .filter_map(|block| match block {
-                tinyagents_harness::message::ContentBlock::Thinking { text, .. } => {
+                tinyinference::message::ContentBlock::Thinking { text, .. } => {
                     Some(text.as_str())
                 }
                 _ => None,

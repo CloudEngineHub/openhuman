@@ -41,7 +41,7 @@ use crate::openhuman::skills::schemas::resolve_workspace_dir;
 use crate::openhuman::threads::todos::ops as board_ops;
 use crate::openhuman::threads::todos::ops::{BoardLocation, CardPatch};
 use crate::openhuman::tools::traits::Tool;
-use tinyagents_harness::message::AssistantMessage;
+use tinyinference::message::AssistantMessage;
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyinference::tool::ToolCall;
 

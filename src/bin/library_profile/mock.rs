@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use openhuman_core::openhuman::inference::provider::types::{ChatResponse, ToolCall};
-use tinyagents_harness::message::{AssistantMessage, ContentBlock, Message};
+use tinyinference::message::{AssistantMessage, ContentBlock, Message};
 use tinyinference::model::{ChatModel, ModelRequest, ModelResponse};
 use tinyinference::tool::ToolCall as TinyAgentsToolCall;
 

@@ -3,12 +3,12 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use tinyagents_harness::message::{AssistantMessage, ContentBlock, MessageDelta};
+use tinyinference::message::{AssistantMessage, ContentBlock, MessageDelta};
 use tinyinference::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tinyagents_harness::tool::{ToolCall as TaToolCall, ToolDelta};
-use tinyagents_harness::usage::Usage;
+use tinyinference::usage::Usage;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::openhuman::agent::messages::ChatMessage;

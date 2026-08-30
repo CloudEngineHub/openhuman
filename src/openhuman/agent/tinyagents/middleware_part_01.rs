@@ -8,7 +8,7 @@ use sha2::{Digest, Sha256};
 use tinyagents_harness::error::Result as TaResult;
 use tinyagents_harness::context::RunContext;
 use tinyagents_harness::events::AgentEvent;
-use tinyagents_harness::message::{ContentBlock, Message as TaMessage};
+use tinyinference::message::{ContentBlock, Message as TaMessage};
 use tinyagents_harness::middleware::{
     AgentRun, BudgetTracker, ContextualToolSelectionMiddleware, MicrocompactMiddleware, Middleware,
     MiddlewareToolOutcome, ToolAllowlistMiddleware, ToolHandler, ToolMiddleware,

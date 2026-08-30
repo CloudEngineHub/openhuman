@@ -7,7 +7,7 @@ use tinyagents_graph::stream::{GraphEvent, GraphEventSink};
 use tinyagents_harness::cache::CacheLayoutEvent;
 use tinyagents_harness::events::{AgentEvent, EventListener, EventRecord};
 use tinyagents_harness::steering::{SteeringCommand, SteeringHandle};
-use tinyagents_harness::usage::Usage;
+use tinyinference::usage::Usage;
 
 use crate::openhuman::agent::harness::turn_dispatch_guard::TurnDispatchState;
 use crate::openhuman::agent::progress::AgentProgress;

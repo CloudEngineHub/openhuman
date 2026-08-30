@@ -11,7 +11,7 @@ use serde_json::json;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
-use tinyagents_harness::message::Message;
+use tinyinference::message::Message;
 use tinyinference::model::{ChatModel, ModelRequest};
 
 /// Tool that delegates a subtask to a named agent with a different

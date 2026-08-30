@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tempfile::TempDir;
-use tinyagents_harness::message::{AssistantMessage, Message};
+use tinyinference::message::{AssistantMessage, Message};
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyinference::tool::ToolCall;
 

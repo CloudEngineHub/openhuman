@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 
 use crate::openhuman::agent::progress_tracing::SpanKind;
 use tinyagents_harness::ids::{CallId, EventId, RunId};
-use tinyagents_harness::usage::Usage;
+use tinyinference::usage::Usage;
 
 fn span(
     trace: &str,

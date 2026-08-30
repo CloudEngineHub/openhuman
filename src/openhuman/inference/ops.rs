@@ -9,7 +9,7 @@ use crate::openhuman::inference::{device, presets, sentiment, SentimentResult};
 use crate::openhuman::inference::{LocalAiEmbeddingResult, LocalAiStatus};
 use crate::rpc::RpcOutcome;
 use serde_json::{json, Value};
-use tinyagents_harness::message::Message;
+use tinyinference::message::Message;
 use tinyinference::model::ModelRequest;
 use tracing::{debug, error, warn};
 

@@ -295,7 +295,7 @@ pub async fn agent_chat_simple(
     let run = model.invoke(
         &(),
         tinyinference::model::ModelRequest::new(vec![
-            tinyagents_harness::message::Message::user(message.to_string()),
+            tinyinference::message::Message::user(message.to_string()),
         ])
         .with_model(default_model.clone())
         .with_temperature(effective.default_temperature),

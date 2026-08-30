@@ -59,7 +59,7 @@ async fn invoke_cloud_reflection(
     provider: &Arc<dyn tinyinference::model::ChatModel<()>>,
     prompt: &str,
 ) -> anyhow::Result<String> {
-    use tinyagents_harness::message::Message;
+    use tinyinference::message::Message;
     use tinyinference::model::ModelRequest;
     Ok(provider
         .invoke(

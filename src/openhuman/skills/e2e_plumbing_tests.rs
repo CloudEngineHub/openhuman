@@ -39,7 +39,7 @@ use crate::openhuman::skills::registry::get_workflow;
 use crate::openhuman::skills::run_log;
 use crate::openhuman::skills::runtime::await_run_outcome;
 use crate::openhuman::tools::traits::Tool;
-use tinyagents_harness::message::AssistantMessage;
+use tinyinference::message::AssistantMessage;
 use tinyinference::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinyinference::tool::ToolCall;
 

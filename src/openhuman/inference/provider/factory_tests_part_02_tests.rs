@@ -74,7 +74,7 @@ fn enforce_local_only_inference_errors_on_external_when_local_only() {
 #[tokio::test]
 async fn create_chat_model_uses_native_test_override() {
     use std::sync::Arc;
-    use tinyagents_harness::message::Message;
+    use tinyinference::message::Message;
     use tinyinference::model::ModelRequest;
     use tinyagents_harness::testkit::ScriptedModel;
 
@@ -99,7 +99,7 @@ async fn create_chat_model_uses_native_test_override() {
 async fn one_shot_chat_models_preserve_factory_temperature_as_request_default() {
     use async_trait::async_trait;
     use std::sync::{Arc, Mutex};
-    use tinyagents_harness::message::Message;
+    use tinyinference::message::Message;
     use tinyinference::model::{ModelRequest, ModelResponse};
 
     struct TemperatureProbe {

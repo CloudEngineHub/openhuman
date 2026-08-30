@@ -269,7 +269,7 @@ fn body_failure_result(name: &str, extra: serde_json::Value) -> TaToolResult {
 
 fn repeated_success_response(tool: &str, args: serde_json::Value) -> ModelResponse {
     ModelResponse {
-        message: tinyagents_harness::message::AssistantMessage {
+        message: tinyinference::message::AssistantMessage {
             id: None,
             content: vec![ContentBlock::Text("working".to_string())],
             tool_calls: vec![TaToolCall::new("repeat-1", tool, args)],

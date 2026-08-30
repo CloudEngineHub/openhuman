@@ -7,7 +7,7 @@
 
 use crate::openhuman::inference::provider::UsageInfo;
 use std::sync::Arc;
-use tinyagents_harness::message::Message;
+use tinyinference::message::Message;
 use tinyinference::model::{ChatModel, ModelRequest};
 
 /// A checkpoint result. `usage`, when present, is the provider usage from the

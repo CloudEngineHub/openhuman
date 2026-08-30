@@ -5,7 +5,7 @@
 
 use std::hash::{Hash, Hasher};
 
-use tinyagents_harness::message::Message;
+use tinyinference::message::Message;
 use tinyinference::model::ModelRequest;
 
 pub const THREAD_TITLE_LOG_PREFIX: &str = "[threads:title]";

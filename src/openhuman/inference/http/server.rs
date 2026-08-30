@@ -33,7 +33,7 @@ use serde_json::json;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tinyagents_harness::message::Message;
+use tinyinference::message::Message;
 use tinyinference::model::{ModelRequest, ModelStreamItem};
 use tracing::{debug, warn};
 

@@ -330,7 +330,7 @@ Rules:\n\
         "[linkedin_enrichment] sending profile to LLM for summarisation"
     );
 
-    use tinyagents_harness::message::Message;
+    use tinyinference::message::Message;
     use tinyinference::model::ModelRequest;
     let summary = model_chat
         .invoke(
