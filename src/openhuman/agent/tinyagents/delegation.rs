@@ -1522,3 +1522,39 @@ mod tests {
         assert_eq!(outcome.state.final_output.as_deref(), Some("done"));
     }
 }
+
+#[cfg(test)]
+mod tmp_shape_probe {
+    use super::*;
+
+    #[test]
+    fn print_pre_move_serialized_shape() {
+        let state = DelegationState {
+            plan: Some("PLAN".into()),
+            executions: vec![
+                StepRecord {
+                    index: 0,
+                    prompt: "P0".into(),
+                    result: "R0".into(),
+                },
+                StepRecord {
+                    index: 1,
+                    prompt: "P1".into(),
+                    result: "R1".into(),
+                },
+            ],
+            reviews: vec!["review-0".into(), "review-1".into()],
+            revisions: 1,
+            approved: true,
+            final_output: Some("FINAL".into()),
+            cancelled: false,
+            human_approved: Some(true),
+            denied: false,
+            schema_version: CURRENT_SCHEMA_VERSION,
+        };
+        println!(
+            "PRE_MOVE_JSON={}",
+            serde_json::to_string(&state).expect("serializes")
+        );
+    }
+}
