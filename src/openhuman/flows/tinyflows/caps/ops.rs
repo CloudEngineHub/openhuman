@@ -172,7 +172,7 @@ async fn flow_tool_allowed(
             tracing::debug!(target: "flows", %slug, %toolkit, "[flows] tool_call curation: reject — slug is not a curated action of this toolkit");
             return false;
         };
-        let pref = load_user_scope_pref(&toolkit).await;
+        let pref = load_user_scope_pref(config, &toolkit).await;
         let allowed = pref.allows(curated.scope);
         tracing::debug!(target: "flows", %slug, %toolkit, allowed, "[flows] tool_call curation: static curated catalog decision");
         return allowed;
