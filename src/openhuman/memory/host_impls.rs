@@ -47,7 +47,6 @@ use tinymemory_core::shutdown::{ShutdownHook, ShutdownHost};
 use tokio::sync::Notify;
 
 use crate::openhuman::config::Config;
-use crate::openhuman::memory::model_bridge::{LegacyChatModelBridge, bridge_response_to_new};
 
 /// Type alias for the seam's config trait object, to keep signatures readable.
 type SeamConfig = tinymemory_core::Config;
