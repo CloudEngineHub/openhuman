@@ -49,7 +49,7 @@ pub async fn composio_list_connections(
     let active = resp.connections.iter().filter(|c| c.is_active()).count();
     let total = resp.connections.len();
     sync_cache_with_connections(&resp.connections);
-    let resp = enrich_connections_with_identity(resp);
+    let resp = enrich_connections_with_identity(config, resp).await;
     Ok(RpcOutcome::new(
         resp,
         vec![format!(
