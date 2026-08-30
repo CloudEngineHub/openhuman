@@ -282,7 +282,7 @@ impl ChatModel<()> for ClaudeAgentSdkProvider {
         let output = self
             .invoke_cli(system.as_deref(), &last_user, model)
             .await
-            .map_err(|error| TinyAgentsError::Model(error.to_string()))?;
+            .map_err(|error| tinyinference::Error::Model(error.to_string()))?;
 
         Ok(
             crate::openhuman::agent::tinyagents::model::prompt_guided_text_response(
