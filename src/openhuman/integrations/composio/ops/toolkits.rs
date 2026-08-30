@@ -4,7 +4,6 @@ use crate::openhuman::config::Config;
 use crate::openhuman::modules::connectors::{self, methods};
 use crate::rpc::RpcOutcome;
 
-use super::super::client::{create_composio_client, ComposioClientKind};
 use super::super::providers::{agent_ready_toolkits, capability_matrix};
 use super::super::types::{ComposioCapabilitiesResponse, ComposioToolkitsResponse};
 use super::error_utils::{report_composio_op_error, OpResult};
