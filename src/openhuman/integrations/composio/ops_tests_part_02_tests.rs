@@ -288,7 +288,7 @@ async fn notion_cleanup_targets_surface_corrupt_sync_state() {
     );
     memory
         .kv_set(
-            Some(super::super::super::providers::sync_state::KV_NAMESPACE),
+            Some(tinycortex::memory::sync::state::STATE_NAMESPACE),
             "notion:conn-1",
             &serde_json::json!({ "toolkit": 42 }),
         )
