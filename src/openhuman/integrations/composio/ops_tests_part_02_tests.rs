@@ -232,15 +232,23 @@ async fn notion_cleanup_targets_include_synced_page_sources() {
         MemoryClient::from_workspace_dir(config.workspace_dir.clone())
             .expect("memory client should initialise"),
     );
-    // `save` is the extension trait, not an inherent method: `SyncState` moved
-    // to the contract crate in v1.7.0, which stays free of I/O, so persistence
-    // stayed behind in the engine.
-    use tinymemory_core::sync::composio::providers::sync_state::PersistedSyncState;
-    let mut state = SyncState::new("notion", "conn-1");
+    // tinymemory v1.13.4 deleted the whole in-process Composio pipeline —
+    // `sync_state::PersistedSyncState`/`HostSyncAdapter` included — so there is
+    // no extension trait to save through any more. `memory_cleanup.rs`'s reader
+    // deserialises this row as `tinycortex::memory::sync::SyncState` (the same
+    // shape tinycortex's own sync layer writes), so the test writes that type
+    // straight through the KV store instead.
+    let mut state = tinycortex::memory::sync::SyncState::new("notion", "conn-1");
     state.mark_synced("page-a@2026-01-01T00:00:00Z");
     state.mark_synced("page-b");
-    let adapter = tinymemory_core::tinycortex::HostSyncAdapter::new(std::sync::Arc::clone(&memory));
-    state.save(&adapter).await.expect("sync state should save");
+    memory
+        .kv_set(
+            Some(tinycortex::memory::sync::state::STATE_NAMESPACE),
+            "notion:conn-1",
+            &state,
+        )
+        .await
+        .expect("sync state should save");
 
     let targets = composio_memory_targets_for_connection(&config, Some("notion"), "conn-1")
         .await
