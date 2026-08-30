@@ -38,7 +38,6 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tinyinference::model::{ChatModel, ModelResponse};
 use tinymemory_api::host::{EmbeddingHost, EmbeddingProvider, ErrorReporter, UsageInfo};
 use tinymemory_core::chat_host::ChatHost;
 use tinymemory_core::config_loader::ConfigLoader;
@@ -48,6 +47,7 @@ use tinymemory_core::shutdown::{ShutdownHook, ShutdownHost};
 use tokio::sync::Notify;
 
 use crate::openhuman::config::Config;
+use crate::openhuman::memory::model_bridge::{LegacyChatModelBridge, bridge_response_to_new};
 
 /// Type alias for the seam's config trait object, to keep signatures readable.
 type SeamConfig = tinymemory_core::Config;
