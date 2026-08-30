@@ -14,7 +14,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::openhuman::agent::turn_origin::{with_origin, AgentTurnOrigin, TrustedAutomationSource};
 use crate::openhuman::config::Config;
-use crate::openhuman::flows::build_registry;
+use tinyflows_catalog::build_registry;
 use crate::openhuman::flows::bus;
 use crate::openhuman::flows::draft_store;
 use crate::openhuman::flows::run_registry;
