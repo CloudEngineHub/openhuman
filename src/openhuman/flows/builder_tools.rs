@@ -3452,16 +3452,13 @@ fn tool_call_error_message(output: &Value, node_id: &str) -> Option<String> {
         })
 }
 
-/// A [`tinyflows::observability::RunObserver`] that captures every finished
-/// node's [`ExecutionStep`](tinyflows::observability::ExecutionStep) — in
-/// particular its `diagnostics` (null-resolved `=`-expressions the engine
-/// traced during that node's config resolution) — so [`DryRunWorkflowTool`]
-/// can inspect them once the sandbox run settles. See the struct's "Null-
-/// resolution check" doc for why this exists.
-/// `pub(crate)` (not private) so [`crate::openhuman::flows::ops::validate_required_arg_resolvability`]
-/// (issue B18 — escalating a null-resolved REQUIRED outbound arg to a hard
-/// authoring-time reject) can run the identical sandbox-capture shape without
-/// duplicating this struct.
+/// The engine's own step-capturing observer, re-exported under the name
+/// [`DryRunWorkflowTool`]'s call sites already use.
+///
+/// It is upstream because what it captures is the engine's:
+/// `ExecutionStep::diagnostics` holds the `=`-expressions that resolved to null
+/// while a node's config was being assembled, which is the only place a graph's
+/// real wiring failure is visible. This host used to declare an identical copy.
 pub(crate) use tinyflows::observability::CapturingObserver;
 
 // ─────────────────────────────────────────────────────────────────────────────
