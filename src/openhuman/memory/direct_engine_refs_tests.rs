@@ -345,19 +345,11 @@ const ALLOWED: &[(&str, Verdict, &str)] = &[
         "re-export shim: pub use tinymemory_core::sources::*",
     ),
     (
-        "src/openhuman/memory/sync/composio/mod.rs",
+        "src/openhuman/memory/sources/reconcile.rs",
         Verdict::HostSide,
-        "re-export shim: pub use tinymemory_core::sync::composio::*",
-    ),
-    (
-        "src/openhuman/memory/sync/composio/providers/mod.rs",
-        Verdict::HostSide,
-        "re-export shim: pub use tinymemory_core::sync::composio::providers::*",
-    ),
-    (
-        "src/openhuman/memory/sync/composio/providers/slack/mod.rs",
-        Verdict::HostSide,
-        "re-export shim: pub use tinymemory_core::sync::composio::providers::slack::*",
+        "calls the engine's still-live apply_composio_source_caps_migration() after this host's \
+         own tinyconnectors-backed ensure_composio_sources() reconcile pass — see the module docs \
+         for why the reconcile itself moved but this one migration call did not",
     ),
     (
         "src/openhuman/memory/tree/health/mod.rs",
