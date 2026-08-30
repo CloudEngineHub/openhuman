@@ -2824,7 +2824,7 @@ fn build_null_resolution_entry(
     diag: &tinyflows::expr::NullResolution,
     graph: &WorkflowGraph,
 ) -> Value {
-    if let Some(upstream) = crate::openhuman::flows::ops::mock_opaque_tool_call_upstream_ref(
+    if let Some(upstream) = tinyflows::preflight::mock_opaque_tool_call_upstream_ref(
         &diag.expression,
         graph,
         node_id,
@@ -3462,31 +3462,7 @@ fn tool_call_error_message(output: &Value, node_id: &str) -> Option<String> {
 /// (issue B18 — escalating a null-resolved REQUIRED outbound arg to a hard
 /// authoring-time reject) can run the identical sandbox-capture shape without
 /// duplicating this struct.
-#[derive(Default)]
-pub(crate) struct CapturingObserver {
-    steps: std::sync::Mutex<Vec<tinyflows::observability::ExecutionStep>>,
-}
-
-impl tinyflows::observability::RunObserver for CapturingObserver {
-    fn on_step_finish(&self, step: &tinyflows::observability::ExecutionStep) {
-        self.steps
-            .lock()
-            .expect("CapturingObserver steps mutex poisoned")
-            .push(step.clone());
-    }
-}
-
-impl CapturingObserver {
-    /// A snapshot of every step recorded so far (steps are pushed
-    /// synchronously from `on_step_finish`, so once the run's future resolves
-    /// every step it will ever record is already present).
-    pub(crate) fn steps(&self) -> Vec<tinyflows::observability::ExecutionStep> {
-        self.steps
-            .lock()
-            .expect("CapturingObserver steps mutex poisoned")
-            .clone()
-    }
-}
+pub(crate) use tinyflows::observability::CapturingObserver;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // save_workflow — persist a built graph onto an EXISTING saved flow

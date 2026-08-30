@@ -625,6 +625,23 @@ pub(crate) async fn run_builder_gates(config: &Config, graph: &WorkflowGraph) ->
     validate_required_arg_resolvability(graph).await
 }
 
+/// Refuses a graph whose outbound `tool_call` arguments a sandbox run proves
+/// can never carry a value.
+///
+/// Delegates to [`tinyflows::preflight::unresolvable_tool_args`]; the whole
+/// analysis is the engine's, because the mock run, the trigger-scope rule and
+/// the opaque-upstream rule are all statements about the DSL. What this host
+/// contributes is the one thing the crate cannot know: which slug prefix marks
+/// a tool of *ours*, which has no external provider to reject the call and so
+/// is skipped.
+pub(crate) async fn validate_required_arg_resolvability(graph: &WorkflowGraph) -> Vec<String> {
+    tinyflows::preflight::unresolvable_tool_args(
+        graph,
+        &[crate::openhuman::flows::tinyflows::caps::NATIVE_TOOL_PREFIX],
+    )
+    .await
+}
+
 /// Checks literal `workflow_id` children reachable from an authoring candidate.
 ///
 /// Pure graph validation can recurse through inline children, but resolving a
