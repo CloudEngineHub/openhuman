@@ -47,8 +47,12 @@ pub async fn composio_list_capabilities(
     _config: &Config,
 ) -> OpResult<RpcOutcome<ComposioCapabilitiesResponse>> {
     tracing::debug!("[composio] rpc list_capabilities");
+    // The matrix is still built from `tinymemory`'s provider registry, whose
+    // capability type is the parallel copy — see
+    // `integrations::composio::types::reencode`. Phase 4 moves the registry
+    // into the connector module and this conversion goes away.
     let resp = ComposioCapabilitiesResponse {
-        capabilities: capability_matrix(),
+        capabilities: super::super::types::reencode(&capability_matrix())?,
     };
     let count = resp.capabilities.len();
     Ok(RpcOutcome::new(
