@@ -541,7 +541,7 @@ async fn survives_llm_error_with_partial_progress() {
 
     // Exactly 2 LLM calls were made.
     assert_eq!(
-        provider.call_count(),
+        inner_provider.call_count(),
         2,
         "expected 2 LLM calls (1 success + 1 error)"
     );
