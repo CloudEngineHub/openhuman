@@ -49,9 +49,23 @@ use serde_json::Value;
 
 use super::observability::GraphTracingSink;
 
+// The surface the core imports today, under its historical spellings.
 pub(crate) use tinyagents::graph::delegation::{
-    delegation_graph_topology, deny_decision, DelegationConfig, DelegationOutcome, DelegationStage,
-    DelegationStageOutput, DelegationState, PendingApproval, StepRecord, CURRENT_SCHEMA_VERSION,
+    delegation_graph_topology, DelegationConfig, DelegationOutcome, DelegationStage,
+    DelegationStageOutput, DelegationState,
+};
+
+// The rest of the seam. These have no in-tree caller right now — their only
+// consumers were the unit tests, which moved upstream with the graph — but they
+// are kept re-exported rather than deleted so the durable-approval path
+// (`resume_delegation` + `deny_decision` + `PendingApproval`) and the state
+// vocabulary (`StepRecord`, `CURRENT_SCHEMA_VERSION`) are reachable under the
+// same names as before, and so a caller wiring that path up finds it here — on
+// the wrappers that attach the tracing sink — rather than calling the crate
+// directly and silently losing the journal.
+#[allow(unused_imports)]
+pub(crate) use tinyagents::graph::delegation::{
+    deny_decision, PendingApproval, StepRecord, CURRENT_SCHEMA_VERSION,
 };
 
 /// The `tracing` label every delegation graph run is journalled under. Stable —
