@@ -2,9 +2,9 @@ use serde_json::{json, Map, Value};
 
 use crate::core::all;
 use crate::openhuman::agent::harness::AgentDefinitionRegistry;
+use crate::openhuman::agent::tinyagents::convert::spec_to_schema;
 use crate::openhuman::agent::Agent;
 use crate::openhuman::config::rpc as config_rpc;
-use crate::openhuman::inference::provider::types::build_tool_instructions_text;
 use crate::openhuman::security::{SecurityPolicy, ToolOperation};
 
 use super::super::write_dispatch;
