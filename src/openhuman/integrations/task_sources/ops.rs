@@ -193,26 +193,15 @@ pub async fn list_databases(
     provider: ProviderSlug,
     connection_id: Option<String>,
 ) -> Result<RpcOutcome<Vec<TaskContainer>>, String> {
-    let provider_impl = get_provider(provider.as_str())
-        .ok_or_else(|| format!("no native provider registered for '{}'", provider.as_str()))?;
-    let ctx = ProviderContext {
-        config: Arc::new(config.clone()),
-        toolkit: provider.as_str().to_string(),
-        connection_id: connection_id.filter(|s| !s.trim().is_empty()),
-        usage: Default::default(),
-        max_items: None,
-        sync_depth_days: None,
-    };
-    let databases = provider_impl
-        .list_databases(&ctx)
-        .await
-        .map_err(|e| format!("list databases failed: {e}"))?;
-    tracing::debug!(
-        count = databases.len(),
-        provider = provider.as_str(),
-        "[task_sources:ops] list_databases"
-    );
-    Ok(RpcOutcome::new(databases, vec![]))
+    let _ = (config, connection_id);
+    // `ComposioProvider::list_databases` has no replacement — see
+    // `pipeline::fetch_tasks_unavailable`'s doc comment for why.
+    Err(format!(
+        "task_sources list_databases for toolkit '{}' is unavailable: tinymemory v1.13.4 \
+         deleted ComposioProvider::list_databases with no replacement, and the tinyconnectors \
+         module exposes no structured task-fetch surface to reimplement it against",
+        provider.as_str()
+    ))
 }
 
 /// Domain status: enabled flag + source counts.
