@@ -259,7 +259,7 @@ impl ChatModel<()> for ClaudeAgentSdkProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let messages = coalesce_prompt_tool_results(&request.messages);
         let messages = with_prompt_tool_instructions(&messages, &request.tools);
         let system = messages.iter().find_map(|message| match message {

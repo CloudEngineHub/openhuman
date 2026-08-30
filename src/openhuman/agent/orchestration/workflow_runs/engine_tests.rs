@@ -136,7 +136,7 @@ impl ChatModel<()> for PeakModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         self.calls.fetch_add(1, Ordering::SeqCst);
         let current = self.active.fetch_add(1, Ordering::SeqCst) + 1;
         self.record_peak(current);

@@ -93,7 +93,7 @@ impl ChatModel<()> for FixedResponseModel {
         &self,
         _state: &(),
         _request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         Ok(ModelResponse::assistant(self.response))
     }
 }

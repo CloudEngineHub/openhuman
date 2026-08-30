@@ -25,7 +25,7 @@ impl ChatModel<()> for StaticModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let response = self.response.lock().take().unwrap_or_else(|| {
             Ok(ChatResponse {
                 text: Some("done".into()),
@@ -44,7 +44,7 @@ impl ChatModel<()> for StaticModel {
         }
     }
 
-    async fn stream(&self, state: &(), request: ModelRequest) -> tinyagents_harness::Result<ModelStream> {
+    async fn stream(&self, state: &(), request: ModelRequest) -> tinyinference::Result<ModelStream> {
         let response = self.invoke(state, request).await?;
         Ok(Box::pin(futures::stream::iter(vec![
             ModelStreamItem::Started,
@@ -92,7 +92,7 @@ impl ChatModel<()> for PersistentErrModel {
         &self,
         _state: &(),
         _request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         Err(tinyagents_harness::TinyAgentsError::Model(
             self.build_error().to_string(),
         ))

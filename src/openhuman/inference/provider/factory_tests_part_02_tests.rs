@@ -112,7 +112,7 @@ async fn one_shot_chat_models_preserve_factory_temperature_as_request_default() 
             &self,
             _state: &(),
             request: ModelRequest,
-        ) -> tinyagents_harness::Result<ModelResponse> {
+        ) -> tinyinference::Result<ModelResponse> {
             self.seen
                 .lock()
                 .expect("probe lock")

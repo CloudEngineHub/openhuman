@@ -188,7 +188,7 @@ impl ChatModel<()> for HarnessModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let message = request
             .messages
             .last()

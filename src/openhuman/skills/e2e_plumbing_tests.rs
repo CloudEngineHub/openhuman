@@ -49,7 +49,7 @@ use tinyinference::tool::ToolCall;
 // `agent/harness/subagent_runner/ops_tests.rs`; kept local so this file is
 // self-contained).
 struct ScriptedModel {
-    responses: Mutex<Vec<tinyagents_harness::Result<ModelResponse>>>,
+    responses: Mutex<Vec<tinyinference::Result<ModelResponse>>>,
 }
 
 #[async_trait]
@@ -58,7 +58,7 @@ impl ChatModel<()> for ScriptedModel {
         &self,
         _state: &(),
         _request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         self.responses.lock().remove(0)
     }
 }

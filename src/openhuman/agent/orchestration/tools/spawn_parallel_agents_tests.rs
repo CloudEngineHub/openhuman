@@ -322,7 +322,7 @@ impl ParallelHarnessProvider {
         }
     }
 
-    async fn respond_for_subagent(&self, flattened: &str) -> tinyagents_harness::Result<ModelResponse> {
+    async fn respond_for_subagent(&self, flattened: &str) -> tinyinference::Result<ModelResponse> {
         let current = self
             .state
             .active_subagent_calls
@@ -345,7 +345,7 @@ impl ParallelHarnessProvider {
             sleep(Duration::from_millis(5)).await;
         }
 
-        let response = (|| -> tinyagents_harness::Result<ModelResponse> {
+        let response = (|| -> tinyinference::Result<ModelResponse> {
             if flattened.contains(RESEARCH_PROMPT_CANARY) {
                 if flattened.contains("research-step-3-ok") {
                     Ok(text_response(RESEARCH_DONE_CANARY))
@@ -415,7 +415,7 @@ impl ChatModel<()> for ParallelHarnessProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         self.state.total_calls.fetch_add(1, Ordering::SeqCst);
         let flattened = request
             .messages

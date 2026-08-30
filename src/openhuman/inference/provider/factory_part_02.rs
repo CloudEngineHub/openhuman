@@ -221,7 +221,7 @@ impl ChatModel<()> for DefaultTemperatureChatModel {
         &self,
         state: &(),
         mut request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         if request.temperature.is_none() {
             request.temperature = Some(self.temperature);
         }
@@ -232,7 +232,7 @@ impl ChatModel<()> for DefaultTemperatureChatModel {
         &self,
         state: &(),
         mut request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelStream> {
+    ) -> tinyinference::Result<ModelStream> {
         if request.temperature.is_none() {
             request.temperature = Some(self.temperature);
         }

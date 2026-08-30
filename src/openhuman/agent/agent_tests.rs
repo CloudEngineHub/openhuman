@@ -74,7 +74,7 @@ impl ChatModel<()> for ScriptedProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let mut guard = self.responses.lock().unwrap();
         let response = if guard.is_empty() {
             ChatResponse {
@@ -103,7 +103,7 @@ impl ChatModel<()> for FailingProvider {
         &self,
         _state: &(),
         _request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         Err(tinyagents_harness::TinyAgentsError::Model(
             "provider error".to_string(),
         ))

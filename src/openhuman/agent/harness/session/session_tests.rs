@@ -37,7 +37,7 @@ impl ChatModel<()> for MockProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let mut guard = self.responses.lock();
         let response = if guard.is_empty() {
             ChatResponse {
@@ -56,7 +56,7 @@ impl ChatModel<()> for MockProvider {
         )
     }
 
-    async fn stream(&self, state: &(), request: ModelRequest) -> tinyagents_harness::Result<ModelStream> {
+    async fn stream(&self, state: &(), request: ModelRequest) -> tinyinference::Result<ModelStream> {
         let response = self.invoke(state, request).await?;
         Ok(Box::pin(futures::stream::iter(vec![
             ModelStreamItem::Started,
@@ -93,7 +93,7 @@ impl ChatModel<()> for RecordingProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let system_prompt = request.messages.iter().find_map(|message| match message {
             Message::System(_) => Some(message.text()),
             _ => None,
@@ -121,7 +121,7 @@ impl ChatModel<()> for RecordingProvider {
         )
     }
 
-    async fn stream(&self, state: &(), request: ModelRequest) -> tinyagents_harness::Result<ModelStream> {
+    async fn stream(&self, state: &(), request: ModelRequest) -> tinyinference::Result<ModelStream> {
         let response = self.invoke(state, request).await?;
         Ok(Box::pin(futures::stream::iter(vec![
             ModelStreamItem::Started,

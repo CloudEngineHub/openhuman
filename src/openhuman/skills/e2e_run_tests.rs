@@ -118,7 +118,7 @@ impl ChatModel<()> for MockLlm {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let convo: String = request
             .messages
             .iter()
@@ -451,7 +451,7 @@ impl ChatModel<()> for FailingLlm {
         &self,
         _state: &(),
         _request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         Err(tinyagents_harness::TinyAgentsError::Model(
             "simulated provider failure: model unavailable".to_string(),
         ))

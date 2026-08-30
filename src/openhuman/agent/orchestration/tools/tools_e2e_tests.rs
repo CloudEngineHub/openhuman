@@ -491,7 +491,7 @@ impl ChatModel<()> for ScriptedModel {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents_harness::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let flattened = flatten_messages(&request.messages);
         self.seen.lock().push(flattened.clone());
         for (needle, answer) in &self.responses {
