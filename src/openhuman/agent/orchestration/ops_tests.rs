@@ -509,8 +509,34 @@ async fn e2e_abort_all_cancels_an_in_flight_child_for_a_concurrent_waiter() {
         })
     };
 
-    // Let the waiter register on the watch channel before cancelling.
-    tokio::time::sleep(Duration::from_millis(200)).await;
+    // Readiness handshake instead of a fixed sleep: `cancel_all` removes the
+    // registry entry outright, so calling `abort_all` before the child has
+    // observably reached `Running` risks the waiter's own lookup racing the
+    // removal and surfacing `AgentNotFound` instead of `Cancelled`. Poll with
+    // short, non-terminal `wait_agents` calls (the crate only prunes a
+    // *terminal* entry, so polling a still-running child is side-effect-free)
+    // until `Running` is observed, bounded so a genuine regression fails fast
+    // rather than hanging.
+    let observed_running = tokio::time::timeout(Duration::from_secs(10), async {
+        loop {
+            let response = session
+                .wait_agents(WaitAgentOptions {
+                    orchestration_ids: vec![spawned.orchestration_id.clone()],
+                    timeout_ms: Some(5),
+                })
+                .await
+                .expect("poll for readiness succeeds while the child is still live");
+            if response.agents[0].status == OrchestrationTaskStatus::Running {
+                break;
+            }
+            tokio::task::yield_now().await;
+        }
+    })
+    .await;
+    assert!(
+        observed_running.is_ok(),
+        "child never reached Running before the readiness timeout"
+    );
     session.abort_all().await;
 
     let response = waiter
