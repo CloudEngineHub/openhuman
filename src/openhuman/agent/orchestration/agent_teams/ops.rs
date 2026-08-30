@@ -6,7 +6,7 @@
 //! and exchange teammate messages. Messaging rides the run-ledger event stream
 //! (`run_id = team_id`, `event_type = "team_message"`) — no new message table.
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::HashSet;
 
 use anyhow::{anyhow, Result};
 use chrono::Utc;
@@ -14,6 +14,7 @@ use serde_json::json;
 use uuid::Uuid;
 
 use crate::openhuman::config::Config;
+use tinyagents::graph::dag::{has_cycle, DagNode};
 use tinyagents::session::run_ledger::{
     self, AgentTeam, AgentTeamListRequest, AgentTeamListResponse, AgentTeamMemberStatus,
     AgentTeamMemberUpsert, AgentTeamStatus, AgentTeamTask, AgentTeamTaskStatus,
