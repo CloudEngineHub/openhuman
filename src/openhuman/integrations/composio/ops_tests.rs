@@ -55,13 +55,20 @@ async fn composio_list_toolkits_errors_without_session() {
     let tmp = tempfile::tempdir().unwrap();
     let config = test_config(&tmp);
     let err = composio_list_toolkits(&config).await.unwrap_err();
-    // Backend-mode (default) without a session — the mode-aware factory
-    // surfaces "no backend session token" so we accept either the
-    // legacy `composio unavailable` prefix or the new factory message.
+    // Backend mode (the default) with no session. What matters is that the
+    // call *fails* rather than quietly answering with an empty list, and that
+    // the message tells the user what to do about it. The wording moved into
+    // the connector module when the client did — it now reports the missing
+    // route — so this asserts the contract, not the phrasing.
     assert!(
-        err.to_lowercase().contains("composio")
-            && (err.contains("no backend session") || err.contains("unavailable")),
-        "unexpected error: {err}"
+        err.to_lowercase().contains("composio"),
+        "the error should name the domain: {err}"
+    );
+    assert!(
+        err.contains("no backend session")
+            || err.contains("unavailable")
+            || err.contains("route"),
+        "the error should say what is missing: {err}"
     );
 }
 
@@ -125,11 +132,16 @@ async fn composio_list_tools_errors_without_session() {
     let tmp = tempfile::tempdir().unwrap();
     let config = test_config(&tmp);
     let err = composio_list_tools(&config, None, None).await.unwrap_err();
-    // Same tolerance as `composio_list_toolkits_errors_without_session`.
+    // Same contract as `composio_list_toolkits_errors_without_session`.
     assert!(
-        err.to_lowercase().contains("composio")
-            && (err.contains("no backend session") || err.contains("unavailable")),
-        "unexpected error: {err}"
+        err.to_lowercase().contains("composio"),
+        "the error should name the domain: {err}"
+    );
+    assert!(
+        err.contains("no backend session")
+            || err.contains("unavailable")
+            || err.contains("route"),
+        "the error should say what is missing: {err}"
     );
 }
 
