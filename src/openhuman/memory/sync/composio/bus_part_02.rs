@@ -284,37 +284,26 @@ impl EventHandler<DomainEvent> for ComposioConnectionCreatedSubscriber {
                     return;
                 }
 
-                // The provider's bootstrap, run by the driver rather than in
-                // this process (tinymemory#105). What it does is unchanged —
-                // fetch and persist the account profile, plus whatever the
-                // provider overrides — but it now happens where the engine
-                // lives, so this host does not need a `ProviderContext` to
-                // describe itself back to it.
-                match crate::openhuman::memory::binding::for_config(&config) {
-                    Ok(binding) => match binding.provider().as_source_sync() {
-                        Some(sync) => {
-                            if let Err(e) =
-                                sync.bootstrap_connection(&toolkit, &connection_id).await
-                            {
-                                tracing::warn!(
-                                    toolkit = %toolkit,
-                                    connection_id = %connection_id,
-                                    error = %e,
-                                    "[composio:bus] connection bootstrap failed"
-                                );
-                            }
-                        }
-                        None => tracing::debug!(
-                            toolkit = %toolkit,
-                            driver = %binding.driver_id(),
-                            "[composio:bus] driver does not serve SourceSync; skipping bootstrap"
-                        ),
-                    },
-                    Err(e) => tracing::warn!(
+                // The bootstrap step used to be `MemorySourceSync::bootstrap_connection`,
+                // run by the driver — "fetch and persist the account profile".
+                // tinymemory v1.13.4 made that member unconditionally refuse
+                // for every toolkit (reaching a connected account now needs a
+                // credential the engine must not hold), so this host does it
+                // directly through the connector module instead — the same
+                // `GET_USER_PROFILE` round trip `composio_get_user_profile`
+                // already performs.
+                if let Err(e) = crate::openhuman::integrations::composio::ops::composio_get_user_profile(
+                    &config,
+                    &connection_id,
+                )
+                .await
+                {
+                    tracing::warn!(
                         toolkit = %toolkit,
+                        connection_id = %connection_id,
                         error = %e,
-                        "[composio:bus] memory binding failed; skipping bootstrap"
-                    ),
+                        "[composio:bus] connection bootstrap (profile fetch) failed"
+                    );
                 }
 
                 // `ctx.config` is the seam's `dyn MemoryHostConfig`; the binding
