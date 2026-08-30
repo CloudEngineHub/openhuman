@@ -32,10 +32,10 @@ impl OpenHumanCloudEmbedding {
         let bearer: BearerResolver = Arc::new(move || {
             let auth = AuthService::new(&state_dir, secrets_encrypt);
             auth.get_provider_bearer_token(APP_SESSION_PROVIDER, None)
-                .map_err(|error| tinyagents_harness::TinyAgentsError::Embedding(error.to_string()))?
+                .map_err(|error| tinyinference::Error::Embedding(error.to_string()))?
                 .filter(|token| !token.trim().is_empty())
                 .ok_or_else(|| {
-                    tinyagents_harness::TinyAgentsError::Validation(
+                    tinyinference::Error::Validation(
                         "No backend session for cloud embeddings: log in to OpenHuman".into(),
                     )
                 })
