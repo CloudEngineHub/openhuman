@@ -4341,6 +4341,7 @@ dependencies = [
  "tinyagents",
  "tinybus",
  "tinychannels",
+ "tinyconnectors-bus",
  "tinycortex",
  "tinycortex-api",
  "tinydocs-bus",
@@ -7022,6 +7023,14 @@ dependencies = [
  "urlencoding",
  "uuid",
  "webpki-roots 1.0.9",
+]
+
+[[package]]
+name = "tinyconnectors-bus"
+version = "0.3.1"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
