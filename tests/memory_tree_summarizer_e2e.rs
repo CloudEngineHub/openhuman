@@ -337,7 +337,7 @@ async fn builds_hour_day_month_year_chain() {
 
     // Exactly 2 LLM calls: one per hour leaf.
     assert_eq!(
-        provider.call_count(),
+        inner_provider.call_count(),
         2,
         "expected exactly 2 LLM calls (one per hour leaf)"
     );
