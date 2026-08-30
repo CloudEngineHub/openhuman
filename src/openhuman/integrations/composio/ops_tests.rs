@@ -65,9 +65,7 @@ async fn composio_list_toolkits_errors_without_session() {
         "the error should name the domain: {err}"
     );
     assert!(
-        err.contains("no backend session")
-            || err.contains("unavailable")
-            || err.contains("route"),
+        err.contains("no backend session") || err.contains("unavailable") || err.contains("route"),
         "the error should say what is missing: {err}"
     );
 }
@@ -92,10 +90,15 @@ async fn composio_list_connections_errors_without_session() {
     let tmp = tempfile::tempdir().unwrap();
     let config = test_config(&tmp);
     let err = composio_list_connections(&config).await.unwrap_err();
+    // Same contract as `composio_list_toolkits_errors_without_session`: it
+    // fails rather than answering with an empty list, and says what is missing.
     assert!(
-        err.to_lowercase().contains("composio")
-            && (err.contains("no backend session") || err.contains("unavailable")),
-        "unexpected error: {err}"
+        err.to_lowercase().contains("composio"),
+        "the error should name the domain: {err}"
+    );
+    assert!(
+        err.contains("no backend session") || err.contains("unavailable") || err.contains("route"),
+        "the error should say what is missing: {err}"
     );
 }
 
@@ -138,9 +141,7 @@ async fn composio_list_tools_errors_without_session() {
         "the error should name the domain: {err}"
     );
     assert!(
-        err.contains("no backend session")
-            || err.contains("unavailable")
-            || err.contains("route"),
+        err.contains("no backend session") || err.contains("unavailable") || err.contains("route"),
         "the error should say what is missing: {err}"
     );
 }
