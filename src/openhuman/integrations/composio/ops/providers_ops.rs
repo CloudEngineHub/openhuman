@@ -257,18 +257,43 @@ pub async fn composio_sync(
     Ok(RpcOutcome::new(outcome, vec![summary]))
 }
 
+/// What one [`run_sync_pass`] call did.
+///
+/// A superset of the `usize` the caller inside this file needs, so
+/// `memory::sync::composio::providers::slack::rpc` — the other caller — can
+/// build a [`SyncOutcome`] without a second round trip through the module.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct SyncPassOutcome {
+    /// Records the module returned in this page.
+    pub records_read: usize,
+    /// Of those, how many the driver actually wrote (the rest were already
+    /// ingested and unchanged).
+    pub written: u64,
+    /// Records the driver had already ingested, unchanged.
+    pub already_ingested: u64,
+    /// Whether the module has more to read — the caller decides whether to
+    /// call again.
+    pub more_pending: bool,
+}
+
 /// Read one connection through the module and ingest what it returns.
 ///
 /// The two halves are deliberately not interleaved with retries or partial
 /// commits: the module already decides what a page is and where the cursor
 /// stands, and re-deciding that here would give the run two opinions about
 /// what has been read.
-async fn run_sync_pass(
+///
+/// `pub(crate)` — also called from
+/// `memory::sync::composio::providers::slack::rpc`, which needs the same
+/// tinyconnectors-mediated sync pass `composio_sync` runs here, but awaited
+/// synchronously rather than fired into a background task (its RPC contract
+/// is "return the outcome", not "return that a run started").
+pub(crate) async fn run_sync_pass(
     config: &Config,
     toolkit: &str,
     connection_id: &str,
     reason: &str,
-) -> Result<usize, String> {
+) -> Result<SyncPassOutcome, String> {
     let response = connectors::call::<_, ConnectorSyncResponse>(
         config,
         methods::SYNC,
