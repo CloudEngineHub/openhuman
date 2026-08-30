@@ -1,6 +1,6 @@
 //! Tests for the connector module client.
 
-use super::{MODULE_ID, methods};
+use super::{methods, MODULE_ID};
 use crate::openhuman::modules::registry;
 
 #[test]
@@ -19,7 +19,9 @@ fn the_registered_version_matches_the_compiled_contract() {
     // checks the record against the crate this build actually links.
     let record = registry::find(MODULE_ID).expect("tinyconnectors is registered");
     assert!(
-        record.release_url.ends_with(&format!("v{}", record.version)),
+        record
+            .release_url
+            .ends_with(&format!("v{}", record.version)),
         "the release URL and the version must name one release: {} / {}",
         record.release_url,
         record.version
@@ -33,7 +35,10 @@ fn the_module_is_lazy() {
     // configuration and still answers the capability members.
     let record = registry::find(MODULE_ID).expect("tinyconnectors is registered");
     assert!(
-        matches!(record.load, crate::openhuman::modules::types::LoadPolicy::Lazy),
+        matches!(
+            record.load,
+            crate::openhuman::modules::types::LoadPolicy::Lazy
+        ),
         "tinyconnectors should load lazily"
     );
 }

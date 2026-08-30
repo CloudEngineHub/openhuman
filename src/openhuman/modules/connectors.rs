@@ -28,8 +28,8 @@
 //! preference: two sources of truth for a permission is how one of them ends up
 //! stale and permissive.
 
-use serde::Serialize;
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 use tinybus::Proxy;
 use tinyconnectors_bus::names;
 
