@@ -43,7 +43,7 @@ use std::collections::HashSet;
 use std::sync::{Arc, OnceLock};
 
 use serde_json::json;
-use tinyagents_harness::embeddings::{
+use tinyinference::embeddings::{
     EmbeddingModel as TaEmbeddingModel, InMemoryVectorStore, Retriever, ScoredDoc,
 };
 use tinyagents_harness::events::{AgentEvent, EventSink};

@@ -6,8 +6,8 @@
 //! (rate-limit + retry). This adapter is a **thin seam**: it wraps an
 //! `Arc<dyn EmbeddingProvider>` and re-exposes it as the crate's provider-neutral
 //! [`EmbeddingModel`] so the harness's retrieval surface
-//! ([`Retriever`](tinyagents_harness::embeddings::Retriever) /
-//! [`VectorStore`](tinyagents_harness::embeddings::VectorStore)) can drive
+//! ([`Retriever`](tinyinference::embeddings::Retriever) /
+//! [`VectorStore`](tinyinference::embeddings::VectorStore)) can drive
 //! OpenHuman embeddings without cloning provider logic.
 //!
 //! The only real work here is bridging the batch signature: the crate trait
@@ -22,7 +22,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tinyagents_harness::embeddings::EmbeddingModel as TaEmbeddingModel;
+use tinyinference::embeddings::EmbeddingModel as TaEmbeddingModel;
 use tinyagents::{Result as TaResult, TinyAgentsError};
 
 use crate::openhuman::inference::embeddings::EmbeddingProvider;
