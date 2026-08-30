@@ -46,15 +46,15 @@ pub struct RefreshIdentitiesReport {
 
 /// Persist one profile's identity facets and report how many rows it wrote.
 ///
-/// Still routed through the memory-side provider registry, which owns the facet
-/// schema. Phase 4 moves that here and this conversion goes away — see
-/// [`super::super::types::reencode`].
-fn persist_identity(profile: &ComposioUserProfile) -> OpResult<usize> {
+/// Was routed through the engine's provider registry (`get_provider(toolkit)
+/// .identity_set(profile)`), deleted by tinymemory v1.13.4 with no
+/// replacement. `identity_store::persist_provider_profile` is this host's own
+/// port of what `identity_set`'s default impl did — see its module docs for
+/// what carried over (the facet write) and what did not (the deleted
+/// engine's `LearningCandidate` emission for stability scoring).
+async fn persist_identity(config: &Config, profile: &ComposioUserProfile) -> OpResult<usize> {
     let native: ProviderUserProfile = reencode(profile)?;
-    let Some(provider) = super::super::providers::get_provider(&profile.toolkit) else {
-        return Ok(0);
-    };
-    Ok(provider.identity_set(&native))
+    super::super::identity_store::persist_provider_profile(config, &native).await
 }
 
 /// `openhuman.composio_get_user_profile` — fetch a normalized user profile for
