@@ -426,6 +426,12 @@ impl AgentOrchestrationSession {
             )
             .map_err(|err| {
                 log::error!("[agent_orchestration] duplicate detached child id: {err}");
+                // Registration failed, so the registry holds no record of this
+                // task and `abort_all`/`cancel_all` can never reach it. Dropping
+                // `handle` here would only detach the `JoinHandle` — the spawned
+                // task keeps running orphaned. Abort it explicitly so a failed
+                // spawn never leaves a live, unreachable child behind.
+                handle.abort();
                 OrchestrationError::InvalidSpawnRequest
             })?;
 
