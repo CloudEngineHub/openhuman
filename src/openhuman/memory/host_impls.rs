@@ -333,17 +333,15 @@ async fn live_config(config: &SeamConfig) -> Result<Config, String> {
 /// Install every host seam into `tinymemory-core`.
 ///
 /// Call once during startup wiring, **before any memory work begins** — the
-/// embedding, chat, Composio and config seams all fail loudly when unwired, by
-/// design, because degrading quietly would corrupt an embedding space or make a
-/// sync run look empty rather than broken.
+/// embedding, chat and config seams all fail loudly when unwired, by design,
+/// because degrading quietly would corrupt an embedding space or make a sync
+/// run look empty rather than broken. Composio has no seam here any more —
+/// see the module docs.
 pub fn install_memory_host_seams(config: Arc<Config>) {
     tinymemory_core::embedding_host::set_embedding_host(Arc::new(OpenHumanEmbeddingHost {
         config: Arc::clone(&config),
     }));
     tinymemory_core::chat_host::set_chat_host(Arc::new(OpenHumanChatHost {
-        config: Arc::clone(&config),
-    }));
-    tinymemory_core::composio_host::set_composio_host(Arc::new(OpenHumanComposioHost {
         config: Arc::clone(&config),
     }));
     tinymemory_core::config_loader::set_config_loader(Arc::new(OpenHumanConfigLoader));
