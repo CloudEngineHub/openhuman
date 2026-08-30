@@ -28,6 +28,12 @@
 //! consulted in production (the env var is absent) so there is zero
 //! runtime cost.
 
+// `CachedResult`, `HANDOFF_PREVIEW_CHARS`, `build_handoff_placeholder` and
+// `clean_tool_output` have no current OpenHuman call site (the crate now
+// owns the only callers, inside `apply_handoff`/`build_handoff_placeholder`
+// itself) but are kept re-exported here for surface parity with the
+// pre-migration module and in case a future caller needs them directly.
+#[allow(unused_imports)]
 pub(crate) use tinyagents::harness::handoff::{
     build_handoff_placeholder, chunk_content, clean_tool_output, CachedResult, ResultHandoffCache,
     HANDOFF_MAX_ENTRIES, HANDOFF_OVERSIZE_THRESHOLD_TOKENS, HANDOFF_PREVIEW_CHARS,
