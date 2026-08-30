@@ -152,7 +152,7 @@ impl ChatModel<()> for PeakModel {
 
         if let Some(needle) = self.fail_on.lock().as_ref() {
             if flattened.contains(needle.as_str()) {
-                return Err(tinyagents_harness::TinyAgentsError::Model(
+                return Err(tinyinference::Error::Model(
                     "mock model forced failure".to_string(),
                 ));
             }

@@ -100,7 +100,7 @@ impl ChatModel<()> for SequenceProvider {
                     &response, &request,
                 ),
             ),
-            Err(error) => Err(tinyagents_harness::TinyAgentsError::Model(error.to_string())),
+            Err(error) => Err(tinyinference::Error::Model(error.to_string())),
         }
     }
 

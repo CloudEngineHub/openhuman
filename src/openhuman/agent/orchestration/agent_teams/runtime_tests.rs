@@ -99,7 +99,7 @@ impl ChatModel<()> for CannedModel {
         _request: ModelRequest,
     ) -> tinyinference::Result<ModelResponse> {
         if self.fail {
-            return Err(tinyagents_harness::TinyAgentsError::Model(
+            return Err(tinyinference::Error::Model(
                 "mock model forced failure".to_string(),
             ));
         }

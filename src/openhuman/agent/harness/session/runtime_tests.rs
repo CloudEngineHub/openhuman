@@ -40,7 +40,7 @@ impl ChatModel<()> for StaticModel {
                     &response, &request,
                 ),
             ),
-            Err(error) => Err(tinyagents_harness::TinyAgentsError::Model(error.to_string())),
+            Err(error) => Err(tinyinference::Error::Model(error.to_string())),
         }
     }
 
@@ -93,7 +93,7 @@ impl ChatModel<()> for PersistentErrModel {
         _state: &(),
         _request: ModelRequest,
     ) -> tinyinference::Result<ModelResponse> {
-        Err(tinyagents_harness::TinyAgentsError::Model(
+        Err(tinyinference::Error::Model(
             self.build_error().to_string(),
         ))
     }

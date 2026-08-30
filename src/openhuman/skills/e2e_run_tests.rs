@@ -452,7 +452,7 @@ impl ChatModel<()> for FailingLlm {
         _state: &(),
         _request: ModelRequest,
     ) -> tinyinference::Result<ModelResponse> {
-        Err(tinyagents_harness::TinyAgentsError::Model(
+        Err(tinyinference::Error::Model(
             "simulated provider failure: model unavailable".to_string(),
         ))
     }

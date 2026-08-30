@@ -385,7 +385,7 @@ impl ParallelHarnessProvider {
                     ))
                 }
             } else {
-                Err(tinyagents_harness::TinyAgentsError::Model(format!(
+                Err(tinyinference::Error::Model(format!(
                     "unexpected subagent payload: {flattened}"
                 )))
             }

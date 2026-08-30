@@ -499,7 +499,7 @@ impl ChatModel<()> for ScriptedModel {
                 return Ok(ModelResponse::assistant(*answer));
             }
         }
-        Err(tinyagents_harness::TinyAgentsError::Model(format!(
+        Err(tinyinference::Error::Model(format!(
             "unexpected model request: {flattened}"
         )))
     }
