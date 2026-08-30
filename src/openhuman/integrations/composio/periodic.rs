@@ -86,7 +86,7 @@ async fn run_one_tick() -> Result<(), String> {
         crate::openhuman::integrations::composio::ops::composio_list_connections(&config)
             .await
             .map_err(|error| format!("list_connections: {error}"))?
-            .data
+            .value
             .connections;
 
     for conn in connections {
