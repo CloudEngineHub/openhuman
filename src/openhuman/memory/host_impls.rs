@@ -31,7 +31,6 @@ use async_trait::async_trait;
 use tinyinference::model::{ChatModel, ModelResponse};
 use tinymemory_api::host::{EmbeddingHost, EmbeddingProvider, ErrorReporter, UsageInfo};
 use tinymemory_core::chat_host::ChatHost;
-use tinymemory_core::composio_host::{ComposioConnection, ComposioExecuteResponse, ComposioHost};
 use tinymemory_core::config_loader::ConfigLoader;
 use tinymemory_core::nlp_host::{NlpHost, SpacyResponse};
 use tinymemory_core::scheduler_gate::{Policy, SchedulerGate};
