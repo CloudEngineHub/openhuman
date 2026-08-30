@@ -32,8 +32,8 @@ use tempfile::tempdir;
 
 use openhuman_core::openhuman::config::Config;
 use openhuman_core::openhuman::memory::tree::tree_runtime::{engine, store};
-use tinyagents::harness::model::{ChatModel, ModelRequest, ModelResponse};
-use tinyagents::TinyAgentsError;
+use tinyinference::model::{ChatModel, ModelRequest, ModelResponse};
+use tinyinference::Error as TinyAgentsError;
 
 // ── Env isolation ─────────────────────────────────────────────────────────
 
@@ -106,7 +106,7 @@ impl ChatModel<()> for ScriptedProvider {
         &self,
         _state: &(),
         request: ModelRequest,
-    ) -> tinyagents::Result<ModelResponse> {
+    ) -> tinyinference::Result<ModelResponse> {
         let mut count = self.call_count.lock().expect("call_count lock");
         *count += 1;
         let call_n = *count;
