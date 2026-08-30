@@ -28,7 +28,7 @@
 //! `memory::sync::sync_status::rpc` and `memory::tools::flavour` are blocked on
 //! the same call.
 
-// XPROBE
+pub use tinymemory_core::tree::tree_runtime::*;
 
 // The summary-tree node model is **contract** vocabulary, not engine
 // vocabulary: it is defined in `tinymemory-bus` and the engine crate re-exports

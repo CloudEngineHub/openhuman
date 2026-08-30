@@ -25,6 +25,6 @@
 //! engine's `slack` from this glob; see that file before assuming either is
 //! droppable.
 
-// XPROBE
+pub use tinymemory_core::sync::composio::providers::*;
 
 pub mod slack;

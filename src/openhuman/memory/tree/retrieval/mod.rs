@@ -37,7 +37,7 @@
 // `search::search_entities` — plus `{query_source, search_entities}` from the
 // memory e2e suites. Every one names a shape the contract does not carry, so
 // this is the same wire-change ask as the paragraph above, not a routing one.
-// XPROBE
+pub use tinymemory_core::tree::retrieval::*;
 
 pub mod rpc;
 pub mod schemas;

@@ -20,6 +20,6 @@
 // `set_summary_embedding`. `MemoryTree` on the contract is namespace-addressed
 // (append / query_source / drill_down / seal / cascade / summary_forest /
 // recent_leaves) and has no door onto a tree *object*, which is the ask.
-// XPROBE
+pub use tinymemory_core::tree::tree::*;
 
 pub mod rpc;
