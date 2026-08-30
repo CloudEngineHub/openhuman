@@ -505,10 +505,11 @@ async fn survives_llm_error_with_partial_progress() {
     .expect("buffer_write hour15");
 
     // Provider: call 1 succeeds, call 2 returns an error.
-    let provider = LegacyChatModelBridge::new(Arc::new(ScriptedProvider::new(vec![
+    let inner_provider = Arc::new(ScriptedProvider::new(vec![
         Ok("Hour-14 summary: deployment planning in progress".to_string()),
         Err("boom: simulated LLM failure on second call".to_string()),
-    ])));
+    ]));
+    let provider = LegacyChatModelBridge::new(inner_provider.clone());
 
     log::debug!("[memory_tree_summarizer_e2e] running summarization expecting partial failure");
     let result = engine::run_summarization(&config, &provider, NS, Utc::now()).await;
