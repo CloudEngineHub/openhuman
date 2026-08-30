@@ -43,9 +43,8 @@ use crate::openhuman::agent::harness::{
     current_spawn_depth, with_current_sandbox_mode, with_spawn_depth, MAX_SPAWN_DEPTH,
 };
 use crate::openhuman::inference::provider::AGENT_TURN_MAX_OUTPUT_TOKENS;
-use crate::openhuman::memory::tree::retrieval::{
-    fast_retrieve, FastRetrieveOptions, QueryResponse,
-};
+use crate::openhuman::memory::api::provider::retrieval::{FastRetrieveQuery, RetrievalResponse};
+use crate::openhuman::memory::source_scope::as_bus_scope;
 use crate::openhuman::tools::{Tool, ToolCategory, ToolSpec};
 use tinyagents::harness::tool::SandboxMode as TinyagentsSandboxMode;
 use tinyagents::harness::workspace::WorkspaceDescriptor;
@@ -136,7 +135,7 @@ fn parse_memory_fast_path_enabled(env_value: Option<&str>) -> bool {
 /// block for the parent turn. Returns `None` when there are no hits, so the
 /// caller falls back to the model-driven walk (the empty/degraded case is
 /// #4655's territory and still benefits from the model's judgement).
-fn format_deterministic_memory_hits(resp: &QueryResponse) -> Option<String> {
+fn format_deterministic_memory_hits(resp: &RetrievalResponse) -> Option<String> {
     use std::fmt::Write as _;
     if resp.hits.is_empty() {
         return None;
@@ -295,11 +294,32 @@ async fn try_deterministic_memory_retrieval(
         );
         return None;
     }
-    let opts = FastRetrieveOptions {
+    let opts = FastRetrieveQuery {
         limit: MEMORY_FAST_PATH_LIMIT,
-        ..FastRetrieveOptions::default()
+        ..FastRetrieveQuery::default()
     };
-    let resp = match fast_retrieve(config, query, opts).await {
+    // Through the bound driver's `MemoryRetrieval`, not the engine (#5560).
+    // This is an agent turn, so `as_bus_scope()` carries the turn's own
+    // memory-source allowlist; `binding.provider()` is unguarded, which makes
+    // that argument the gate rather than a hint.
+    let scope = as_bus_scope();
+    let binding = match crate::openhuman::memory::binding::for_config(config) {
+        Ok(binding) => binding,
+        Err(e) => {
+            tracing::warn!(
+                task_id = %task_id,
+                error = %e,
+                "[subagent_runner] agent_memory fast-path could not bind the memory driver — falling back to model walk (#4677)"
+            );
+            return None;
+        }
+    };
+    // A driver with no retrieval family has no summary tree to rank. Falling
+    // through to the model walk is the same answer this path already gives for
+    // an empty result, and strictly better than reporting a failure that is
+    // really an absent capability.
+    let retrieval = binding.provider().as_retrieval()?;
+    let resp = match retrieval.fast_retrieve(query, opts, scope.as_ref()).await {
         Ok(resp) => resp,
         Err(e) => {
             tracing::warn!(
