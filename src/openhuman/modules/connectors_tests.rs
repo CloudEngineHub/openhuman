@@ -1,6 +1,8 @@
 //! Tests for the connector module client.
 
-use super::{methods, MODULE_ID};
+use super::{methods, module_config, MODULE_ID};
+use crate::openhuman::config::schema::{COMPOSIO_MODE_BACKEND, COMPOSIO_MODE_DIRECT};
+use crate::openhuman::config::Config;
 use crate::openhuman::modules::registry;
 
 #[test]
@@ -63,4 +65,84 @@ fn every_member_this_host_names_is_one_the_module_serves() {
             "{member} is not in the contract's member table"
         );
     }
+}
+
+
+// ── the route blob ───────────────────────────────────────────────────
+
+/// A config with no backend session and no stored key.
+fn bare_config() -> Config {
+    let mut config = Config::default();
+    config.composio.enabled = true;
+    config
+}
+
+#[test]
+fn direct_mode_takes_the_api_key_from_the_config_file() {
+    // The keychain is the source of truth, but `config.toml` is the documented
+    // fallback for power users — and the only one reachable in a unit test.
+    let mut config = bare_config();
+    config.composio.mode = COMPOSIO_MODE_DIRECT.to_string();
+    config.composio.api_key = Some("  sk-from-file  ".to_string());
+
+    let blob = module_config(&config).expect("direct mode with a key resolves");
+    assert_eq!(blob["route"], "direct");
+    assert_eq!(blob["api_key"], "sk-from-file", "the key is trimmed");
+    assert_eq!(blob["entity_id"], config.composio.entity_id);
+    assert!(blob.get("state_dir").is_some());
+}
+
+#[test]
+fn direct_mode_without_a_key_is_refused() {
+    // Rather than silently falling back to the backend route, which would send
+    // the user's requests somewhere they did not choose.
+    let mut config = bare_config();
+    config.composio.mode = COMPOSIO_MODE_DIRECT.to_string();
+    config.composio.api_key = None;
+
+    let error = module_config(&config).expect_err("no key must be refused");
+    assert!(error.contains("no api key"), "{error}");
+}
+
+#[test]
+fn a_blank_api_key_is_not_a_key() {
+    let mut config = bare_config();
+    config.composio.mode = COMPOSIO_MODE_DIRECT.to_string();
+    config.composio.api_key = Some("   ".to_string());
+
+    assert!(module_config(&config).is_err());
+}
+
+#[test]
+fn an_unknown_mode_fails_loudly_and_names_the_alternatives() {
+    // A typo in config.toml must not silently downgrade to a working route.
+    let mut config = bare_config();
+    config.composio.mode = "backnd".to_string();
+
+    let error = module_config(&config).expect_err("a typo must be refused");
+    assert!(error.contains("backnd"), "{error}");
+    assert!(error.contains(COMPOSIO_MODE_BACKEND), "{error}");
+    assert!(error.contains(COMPOSIO_MODE_DIRECT), "{error}");
+}
+
+#[test]
+fn an_empty_mode_is_treated_as_the_backend_default() {
+    // `serde(default)` already gives "backend" for a missing field, but a
+    // literal empty string in TOML would otherwise be rejected.
+    let mut config = bare_config();
+    config.composio.mode = String::new();
+
+    // No session in a bare config, so this reports that rather than a bad mode.
+    let error = module_config(&config).expect_err("no session");
+    assert!(error.contains("session"), "{error}");
+    assert!(!error.contains("unknown composio mode"), "{error}");
+}
+
+#[test]
+fn the_backend_route_needs_a_session() {
+    let mut config = bare_config();
+    config.composio.mode = COMPOSIO_MODE_BACKEND.to_string();
+
+    let error = module_config(&config).expect_err("no session token");
+    assert!(error.contains("Sign in"), "{error}");
 }
