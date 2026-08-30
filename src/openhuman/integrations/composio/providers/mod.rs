@@ -45,7 +45,10 @@ pub use tinymemory_api::composio::scopes::{
 pub use tinymemory_api::composio::tasks::{
     GithubFetchMode, NormalizedTask, TaskContainer, TaskFetchFilter, TaskKind,
 };
-pub use tinymemory_api::composio::{ProviderUserProfile, SyncOutcome, SyncReason};
+pub use tinymemory_api::composio::{
+    render_connected_identities_section, ConnectedIdentity, ProviderUserProfile, SyncOutcome,
+    SyncReason,
+};
 
 // ── This host's own RPC layer over the connector module ────────────────────
 pub use crate::openhuman::memory::sync::composio::providers::slack;
