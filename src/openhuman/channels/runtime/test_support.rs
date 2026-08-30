@@ -24,7 +24,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tinyagents::harness::model::{ChatModel, ModelRequest, ModelResponse};
+use tinyagents_harness::model::{ChatModel, ModelRequest, ModelResponse};
 use tinymemory_api::types::{MemoryCategory, MemoryEntry};
 
 #[derive(Debug, Clone)]

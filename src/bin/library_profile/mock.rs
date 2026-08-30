@@ -7,9 +7,9 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use openhuman_core::openhuman::inference::provider::types::{ChatResponse, ToolCall};
-use tinyagents::harness::message::{AssistantMessage, ContentBlock, Message};
-use tinyagents::harness::model::{ChatModel, ModelRequest, ModelResponse};
-use tinyagents::harness::tool::ToolCall as TinyAgentsToolCall;
+use tinyagents_harness::message::{AssistantMessage, ContentBlock, Message};
+use tinyagents_harness::model::{ChatModel, ModelRequest, ModelResponse};
+use tinyagents_harness::tool::ToolCall as TinyAgentsToolCall;
 
 /// A plain `ChatResponse` carrying only text (no tool calls).
 pub fn response(text: &str) -> ChatResponse {

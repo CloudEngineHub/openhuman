@@ -16,8 +16,8 @@ use anyhow::Result;
 use async_trait::async_trait;
 use parking_lot::Mutex;
 use std::sync::Arc;
-use tinyagents::harness::message::Message;
-use tinyagents::harness::model::{
+use tinyagents_harness::message::Message;
+use tinyagents_harness::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 
@@ -359,7 +359,7 @@ impl crate::openhuman::agent::harness::session::transcript_history::SessionHisto
 }
 
 #[async_trait]
-impl tinyagents::harness::memory::ChatHistory for FakeSessionHistory {
+impl tinyagents_harness::memory::ChatHistory for FakeSessionHistory {
     async fn messages(&self, _thread_id: &str) -> tinyagents::Result<Vec<Message>> {
         Ok(vec![])
     }

@@ -15,7 +15,7 @@
 ///
 /// When built with [`with_shadow`](Self::with_shadow), this middleware is ALSO a
 /// divergence-logging shadow over the observe-only crate
-/// [`BudgetMiddleware`](tinyagents::harness::middleware::BudgetMiddleware). It
+/// [`BudgetMiddleware`](tinyagents_harness::middleware::BudgetMiddleware). It
 /// keeps enforcing exactly as before, but at `after_agent` it compares the
 /// crate `BudgetMiddleware`'s shared [`BudgetTracker`] accumulation against the
 /// authoritative runtime [`AgentRun::usage`] and logs `[budget_shadow]` parity

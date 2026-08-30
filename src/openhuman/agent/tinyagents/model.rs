@@ -3,12 +3,12 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use tinyagents::harness::message::{AssistantMessage, ContentBlock, MessageDelta};
-use tinyagents::harness::model::{
+use tinyagents_harness::message::{AssistantMessage, ContentBlock, MessageDelta};
+use tinyagents_harness::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
-use tinyagents::harness::tool::{ToolCall as TaToolCall, ToolDelta};
-use tinyagents::harness::usage::Usage;
+use tinyagents_harness::tool::{ToolCall as TaToolCall, ToolDelta};
+use tinyagents_harness::usage::Usage;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::openhuman::agent::messages::ChatMessage;
@@ -200,7 +200,7 @@ pub(crate) fn prompt_guided_text_response(text: String, request: &ModelRequest) 
     }
 
     let response =
-        tinyagents::harness::tool::apply_prompt_tool_calls(ModelResponse::assistant(text.clone()));
+        tinyagents_harness::tool::apply_prompt_tool_calls(ModelResponse::assistant(text.clone()));
     if !response.message.tool_calls.is_empty() {
         return response;
     }

@@ -7,8 +7,8 @@
 
 use crate::openhuman::inference::provider::UsageInfo;
 use std::sync::Arc;
-use tinyagents::harness::message::Message;
-use tinyagents::harness::model::{ChatModel, ModelRequest};
+use tinyagents_harness::message::Message;
+use tinyagents_harness::model::{ChatModel, ModelRequest};
 
 /// A checkpoint result. `usage`, when present, is the provider usage from the
 /// summary call so the caller can fold it into sub-agent token/cost accounting.

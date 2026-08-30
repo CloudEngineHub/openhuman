@@ -8,7 +8,7 @@
 //! surface every consumer (RPC ops, the harness turn loop, the heartbeat
 //! continuation runtime, the agent tools, and post-turn accounting) already
 //! uses, and forwards each operation to the crate store — converting the crate
-//! [`CrateThreadGoal`](tinyagents::graph::goals::types::ThreadGoal) back to the
+//! [`CrateThreadGoal`](tinyagents_graph::goals::types::ThreadGoal) back to the
 //! local [`ThreadGoal`] and its `TinyAgentsError` to a `String`.
 //!
 //! The crate store owns the concurrency (per-thread async locks) and the goal

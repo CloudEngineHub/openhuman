@@ -28,11 +28,11 @@ use serde_json::Value;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use tinyagents::harness::message::Message;
-use tinyagents::harness::model::{
+use tinyagents_harness::message::Message;
+use tinyagents_harness::model::{
     ChatModel, Modalities, ModelProfile, ModelRequest, ModelResponse, ModelStream, ProviderError,
 };
-use tinyagents::harness::providers::openai::OpenAiModel;
+use tinyagents_harness::providers::openai::OpenAiModel;
 use tinyagents::{Result as TaResult, TinyAgentsError};
 
 use super::ProviderRuntimeOptions;

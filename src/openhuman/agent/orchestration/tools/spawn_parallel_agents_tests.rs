@@ -24,9 +24,9 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use tinyagents::harness::message::{AssistantMessage, Message};
-use tinyagents::harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents::harness::tool::ToolCall;
+use tinyagents_harness::message::{AssistantMessage, Message};
+use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyagents_harness::tool::ToolCall;
 use tokio::time::{sleep, timeout, Duration};
 
 const PARENT_PROMPT_CANARY: &str = "parallel-fanout-e2e-canary";
@@ -107,8 +107,8 @@ fn parent_context(max_parallel_tools: usize) -> ParentExecutionContext {
         max_parallel_tools,
         ..Default::default()
     };
-    let model: Arc<dyn tinyagents::harness::model::ChatModel<()>> =
-        Arc::new(tinyagents::harness::testkit::ScriptedModel::replies(vec![
+    let model: Arc<dyn tinyagents_harness::model::ChatModel<()>> =
+        Arc::new(tinyagents_harness::testkit::ScriptedModel::replies(vec![
             "ok",
         ]));
     ParentExecutionContext {

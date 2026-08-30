@@ -1,5 +1,5 @@
 use std::sync::{Arc, Mutex, OnceLock};
-use tinyagents::harness::model::ChatModel;
+use tinyagents_harness::model::ChatModel;
 
 static OVERRIDE: OnceLock<Mutex<Option<Arc<dyn ChatModel<()>>>>> = OnceLock::new();
 fn cell() -> &'static Mutex<Option<Arc<dyn ChatModel<()>>>> {

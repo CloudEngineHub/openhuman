@@ -9,8 +9,8 @@ use crate::openhuman::inference::{device, presets, sentiment, SentimentResult};
 use crate::openhuman::inference::{LocalAiEmbeddingResult, LocalAiStatus};
 use crate::rpc::RpcOutcome;
 use serde_json::{json, Value};
-use tinyagents::harness::message::Message;
-use tinyagents::harness::model::ModelRequest;
+use tinyagents_harness::message::Message;
+use tinyagents_harness::model::ModelRequest;
 use tracing::{debug, error, warn};
 
 const LOG_PREFIX: &str = "[inference::ops]";

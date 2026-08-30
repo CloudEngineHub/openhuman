@@ -35,7 +35,7 @@
 use crate::core::bus::BUS;
 use crate::openhuman::config::Config;
 use std::sync::Arc;
-use tinyagents::harness::model::{ModelRequest, ModelResponse};
+use tinyagents_harness::model::{ModelRequest, ModelResponse};
 use tinybus::ObjectPath;
 use tinyconnectors_bus::{ComposioConnection, ComposioExecuteResponse};
 use tinymemory_api::host::{MemoryEvent, SpacyResponse};

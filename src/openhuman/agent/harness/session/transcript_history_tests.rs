@@ -42,8 +42,8 @@ fn history(dir: &TempDir) -> SessionTranscriptHistory {
 }
 
 fn user(text: &str) -> Message {
-    Message::User(tinyagents::harness::message::UserMessage {
-        content: vec![tinyagents::harness::message::ContentBlock::Text(
+    Message::User(tinyagents_harness::message::UserMessage {
+        content: vec![tinyagents_harness::message::ContentBlock::Text(
             text.to_string(),
         )],
     })
@@ -375,9 +375,9 @@ async fn trait_path_loses_the_provenance_that_append_turn_preserves() {
         .replace(
             "thread-1",
             vec![Message::Assistant(
-                tinyagents::harness::message::AssistantMessage {
+                tinyagents_harness::message::AssistantMessage {
                     id: None,
-                    content: vec![tinyagents::harness::message::ContentBlock::Text(
+                    content: vec![tinyagents_harness::message::ContentBlock::Text(
                         "72F and sunny.".into(),
                     )],
                     tool_calls: vec![],

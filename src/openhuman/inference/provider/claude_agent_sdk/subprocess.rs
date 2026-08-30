@@ -2,10 +2,10 @@
 
 use anyhow::Context;
 use async_trait::async_trait;
-use tinyagents::error::TinyAgentsError;
-use tinyagents::harness::message::Message;
-use tinyagents::harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents::harness::tool::{coalesce_prompt_tool_results, with_prompt_tool_instructions};
+use tinyagents_harness::error::TinyAgentsError;
+use tinyagents_harness::message::Message;
+use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyagents_harness::tool::{coalesce_prompt_tool_results, with_prompt_tool_instructions};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::Command;
 use tokio::time::{timeout, Duration};

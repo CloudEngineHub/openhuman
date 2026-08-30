@@ -2,11 +2,11 @@ use super::*;
 use crate::openhuman::tools::ToolResult;
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use tinyagents::harness::message::{AssistantMessage, MessageDelta};
-use tinyagents::harness::model::{
+use tinyagents_harness::message::{AssistantMessage, MessageDelta};
+use tinyagents_harness::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
-use tinyagents::harness::tool::ToolCall;
+use tinyagents_harness::tool::ToolCall;
 
 fn native_tool_profile() -> &'static ModelProfile {
     static PROFILE: std::sync::LazyLock<ModelProfile> = std::sync::LazyLock::new(|| ModelProfile {

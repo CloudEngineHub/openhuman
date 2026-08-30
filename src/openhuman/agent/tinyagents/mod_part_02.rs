@@ -293,7 +293,7 @@ pub(crate) async fn run_turn_via_tinyagents_shared(
     // a 05.2/05.3 follow-up).
     let journal_thread_id = subagent_scope
         .as_ref()
-        .map(|scope| tinyagents::harness::ids::ThreadId::new(scope.task_id.clone()));
+        .map(|scope| tinyagents_harness::ids::ThreadId::new(scope.task_id.clone()));
     let turn_journal = match &events {
         Some(events) => {
             journal::attach_turn_journal(events, model, journal_run_id.clone(), journal_thread_id)

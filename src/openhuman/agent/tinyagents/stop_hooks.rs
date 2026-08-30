@@ -25,10 +25,10 @@ use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use tinyagents::harness::context::RunContext;
-use tinyagents::harness::middleware::Middleware;
-use tinyagents::harness::model::ModelResponse;
-use tinyagents::harness::steering::{SteeringCommand, SteeringHandle};
+use tinyagents_harness::context::RunContext;
+use tinyagents_harness::middleware::Middleware;
+use tinyagents_harness::model::ModelResponse;
+use tinyagents_harness::steering::{SteeringCommand, SteeringHandle};
 
 use crate::openhuman::agent::cost::TurnCost;
 use crate::openhuman::agent::stop_hooks::{StopDecision, StopHook, TurnState};

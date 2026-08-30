@@ -19,8 +19,8 @@ use async_trait::async_trait;
 use std::collections::HashSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
-use tinyagents::harness::message::Message;
-use tinyagents::harness::model::{
+use tinyagents_harness::message::Message;
+use tinyagents_harness::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tokio::sync::Mutex as AsyncMutex;

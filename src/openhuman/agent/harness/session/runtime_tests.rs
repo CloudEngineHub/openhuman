@@ -9,7 +9,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use parking_lot::Mutex;
 use std::sync::Arc;
-use tinyagents::harness::model::{
+use tinyagents_harness::model::{
     ChatModel, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tokio::sync::Mutex as AsyncMutex;
@@ -408,7 +408,7 @@ fn helper_paths_cover_no_overlap_native_calls_and_truncation() {
 /// too, not just behind the factory.
 #[tokio::test]
 async fn memory_backed_host_capabilities_build_from_session_state() {
-    use tinyagents::harness::host::{AgentMemory, ExperienceStore};
+    use tinyagents_harness::host::{AgentMemory, ExperienceStore};
 
     let model: Arc<dyn ChatModel<()>> = Arc::new(StaticModel {
         response: Mutex::new(None),
@@ -419,7 +419,7 @@ async fn memory_backed_host_capabilities_build_from_session_state() {
     // the accessor is that the runtime can hold `dyn AgentMemory`.
     let memory: &dyn AgentMemory = &agent.host_agent_memory();
     let recalled = memory
-        .recall(tinyagents::harness::host::RecallRequest::new("anything"))
+        .recall(tinyagents_harness::host::RecallRequest::new("anything"))
         .await
         .expect("recall must succeed against an empty backend");
     assert!(

@@ -10,8 +10,8 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 
-use tinyagents::graph::export::GraphTopology;
-use tinyagents::graph::{
+use tinyagents_graph::export::GraphTopology;
+use tinyagents_graph::{
     ClosureStateReducer, CompiledGraph, GraphBuilder, NodeContext, NodeResult,
 };
 use tokio::sync::Mutex;

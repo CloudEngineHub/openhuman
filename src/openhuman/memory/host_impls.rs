@@ -28,7 +28,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tinyagents::harness::model::{ChatModel, ModelResponse};
+use tinyagents_harness::model::{ChatModel, ModelResponse};
 use tinymemory_api::host::{EmbeddingHost, EmbeddingProvider, ErrorReporter, UsageInfo};
 use tinymemory_core::chat_host::ChatHost;
 use tinymemory_core::composio_host::{ComposioConnection, ComposioExecuteResponse, ComposioHost};

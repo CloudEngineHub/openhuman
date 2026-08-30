@@ -19,14 +19,14 @@ use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
 use serde_json::Value;
-use tinyagents::graph::export::GraphTopology;
-use tinyagents::graph::recursion::RecursionPolicy;
-use tinyagents::graph::{
+use tinyagents_graph::export::GraphTopology;
+use tinyagents_graph::recursion::RecursionPolicy;
+use tinyagents_graph::{
     ClosureStateReducer, Command, CompiledGraph, GraphBuilder, NodeContext, NodeResult,
 };
 
 use crate::openhuman::config::Config;
-use tinyagents::session::run_ledger::get_workflow_run;
+use tinyagents_session::run_ledger::get_workflow_run;
 
 use super::engine::{execute_phase, select_next_phase, PhaseExecOutcome, PhaseSelection};
 use super::types::{WorkflowDefinition, WorkflowPhase};

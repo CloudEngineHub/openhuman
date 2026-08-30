@@ -39,9 +39,9 @@ use crate::openhuman::skills::registry::get_workflow;
 use crate::openhuman::skills::run_log;
 use crate::openhuman::skills::runtime::await_run_outcome;
 use crate::openhuman::tools::traits::Tool;
-use tinyagents::harness::message::AssistantMessage;
-use tinyagents::harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents::harness::tool::ToolCall;
+use tinyagents_harness::message::AssistantMessage;
+use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyagents_harness::tool::ToolCall;
 
 // ── Mock LLM ─────────────────────────────────────────────────────────────
 // Minimal scripted model: pops queued ModelResponses in order. Mirrors the

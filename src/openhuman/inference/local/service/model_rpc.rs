@@ -10,9 +10,9 @@ use crate::openhuman::inference::local::ollama::{
     ollama_base_url_from_config, redact_ollama_base_url,
 };
 use crate::openhuman::inference::local::provider::{provider_from_config, LocalAiProvider};
-use tinyagents::harness::message::Message;
-use tinyagents::harness::model::{ChatModel, ModelRequest};
-use tinyagents::harness::providers::openai::OpenAiModel;
+use tinyagents_harness::message::Message;
+use tinyagents_harness::model::{ChatModel, ModelRequest};
+use tinyagents_harness::providers::openai::OpenAiModel;
 
 pub(super) struct ModelRpcOutcome {
     pub reply: String,
@@ -126,7 +126,7 @@ pub(super) async fn invoke(
 }
 
 fn model_outcome(
-    response: tinyagents::harness::model::ModelResponse,
+    response: tinyagents_harness::model::ModelResponse,
     allow_empty: bool,
 ) -> Result<ModelRpcOutcome, String> {
     let mut reply = response.text();
@@ -136,7 +136,7 @@ fn model_outcome(
             .content
             .iter()
             .filter_map(|block| match block {
-                tinyagents::harness::message::ContentBlock::Thinking { text, .. } => {
+                tinyagents_harness::message::ContentBlock::Thinking { text, .. } => {
                     Some(text.as_str())
                 }
                 _ => None,

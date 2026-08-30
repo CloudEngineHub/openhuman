@@ -46,8 +46,8 @@ use crate::openhuman::inference::provider::AGENT_TURN_MAX_OUTPUT_TOKENS;
 use crate::openhuman::memory::api::provider::retrieval::{FastRetrieveQuery, RetrievalResponse};
 use crate::openhuman::memory::source_scope::as_bus_scope;
 use crate::openhuman::tools::{Tool, ToolCategory, ToolSpec};
-use tinyagents::harness::tool::SandboxMode as TinyagentsSandboxMode;
-use tinyagents::harness::workspace::WorkspaceDescriptor;
+use tinyagents_harness::tool::SandboxMode as TinyagentsSandboxMode;
+use tinyagents_harness::workspace::WorkspaceDescriptor;
 
 use super::prompt::{
     append_artifact_offload_contract, append_subagent_role_contract, dedup_tool_specs_by_name,

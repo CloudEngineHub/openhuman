@@ -1,7 +1,7 @@
 use crate::openhuman::config::Config;
 use crate::openhuman::inference::model_ids;
 use crate::openhuman::inference::parse::sanitize_inline_completion;
-use tinyagents::harness::message::Message;
+use tinyagents_harness::message::Message;
 
 use super::LocalAiService;
 

@@ -36,7 +36,7 @@ use crate::openhuman::tools::{Tool, ToolResult};
 use anyhow::Result;
 use async_trait::async_trait;
 use std::sync::{Arc, Mutex};
-use tinyagents::harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tinymemory_core::store as memory_store;
 
 // ═══════════════════════════════════════════════════════════════════════════

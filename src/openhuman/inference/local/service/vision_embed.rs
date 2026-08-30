@@ -7,7 +7,7 @@ use crate::openhuman::inference::local::ollama::{
 use crate::openhuman::inference::model_ids;
 use crate::openhuman::inference::presets::{self, VisionMode};
 use crate::openhuman::inference::types::LocalAiEmbeddingResult;
-use tinyagents::harness::embeddings::{
+use tinyagents_harness::embeddings::{
     EmbeddingModel, OllamaEmbeddingModel, DEFAULT_OLLAMA_DIMENSIONS,
     RECOMMENDED_OLLAMA_CONTEXT_TOKENS,
 };

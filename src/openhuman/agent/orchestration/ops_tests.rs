@@ -11,7 +11,7 @@ use std::sync::{
     atomic::{AtomicUsize, Ordering},
     Arc,
 };
-use tinyagents::harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
 use tokio::time::Duration;
 
 #[derive(Default)]

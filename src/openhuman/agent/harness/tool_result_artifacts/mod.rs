@@ -13,7 +13,7 @@ use crate::openhuman::agent::dispatcher::ToolExecutionResult;
 use crate::openhuman::memory::safety::{sanitize_text, SanitizationReport};
 use async_trait::async_trait;
 use serde_json::Value;
-use tinyagents::harness::store::Store;
+use tinyagents_harness::store::Store;
 
 const ARTIFACT_ROOT: &str = "artifacts/tool-results";
 const AGGREGATE_PREVIEW_BUDGET_BYTES: usize = 512;

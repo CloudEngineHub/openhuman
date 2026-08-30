@@ -41,9 +41,9 @@ use crate::openhuman::skills::schemas::resolve_workspace_dir;
 use crate::openhuman::threads::todos::ops as board_ops;
 use crate::openhuman::threads::todos::ops::{BoardLocation, CardPatch};
 use crate::openhuman::tools::traits::Tool;
-use tinyagents::harness::message::AssistantMessage;
-use tinyagents::harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents::harness::tool::ToolCall;
+use tinyagents_harness::message::AssistantMessage;
+use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyagents_harness::tool::ToolCall;
 
 /// Serialize this module's tests (each touches process-global state).
 fn serial() -> &'static tokio::sync::Mutex<()> {

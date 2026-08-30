@@ -30,8 +30,8 @@ use crate::openhuman::agent::harness::fork_context::{with_parent_context, Parent
 use crate::openhuman::config::{AgentConfig, Config};
 use crate::openhuman::memory::{Memory, MemoryCategory, MemoryEntry, NamespaceSummary, RecallOpts};
 use crate::openhuman::tools::{Tool, ToolSpec};
-use tinyagents::harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
-use tinyagents::session::run_ledger::{get_workflow_run, upsert_workflow_run, WorkflowRunUpsert};
+use tinyagents_harness::model::{ChatModel, ModelProfile, ModelRequest, ModelResponse};
+use tinyagents_session::run_ledger::{get_workflow_run, upsert_workflow_run, WorkflowRunUpsert};
 
 use super::super::types::{WorkflowDefinition, WorkflowPhase, WorkflowSafetyTier};
 

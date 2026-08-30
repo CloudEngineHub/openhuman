@@ -1,4 +1,4 @@
-//! Thin OpenHuman host adapters for [`tinyagents::graph::goals`].
+//! Thin OpenHuman host adapters for [`tinyagents_graph::goals`].
 //!
 //! Tinyagents owns the goal types, lifecycle, persistence, prompt rendering,
 //! graph continuation, and native harness tools. This compatibility module

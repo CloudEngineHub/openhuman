@@ -32,7 +32,7 @@ async fn collects_entries_within_scope() {
 
 #[tokio::test]
 async fn map_reduce_fanout_preserves_scope() {
-    use tinyagents::graph::parallel::{map_reduce, FailurePolicy, ParallelOptions};
+    use tinyagents_graph::parallel::{map_reduce, FailurePolicy, ParallelOptions};
 
     let (result, entries) = with_turn_collector(async {
         map_reduce(

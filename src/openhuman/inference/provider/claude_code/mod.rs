@@ -23,8 +23,8 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use tinyagents::error::TinyAgentsError;
-use tinyagents::harness::model::{
+use tinyagents_harness::error::TinyAgentsError;
+use tinyagents_harness::model::{
     ChatModel, ModelProfile, ModelRequest, ModelResponse, ModelStream, ModelStreamItem,
 };
 use tokio::sync::Semaphore;

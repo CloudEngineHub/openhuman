@@ -3,12 +3,12 @@
 use std::sync::LazyLock;
 
 use async_trait::async_trait;
-use tinyagents::harness::context::RunContext;
-use tinyagents::harness::events::AgentEvent;
-use tinyagents::harness::middleware::{MiddlewareModelOutcome, ModelHandler, ModelMiddleware};
-use tinyagents::harness::model::{CapabilitySet, ModelRequest};
-use tinyagents::harness::retry::FallbackPolicy;
-use tinyagents::registry::{ModelRouter, WorkloadRoute};
+use tinyagents_harness::context::RunContext;
+use tinyagents_harness::events::AgentEvent;
+use tinyagents_harness::middleware::{MiddlewareModelOutcome, ModelHandler, ModelMiddleware};
+use tinyagents_harness::model::{CapabilitySet, ModelRequest};
+use tinyagents_harness::retry::FallbackPolicy;
+use tinyagents_registry::{ModelRouter, WorkloadRoute};
 
 use crate::openhuman::config::{
     MODEL_AGENTIC_V1, MODEL_BURST_V1, MODEL_CHAT_V1, MODEL_CODING_V1, MODEL_REASONING_V1,
@@ -34,7 +34,7 @@ pub(super) const WORKLOAD_ROUTE_TIERS: &[&str] = &[
 ];
 
 /// The OpenHuman workload-tier routing table as a crate
-/// [`ModelRouter`](tinyagents::registry::ModelRouter) — the single declarative
+/// [`ModelRouter`](tinyagents_registry::ModelRouter) — the single declarative
 /// source for cross-route **fallback chains** and per-tier **required-capability
 /// gates** (issue #4249, Phase 3 routing consolidation).
 ///
@@ -167,12 +167,12 @@ pub(super) fn route_fallback_policy(model: &str) -> Option<FallbackPolicy> {
 }
 
 /// Around-model middleware that makes the crate's registry-backed
-/// [`RunPolicy::fallback`][tinyagents::harness::runtime::RunPolicy] traversal
+/// [`RunPolicy::fallback`][tinyagents_harness::runtime::RunPolicy] traversal
 /// **event-visible** (issue #4249, Workstream 02.2).
 ///
 /// The harness performs the cross-route fallback swap inside its model-resolving
 /// core (`agent_loop::invoke_model_resolving`) but — unlike the
-/// [`ModelFallbackMiddleware`][tinyagents::harness::middleware::ModelFallbackMiddleware]
+/// [`ModelFallbackMiddleware`][tinyagents_harness::middleware::ModelFallbackMiddleware]
 /// primitive — that native path emits **no**
 /// [`AgentEvent::FallbackSelected`]. This observer wraps the resolving core, and
 /// on success compares the response's `resolved_model` against the turn's primary
