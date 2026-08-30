@@ -52,6 +52,7 @@ pub mod module_client;
 pub mod oauth_handoff;
 pub mod ops;
 pub mod periodic;
+pub mod profile_md;
 pub mod providers;
 pub mod schemas;
 pub mod task_window;
