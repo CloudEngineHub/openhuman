@@ -8,7 +8,6 @@ mod agent;
 mod code;
 mod http;
 mod llm;
-mod mocks;
 mod ops;
 mod prompt;
 mod resolver;
@@ -21,7 +20,11 @@ pub(crate) use agent::*;
 pub(crate) use code::*;
 pub(crate) use http::*;
 pub(crate) use llm::*;
-pub(crate) use mocks::*;
+// The schema-aware dry-run doubles are `tinyflows::caps::mock_schema_aware`'s:
+// "answer the shape this node declared" is a fact about the engine's own
+// output-parser sub-port, not about OpenHuman. Re-exported under the historical
+// `caps::` path so existing call sites resolve unchanged.
+pub(crate) use tinyflows::caps::mock_schema_aware::*;
 pub use ops::*;
 pub(crate) use prompt::*;
 pub(crate) use resolver::*;
