@@ -1,29 +1,15 @@
 //! Public data model for high-level agent orchestration.
+//!
+//! The status vocabulary is TinyAgents'
+//! [`OrchestrationTaskStatus`] — the host's own `AgentStatus` copy was retired
+//! once the control plane moved onto the crate's `DetachedTaskRegistry`. It
+//! never appeared on a JSON-RPC schema, and the detached sub-agent path was
+//! already reporting the crate enum, so the two vocabularies are now one.
 
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
-/// Stable status vocabulary for parent/child orchestration.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum AgentStatus {
-    Pending,
-    Running,
-    Waiting,
-    Completed,
-    Failed,
-    Cancelled,
-    Closed,
-}
-
-impl AgentStatus {
-    pub fn is_terminal(self) -> bool {
-        matches!(
-            self,
-            Self::Completed | Self::Failed | Self::Cancelled | Self::Closed
-        )
-    }
-}
+pub use tinyagents::graph::orchestration::OrchestrationTaskStatus;
 
 /// Request to spawn a child agent from the current parent agent turn.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -47,7 +33,7 @@ pub struct SpawnAgentRequest {
 pub struct SpawnAgentResponse {
     pub orchestration_id: String,
     pub agent_id: String,
-    pub status: AgentStatus,
+    pub status: OrchestrationTaskStatus,
 }
 
 /// Wait request for one or more children.
@@ -71,7 +57,7 @@ pub struct AgentSnapshot {
     pub orchestration_id: String,
     pub agent_id: String,
     pub parent_agent_id: Option<String>,
-    pub status: AgentStatus,
+    pub status: OrchestrationTaskStatus,
     pub prompt: String,
     pub result_summary: Option<String>,
     pub error: Option<String>,

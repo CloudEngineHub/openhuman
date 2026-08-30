@@ -119,7 +119,6 @@ type ChildRegistry = DetachedTaskRegistry<ChildMetadata, ChildState>;
 pub struct AgentOrchestrationSession {
     session_id: String,
     registry: Arc<ChildRegistry>,
-    progress_sink: Arc<std::sync::Mutex<Option<mpsc::Sender<AgentProgress>>>>,
 }
 
 impl AgentOrchestrationSession {
@@ -137,7 +136,6 @@ impl AgentOrchestrationSession {
                 REGISTRY_SOFT_CAP,
                 ChildState::is_terminal,
             )),
-            progress_sink: Arc::new(std::sync::Mutex::new(None)),
         }
     }
 
@@ -336,10 +334,8 @@ impl AgentOrchestrationSession {
             parent_agent_id: request.parent_agent_id,
         });
 
-        if let Some(progress) = parent.on_progress.clone() {
-            if let Ok(mut sink) = self.progress_sink.lock() {
-                sink.get_or_insert(progress.clone());
-            }
+        let progress_sink = parent.on_progress.clone();
+        if let Some(progress) = progress_sink.clone() {
             let resolved_display_name = AgentDefinitionRegistry::global()
                 .and_then(|reg| reg.get(&agent_id))
                 .map(|def| def.display_name().to_string());
@@ -408,7 +404,13 @@ impl AgentOrchestrationSession {
                 })
                 .await;
                 session
-                    .finish_agent(&task_id, &task_agent_id, &task_status_tx, result)
+                    .finish_agent(
+                        &task_id,
+                        &task_agent_id,
+                        &task_status_tx,
+                        progress_sink,
+                        result,
+                    )
                     .await;
             }),
         ));
@@ -446,6 +448,7 @@ impl AgentOrchestrationSession {
         orchestration_id: &str,
         agent_id: &str,
         status_tx: &watch::Sender<ChildState>,
+        progress_sink: Option<mpsc::Sender<AgentProgress>>,
         result: Result<SubagentRunOutcome, crate::openhuman::agent::harness::SubagentRunError>,
     ) {
         // A cancelled child has already reached a terminal status via
@@ -453,12 +456,6 @@ impl AgentOrchestrationSession {
         if status_tx.borrow().is_terminal() {
             return;
         }
-
-        let progress_sink = self
-            .progress_sink
-            .lock()
-            .ok()
-            .and_then(|sink| sink.clone());
 
         match result {
             Ok(outcome) => {
