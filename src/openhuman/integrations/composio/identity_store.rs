@@ -24,25 +24,6 @@ use crate::openhuman::config::Config;
 use crate::openhuman::memory::api::provider::{FacetType, MemoryProfile};
 use tinymemory_api::composio::{canonicalize, normalize_connection_identifier, ConnectedIdentity, IdentityKind, ProviderUserProfile};
 
-/// The bound driver's `MemoryProfile` family, or a message naming why it is
-/// unavailable.
-fn profile_family(config: &Config) -> Result<Box<dyn FnOnce() -> String>, String> {
-    // Not actually used — see call sites, which resolve the binding directly.
-    // Kept private and unused-free by not existing; see `with_profile` below.
-    unreachable!()
-}
-
-/// Run `body` against the bound driver's `MemoryProfile` family.
-async fn with_profile<T, F, Fut>(config: &Config, body: F) -> Result<T, String>
-where
-    F: FnOnce(std::sync::Arc<dyn crate::openhuman::memory::binding::MemoryProviderHandle>) -> Fut,
-    Fut: std::future::Future<Output = Result<T, String>>,
-{
-    let _ = profile_family; // silence unused-fn lint from the placeholder above
-    let binding = crate::openhuman::memory::binding::for_config(config)?;
-    body(binding.provider()).await
-}
-
 /// Persist one [`ProviderUserProfile`] as identity facets, returning how many
 /// rows were written.
 ///
