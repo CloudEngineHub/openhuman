@@ -233,10 +233,11 @@ async fn builds_hour_day_month_year_chain() {
     // The hour summaries are short enough that day/month/year/root fit within
     // token budget and do NOT trigger additional LLM calls (propagate_node
     // short-circuits when combined children text fits the level budget).
-    let provider = LegacyChatModelBridge::new(Arc::new(ScriptedProvider::new(vec![
+    let inner_provider = Arc::new(ScriptedProvider::new(vec![
         Ok("User discussed deployment timeline".to_string()),
         Ok("Reviewed infrastructure PR".to_string()),
-    ])));
+    ]));
+    let provider = LegacyChatModelBridge::new(inner_provider.clone());
 
     log::debug!("[memory_tree_summarizer_e2e] running summarization");
     let result = engine::run_summarization(&config, &provider, NS, Utc::now()).await;
