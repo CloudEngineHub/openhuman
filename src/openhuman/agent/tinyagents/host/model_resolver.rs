@@ -220,11 +220,19 @@ impl<State: Send + Sync> ChatModel<State> for StatelessModel {
         self.inner.profile()
     }
 
-    async fn invoke(&self, _state: &State, request: ModelRequest) -> TaResult<ModelResponse> {
+    async fn invoke(
+        &self,
+        _state: &State,
+        request: ModelRequest,
+    ) -> tinyinference::Result<ModelResponse> {
         self.inner.invoke(&(), request).await
     }
 
-    async fn stream(&self, _state: &State, request: ModelRequest) -> TaResult<ModelStream> {
+    async fn stream(
+        &self,
+        _state: &State,
+        request: ModelRequest,
+    ) -> tinyinference::Result<ModelStream> {
         self.inner.stream(&(), request).await
     }
 }
