@@ -5,14 +5,10 @@
 //! `ControllerFuture` boundary. Business logic stays here; `schemas.rs`
 //! only parses params and delegates.
 
-use std::sync::Arc;
-
 use serde_json::{json, Value};
 
 use crate::openhuman::config::Config;
-use crate::openhuman::integrations::composio::providers::{
-    get_provider, NormalizedTask, ProviderContext, TaskContainer,
-};
+use crate::openhuman::integrations::composio::providers::{NormalizedTask, TaskContainer};
 use crate::rpc::RpcOutcome;
 
 use super::types::{
