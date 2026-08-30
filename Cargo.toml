@@ -1345,6 +1345,18 @@ while_let_loop = "allow"
 [patch."https://github.com/tinyhumansai/tinymemory"]
 tinymemory-api = { path = "vendor/tinymemory/crates/tinymemory-api" }
 
+# `tinycortex` (vendored below) depends on `tinyinference` by git rev rather
+# than by path — `[patch.crates-io]` only rewrites crates.io-sourced deps, so
+# it does not touch this one. Without this entry cargo resolves a THIRD copy
+# of `tinyinference` (git) alongside the path copy openhuman/tinyagents use and
+# the crates.io copy tinymemory-core names (patched onto the same path below),
+# the identical "one checkout, one type identity" hazard the `tinyinference`
+# patch entry documents. Patched onto the same vendored checkout so all three
+# resolve to one package — verified with `cargo metadata` / `cargo tree -i
+# tinyinference`.
+[patch."https://github.com/tinyhumansai/tinyinference"]
+tinyinference = { path = "vendor/tinyagents/vendor/tinyinference/crates/tinyinference" }
+
 [patch.crates-io]
 # Upstream 0.2.1 enables reqwest's default native-tls backend even though it
 # also requests rustls. Patch the official release locally so Linux/macOS do
