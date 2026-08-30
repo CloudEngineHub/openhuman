@@ -1342,10 +1342,18 @@ tinymemory-api = { path = "vendor/tinymemory/crates/tinymemory-api" }
 motosan-ai-oauth = { path = "vendor/motosan-ai-oauth" }
 # TinyAgents is vendored as a git submodule (pinned at the released tag) so
 # migration work can change the SDK source in-tree, test it against OpenHuman
-# immediately, and PR the diff upstream from the submodule. Keep the submodule
-# version in lockstep with the `tinyagents` requirement above. After cloning:
-# `git submodule update --init vendor/tinyagents` (worktrees included).
-tinyagents = { path = "vendor/tinyagents" }
+# immediately, and PR the diff upstream from the submodule. After cloning:
+# `git submodule update --init --recursive vendor/tinyagents` (worktrees
+# included) — tinyagents itself now vendors `tinyinference` and `tinytools` as
+# its own submodules, hence `--recursive`.
+#
+# tinyagents is a workspace of several crates now (see the dependency block
+# above), each depended on directly by path, so there is nothing to patch here
+# for tinyagents itself — a path dependency already points at this checkout.
+# `tinyinference` is a normal crates-io-shaped dependency though (declared by
+# path above but not by a plain `path = ...` requirement inside the tinyagents
+# workspace's own Cargo.toml — it is a git submodule under vendor/tinyagents),
+# so nothing to patch there either since we depend on it directly by path too.
 # TinyFlows, TinyCortex, and TinyChannels are vendored beside
 # TinyAgents so integration work can test crate changes against OpenHuman before
 # publishing.
