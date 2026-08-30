@@ -361,7 +361,12 @@ pub(crate) async fn run_sync_pass(
         already_ingested = outcome.already_ingested,
         "[composio] sync pass ingested"
     );
-    Ok(count)
+    Ok(SyncPassOutcome {
+        records_read: count,
+        written: outcome.written,
+        already_ingested: outcome.already_ingested,
+        more_pending: !response.batch.complete,
+    })
 }
 
 /// Parse the optional `reason` parameter into a [`SyncReason`].
