@@ -93,8 +93,6 @@ pub(crate) use super::connected_integrations::sync_cache_with_connections;
 #[cfg(test)]
 pub(crate) use crate::openhuman::config::Config;
 #[cfg(test)]
-pub(crate) use crate::openhuman::integrations::composio::providers::sync_state::SyncState;
-#[cfg(test)]
 pub(crate) use crate::openhuman::integrations::composio::providers::SyncReason;
 #[cfg(test)]
 pub(crate) use connections::enrich_connections_with_identity;
