@@ -13,6 +13,7 @@ use crate::openhuman::inference::local::provider::{provider_from_config, LocalAi
 use tinyinference::message::Message;
 use tinyinference::model::{ChatModel, ModelRequest};
 use tinyinference::providers::openai::OpenAiModel;
+use tinyinference::providers::{ProviderKind, ProviderSpec};
 
 pub(super) struct ModelRpcOutcome {
     pub reply: String,
