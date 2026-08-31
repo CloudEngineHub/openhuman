@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const FLOW = process.env.FLOW_ID;
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+p.on('console', m => { if (m.type() === 'error') console.log('[console error]', m.text().slice(0, 200)); });
+await p.goto('http://127.0.0.1:1431/__dev-connect', { waitUntil: 'networkidle' });
+await p.waitForTimeout(3000);
+await p.goto('http://127.0.0.1:1431/#/flows?view=main', { waitUntil: 'networkidle' });
+await p.waitForTimeout(4000);
+await p.screenshot({ path: '/tmp/shot-list.png' });
+console.log('list url:', p.url());
+await p.goto(`http://127.0.0.1:1431/#/flows/${FLOW}`, { waitUntil: 'networkidle' });
+await p.waitForTimeout(5000);
+await p.screenshot({ path: '/tmp/shot-canvas.png' });
+console.log('canvas url:', p.url());
+console.log('title input present:', await p.locator('[data-testid=flow-canvas-title]').count());
+await b.close();
