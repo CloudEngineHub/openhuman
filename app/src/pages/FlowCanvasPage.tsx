@@ -19,7 +19,7 @@
  */
 import type { Viewport } from '@xyflow/react';
 import createDebug from 'debug';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import type {
@@ -38,12 +38,14 @@ import {
 } from '../components/flows/workflowCopilotThreads';
 import { ToastContainer } from '../components/intelligence/Toast';
 import PanelPage from '../components/layout/PanelPage';
+import { SidebarContent } from '../components/layout/shell/SidebarSlot';
 import {
   Alert,
   AlertDescription,
   Badge,
   Button,
   CenteredLoadingState,
+  ConfirmDialog,
   ErrorBanner,
   ToggleGroupItem,
   ToggleGroupRoot,
@@ -269,6 +271,47 @@ function DiscardIcon() {
       aria-hidden="true">
       <path d="M18 6L6 18M6 6l12 12" />
     </svg>
+  );
+}
+
+/**
+ * The canvas header's Back control. One component rather than the three
+ * byte-identical copies this file used to carry (the editor, the load-state
+ * page and the draft page each declared their own `backButton`), which is how
+ * the three drifted apart in the first place.
+ */
+function CanvasBackButton({ onBack }: { onBack: () => void }) {
+  const { t } = useT();
+  return (
+    <Button
+      type="button"
+      variant="tertiary"
+      size="xs"
+      iconOnly
+      data-testid="flow-canvas-back"
+      aria-label={t('flows.canvas.backToList')}
+      onClick={onBack}>
+      <BackIcon />
+    </Button>
+  );
+}
+
+/**
+ * The chrome the canvas shows when there is no graph to edit — loading, load
+ * error, not found, or a draft whose ephemeral `location.state` is gone. All
+ * four rendered their own `PanelPage` with the same title/leading/body classes;
+ * the only thing that differed was the message in the middle.
+ */
+function CanvasStatePage({ onBack, children }: { onBack: () => void; children: ReactNode }) {
+  const { t } = useT();
+  return (
+    <PanelPage
+      testId="flow-canvas-page"
+      title={t('flows.canvas.title')}
+      leading={<CanvasBackButton onBack={onBack} />}
+      contentClassName="h-full p-0">
+      {children}
+    </PanelPage>
   );
 }
 
