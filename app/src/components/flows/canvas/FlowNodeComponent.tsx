@@ -128,7 +128,6 @@ function FlowNodeComponent({ id, data, selected }: NodeProps<FlowNode>) {
   const labelInputs = data.inputPorts.length > 1 || data.inputPorts.some(p => p !== IMPLICIT_PORT);
   const labelOutputs =
     data.outputPorts.length > 1 || data.outputPorts.some(p => p !== IMPLICIT_PORT);
-  const hasPorts = data.inputPorts.length > 0 || data.outputPorts.length > 0;
   const showActions = Boolean(actions) && selected;
 
   return (
@@ -205,7 +204,7 @@ function FlowNodeComponent({ id, data, selected }: NodeProps<FlowNode>) {
           identity from behaviour, so a second fill here would only add a band. */}
       {summary && (
         <div
-          className="px-3 pt-2 text-[11px] leading-snug text-content-secondary"
+          className="px-3 pb-3 pt-2 text-[11px] leading-snug text-content-secondary"
           data-testid="flow-node-summary">
           {summary}
         </div>
