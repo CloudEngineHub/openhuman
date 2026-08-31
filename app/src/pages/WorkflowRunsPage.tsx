@@ -83,7 +83,9 @@ export default function WorkflowRunsPage() {
       <SettingsTabbedPage
         title={t('flows.allRuns.title')}
         description={t('flows.allRuns.description')}>
-        <div className="pt-4">
+        {/* No wrapper padding: `SettingsTabbedPage`'s body already renders
+            `min-h-full pb-4 pt-4`, so a `pt-4` here double-pads the top. */}
+        <div>
           {pageLoading ? (
             <CenteredLoadingState label={t('flows.allRuns.loading')} />
           ) : pageError ? (
