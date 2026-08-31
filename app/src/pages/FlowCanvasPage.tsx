@@ -221,7 +221,7 @@ export function isPlaceholderTitle(title: string, placeholder: string): boolean 
 function BackIcon() {
   return (
     <svg
-      className="h-4 w-4"
+      className="h-5 w-5"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
@@ -285,10 +285,17 @@ function CanvasBackButton({ onBack }: { onBack: () => void }) {
     <Button
       type="button"
       variant="tertiary"
-      size="xs"
+      size="sm"
       iconOnly
       data-testid="flow-canvas-back"
       aria-label={t('flows.canvas.backToList')}
+      // The header row is `items-start`, so a control shorter than the heading
+      // sits high against it rather than centred. `text-2xl`'s line box is
+      // exactly 2rem, so an `h-8` button fills it and lands on the title's
+      // optical centre; `w-8` keeps it square. The default `size="sm"` metrics
+      // (30px) miss by 2px, which is enough to read as misaligned next to a
+      // 24px heading.
+      className="h-8 w-8"
       onClick={onBack}>
       <BackIcon />
     </Button>
@@ -309,6 +316,7 @@ function CanvasStatePage({ onBack, children }: { onBack: () => void; children: R
     <div className="h-full p-4" data-testid="flow-canvas-page">
       <SettingsTabbedPage
         title={t('flows.canvas.title')}
+        description={t('flows.canvas.description')}
         leading={<CanvasBackButton onBack={onBack} />}
         scrollable={false}>
         {children}
@@ -1236,9 +1244,15 @@ function FlowEditor({
       )}
       <SettingsTabbedPage
         title={titleNode}
+        description={t('flows.canvas.description')}
         leading={backButton}
         headerAction={headerActions}
-        scrollable={false}>
+        scrollable={false}
+        // The canvas is a single full-bleed surface, so it cancels the page
+        // gutter and runs to the content card's edges instead of floating as an
+        // inset rectangle inside it. The header keeps the gutter, so the title
+        // still lines up with every other page's.
+        bodyClassName="-mx-4 -mb-4 h-full min-h-0">
         <div className="flex h-full w-full">
           <div className={`relative h-full flex-1 ${hideGraph ? 'hidden' : ''}`}>
             <FlowCanvas
