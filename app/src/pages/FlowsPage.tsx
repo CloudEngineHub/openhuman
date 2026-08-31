@@ -22,10 +22,9 @@ import FlowTemplateGallery from '../components/flows/FlowTemplateGallery';
 import NewWorkflowModal from '../components/flows/NewWorkflowModal';
 import { useCreateFlow } from '../components/flows/useCreateFlow';
 import { ToastContainer } from '../components/intelligence/Toast';
-import PageSectionHeader from '../components/layout/PageSectionHeader';
 import PageWelcome from '../components/layout/PageWelcome';
-import PanelPage from '../components/layout/PanelPage';
 import { usePageWelcomeView } from '../components/layout/usePageWelcomeView';
+import SettingsTabbedPage from '../components/settings/layout/SettingsTabbedPage';
 import CronJobsPanel from '../components/settings/panels/CronJobsPanel';
 import {
   BetaBanner,
@@ -553,46 +552,46 @@ export default function FlowsPage() {
   return (
     <>
       {nav}
-      {/* `width="lg"` is the contentWidth scale's `max-w-3xl`; the scaffold
-          renders the centred column, so the body only owns its section gap.
-          `contentClassName` keeps the explicit `p-4` because the default's
-          `space-y-5` would land on the scaffold's width wrapper, not on the
-          sections inside it. */}
-      <PanelPage testId="flows-page" width="lg" contentClassName="p-4">
-        <input
-          ref={importInputRef}
-          type="file"
-          accept="application/json,.json"
-          className="hidden"
-          data-testid="flows-import-input"
-          onChange={e => void handleImportFile(e)}
-        />
-        <div className="space-y-5">
-          <PageSectionHeader
-            title={t('flows.page.title')}
-            description={t('flows.page.description')}
-            action={
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  data-testid="flows-import"
-                  onClick={handleImportClick}>
-                  {t('flows.page.import')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  data-testid="flows-new-workflow"
-                  onClick={handleNewWorkflow}>
-                  {t('flows.page.newWorkflow')}
-                </Button>
-              </div>
-            }
+      {/* The standard sidebar-page shell: the host supplies the `p-4` gutter
+          that `SettingsTabbedPage`'s full-bleed divider bleeds through, and the
+          page title/description/actions live in that flush header band — the
+          same chrome Brain, Skills, Runs and Discoveries already use. This page
+          used to float a `PageSectionHeader` card inside a `PanelPage` body,
+          which read as a different page depending on how it was reached. */}
+      <div className="h-full p-4" data-testid="flows-page">
+        <SettingsTabbedPage
+          title={t('flows.page.title')}
+          description={t('flows.page.description')}
+          headerAction={
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                data-testid="flows-import"
+                onClick={handleImportClick}>
+                {t('flows.page.import')}
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                data-testid="flows-new-workflow"
+                onClick={handleNewWorkflow}>
+                {t('flows.page.newWorkflow')}
+              </Button>
+            </div>
+          }>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            data-testid="flows-import-input"
+            onChange={e => void handleImportFile(e)}
           />
-          <div data-testid="flows-beta-banner">
+          <div className="space-y-5">
+            <div data-testid="flows-beta-banner">
             <BetaBanner />
           </div>
 
