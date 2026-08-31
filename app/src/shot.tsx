@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
-import './src/index.css';
-import SettingsTabbedPage from './src/components/settings/layout/SettingsTabbedPage';
-import Button from './src/components/ui/Button';
+import './index.css';
+import SettingsTabbedPage from './components/settings/layout/SettingsTabbedPage';
+import Button from './components/ui/Button';
 
 const Back = () => (
   <Button type="button" variant="tertiary" size="sm" iconOnly aria-label="Back" className="h-8 w-8">
