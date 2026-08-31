@@ -592,134 +592,138 @@ export default function FlowsPage() {
           />
           <div className="space-y-5">
             <div data-testid="flows-beta-banner">
-            <BetaBanner />
-          </div>
+              <BetaBanner />
+            </div>
 
-          {/* Flow Scout discovery moved to its own sidebar page
+            {/* Flow Scout discovery moved to its own sidebar page
               (/flows/discoveries); the list stays focused on saved workflows. */}
 
-          {error && (
-            <div data-testid="flows-error">
-              <ErrorBanner message={error} />
-            </div>
-          )}
+            {error && (
+              <div data-testid="flows-error">
+                <ErrorBanner message={error} />
+              </div>
+            )}
 
-          {loading && <CenteredLoadingState label={t('flows.page.loading')} />}
+            {loading && <CenteredLoadingState label={t('flows.page.loading')} />}
 
-          {!loading && flows.length === 0 && !error && (
-            <div className="space-y-4">
-              <EmptyStateCard
-                icon={
-                  <svg
-                    className="h-7 w-7 text-primary-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}>
-                    <circle cx="5" cy="6" r="2" />
-                    <circle cx="5" cy="18" r="2" />
-                    <circle cx="19" cy="12" r="2" />
-                    <path strokeLinecap="round" d="M7 6h4a4 4 0 014 4M7 18h4a4 4 0 004-4" />
-                  </svg>
-                }
-                title={t('flows.page.emptyTitle')}
-                description={t('flows.page.emptyDescription')}
-                actionLabel={t('flows.page.newWorkflow')}
-                actionTestId="flows-empty-new-workflow"
-                onAction={handleNewWorkflow}
-              />
-
-              <section className="space-y-3" data-testid="flows-empty-templates">
-                <div>
-                  <h3 className="text-sm font-semibold text-content">
-                    {t('flows.templates.title')}
-                  </h3>
-                  <p className="text-xs text-content-muted">{t('flows.templates.subtitle')}</p>
-                </div>
-                {emptyCreate.error && (
-                  <div data-testid="flows-empty-template-error">
-                    <ErrorBanner message={emptyCreate.error} />
-                  </div>
-                )}
-                <FlowTemplateGallery onSelect={handleEmptyTemplate} busyId={emptyCreate.busyKey} />
-              </section>
-            </div>
-          )}
-
-          {!loading && flows.length > 0 && (
-            <div
-              data-testid="flows-list"
-              className="overflow-hidden rounded-2xl border border-line bg-surface">
-              {flows.map(flow => (
-                <FlowListRow
-                  key={flow.id}
-                  flow={flow}
-                  busy={busyFor(flow)}
-                  onToggle={f => void handleToggle(f)}
-                  onRun={f => void handleRun(f)}
-                  onViewRuns={handleViewRuns}
-                  onView={handleView}
-                  onExport={handleExport}
-                  onDuplicate={f => void handleDuplicate(f)}
-                  onDelete={setDeleteTarget}
+            {!loading && flows.length === 0 && !error && (
+              <div className="space-y-4">
+                <EmptyStateCard
+                  icon={
+                    <svg
+                      className="h-7 w-7 text-primary-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}>
+                      <circle cx="5" cy="6" r="2" />
+                      <circle cx="5" cy="18" r="2" />
+                      <circle cx="19" cy="12" r="2" />
+                      <path strokeLinecap="round" d="M7 6h4a4 4 0 014 4M7 18h4a4 4 0 004-4" />
+                    </svg>
+                  }
+                  title={t('flows.page.emptyTitle')}
+                  description={t('flows.page.emptyDescription')}
+                  actionLabel={t('flows.page.newWorkflow')}
+                  actionTestId="flows-empty-new-workflow"
+                  onAction={handleNewWorkflow}
                 />
-              ))}
-            </div>
-          )}
-        </div>
 
-        <FlowRunsDrawer
-          flowId={selectedFlowId}
-          flowName={selectedFlow?.name}
-          onClose={() => setSelectedFlowId(null)}
-          onFixWithAgent={handleFixWithAgent}
+                <section className="space-y-3" data-testid="flows-empty-templates">
+                  <div>
+                    <h3 className="text-sm font-semibold text-content">
+                      {t('flows.templates.title')}
+                    </h3>
+                    <p className="text-xs text-content-muted">{t('flows.templates.subtitle')}</p>
+                  </div>
+                  {emptyCreate.error && (
+                    <div data-testid="flows-empty-template-error">
+                      <ErrorBanner message={emptyCreate.error} />
+                    </div>
+                  )}
+                  <FlowTemplateGallery
+                    onSelect={handleEmptyTemplate}
+                    busyId={emptyCreate.busyKey}
+                  />
+                </section>
+              </div>
+            )}
+
+            {!loading && flows.length > 0 && (
+              <div
+                data-testid="flows-list"
+                className="overflow-hidden rounded-2xl border border-line bg-surface">
+                {flows.map(flow => (
+                  <FlowListRow
+                    key={flow.id}
+                    flow={flow}
+                    busy={busyFor(flow)}
+                    onToggle={f => void handleToggle(f)}
+                    onRun={f => void handleRun(f)}
+                    onViewRuns={handleViewRuns}
+                    onView={handleView}
+                    onExport={handleExport}
+                    onDuplicate={f => void handleDuplicate(f)}
+                    onDelete={setDeleteTarget}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </SettingsTabbedPage>
+      </div>
+
+      <FlowRunsDrawer
+        flowId={selectedFlowId}
+        flowName={selectedFlow?.name}
+        onClose={() => setSelectedFlowId(null)}
+        onFixWithAgent={handleFixWithAgent}
+      />
+
+      {chooserOpen && <NewWorkflowModal onClose={() => setChooserOpen(false)} />}
+
+      {deleteTarget && (
+        <ModalShell
+          onClose={() => (deleting ? undefined : setDeleteTarget(null))}
+          title={t('flows.delete.title')}
+          subtitle={t('flows.delete.body').replace('{name}', deleteTarget.name)}
+          titleId="flow-delete-modal-title"
+          maxWidthClassName="max-w-sm">
+          <div className="flex justify-end gap-2" data-testid="flow-delete-confirm">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={deleting}
+              data-testid="flow-delete-cancel"
+              onClick={() => setDeleteTarget(null)}>
+              {t('flows.delete.cancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              tone="danger"
+              size="sm"
+              disabled={deleting}
+              data-testid="flow-delete-confirm-button"
+              onClick={() => void handleConfirmDelete()}>
+              {deleting ? t('flows.delete.deleting') : t('flows.delete.confirm')}
+            </Button>
+          </div>
+        </ModalShell>
+      )}
+
+      {preauth.pending && (
+        <FlowPreauthorizationOverlay
+          entries={preauth.pending.manifest.entries}
+          busy={preauth.busy}
+          errorMsg={preauth.errorKey ? t('flows.enableApproval.error') : null}
+          onApproveAll={() => void preauth.approveAll()}
+          onDeny={() => void preauth.deny()}
         />
+      )}
 
-        {chooserOpen && <NewWorkflowModal onClose={() => setChooserOpen(false)} />}
-
-        {deleteTarget && (
-          <ModalShell
-            onClose={() => (deleting ? undefined : setDeleteTarget(null))}
-            title={t('flows.delete.title')}
-            subtitle={t('flows.delete.body').replace('{name}', deleteTarget.name)}
-            titleId="flow-delete-modal-title"
-            maxWidthClassName="max-w-sm">
-            <div className="flex justify-end gap-2" data-testid="flow-delete-confirm">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                disabled={deleting}
-                data-testid="flow-delete-cancel"
-                onClick={() => setDeleteTarget(null)}>
-                {t('flows.delete.cancel')}
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                tone="danger"
-                size="sm"
-                disabled={deleting}
-                data-testid="flow-delete-confirm-button"
-                onClick={() => void handleConfirmDelete()}>
-                {deleting ? t('flows.delete.deleting') : t('flows.delete.confirm')}
-              </Button>
-            </div>
-          </ModalShell>
-        )}
-
-        {preauth.pending && (
-          <FlowPreauthorizationOverlay
-            entries={preauth.pending.manifest.entries}
-            busy={preauth.busy}
-            errorMsg={preauth.errorKey ? t('flows.enableApproval.error') : null}
-            onApproveAll={() => void preauth.approveAll()}
-            onDeny={() => void preauth.deny()}
-          />
-        )}
-
-        <ToastContainer notifications={toasts} onRemove={removeToast} />
-      </PanelPage>
+      <ToastContainer notifications={toasts} onRemove={removeToast} />
     </>
   );
 }
