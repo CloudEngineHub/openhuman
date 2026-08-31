@@ -1078,18 +1078,7 @@ function FlowEditor({
     goBack();
   }, [dirty, goBack]);
 
-  const backButton = (
-    <Button
-      type="button"
-      variant="tertiary"
-      size="xs"
-      iconOnly
-      data-testid="flow-canvas-back"
-      aria-label={t('flows.canvas.backToList')}
-      onClick={handleBack}>
-      <BackIcon />
-    </Button>
-  );
+  const backButton = <CanvasBackButton onBack={handleBack} />;
 
   // A draft has nothing persisted to run yet — the canvas's Save (which creates
   // the flow) is the only gate, so no Run affordance until it's saved.
@@ -1213,15 +1202,21 @@ function FlowEditor({
       leading={backButton}
       action={headerActions}
       contentClassName="h-full p-0">
-      <div className="flex h-full w-full">
-        {/* Run history + "Fix with agent" as an inline left rail (persisted flows
-            only). The app sidebar is hidden on this route (chromeless), so this
-            can't use the shell `SidebarContent` slot — render it in-page. */}
-        {!isDraft && flowId && (
-          <div className="hidden h-full w-60 shrink-0 border-r border-line lg:flex">
+      {/* Run history + "Fix with agent" go through the shell's dynamic sidebar
+          region, like every other page's rail. This used to be an in-page
+          `hidden lg:flex w-60 border-r` column because the route was chromeless
+          and had no slot to project into — so the builder drew a second sidebar
+          in the space the real one would have occupied, and it only existed at
+          `lg` and up. Drafts have no runs yet, so they project nothing and the
+          region stays empty. */}
+      {!isDraft && flowId && (
+        <SidebarContent>
+          <div className="h-full overflow-hidden">
             <FlowRunsSidebar flowId={flowId} />
           </div>
-        )}
+        </SidebarContent>
+      )}
+      <div className="flex h-full w-full">
         <div className={`relative h-full flex-1 ${hideGraph ? 'hidden' : ''}`}>
           <FlowCanvas
             key={`canvas-${canvasVersion}`}
