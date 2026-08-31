@@ -419,10 +419,9 @@ fn classify_embed_probe_distinguishes_dimension_mismatch() {
 /// Issue #5017 regression — the request the app sends is correct: a conformant
 /// OpenAI-compatible `POST /v1/embeddings` host (right path, the user's model,
 /// Bearer key, `{"input":[…],"model":…}` body) verifies successfully. Builds
-/// the provider exactly as the save-time probe does
-/// (`create_embedding_provider_with_credentials("custom", …, custom_endpoint)`)
-/// and drives it against a mock that echoes the OpenAI embeddings wire shape,
-/// asserting the captured request AND that the probe classifies it as a pass.
+/// the live custom provider with the endpoint's known width and drives it
+/// against a mock that echoes the OpenAI embeddings wire shape, asserting the
+/// captured request AND that the probe classifies it as a pass.
 #[tokio::test]
 async fn conformant_custom_endpoint_verifies_and_sends_expected_request() {
     use std::sync::{Arc, Mutex};
@@ -477,12 +476,13 @@ async fn conformant_custom_endpoint_verifies_and_sends_expected_request() {
     );
     tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
 
-    // Same construction as the save-time probe for a non-`text-embedding-3-*`
-    // model: probe dimension-agnostically (dims = 0).
+    // The live provider validates returned vectors against its configured width.
+    // Use the mock endpoint's known width; setup-time custom probing discovers
+    // that width separately before saving the live configuration.
     let embedder = create_embedding_provider_with_credentials(
         "custom",
         "gpt-5-mini",
-        0,
+        4,
         "sk-secret-key",
         Some(&base),
     )
