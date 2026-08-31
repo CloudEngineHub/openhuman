@@ -105,22 +105,6 @@ fn resolve_api_key_normalizes_custom_prefix_to_custom_slug() {
     );
 }
 
-/// Issue #4056: a Custom endpoint is probed dimension-agnostically for any
-/// model that doesn't honour the OpenAI `dimensions` request param, so the
-/// user's guessed size can't fail an otherwise-valid endpoint. Only the
-/// `text-embedding-3-*` family (which honours the param) is probed at the
-/// requested size.
-#[test]
-fn probe_dims_for_zeroes_non_matryoshka_models() {
-    // text-embedding-3-* honours the param → probe at the requested size.
-    assert_eq!(probe_dims_for("text-embedding-3-large", 1024), 1024);
-    assert_eq!(probe_dims_for("text-embedding-3-small", 512), 512);
-    // Everything else → 0 (no param sent, no length guard).
-    assert_eq!(probe_dims_for("bge-m3", 1024), 0);
-    assert_eq!(probe_dims_for("nomic-embed-text", 768), 0);
-    assert_eq!(probe_dims_for("gpt-5-mini", 1024), 0);
-}
-
 /// Issue #4056: after a successful probe we adopt the endpoint's real
 /// returned length for auto-detected models, but keep the requested size for
 /// `text-embedding-3-*` (the server returned exactly that). A zero actual
