@@ -1248,11 +1248,11 @@ function FlowEditor({
         leading={backButton}
         headerAction={headerActions}
         scrollable={false}
-        // The canvas is a single full-bleed surface, so it cancels the page
-        // gutter and runs to the content card's edges instead of floating as an
-        // inset rectangle inside it. The header keeps the gutter, so the title
-        // still lines up with every other page's.
-        bodyClassName="-mx-4 -mb-4 h-full min-h-0">
+        // The canvas is a single full-bleed surface, so it runs to the content
+        // card's edges instead of floating as an inset rectangle inside it.
+        // The header keeps the gutter, so the title still lines up with every
+        // other page's.
+        bodyFullBleed>
         <div className="flex h-full w-full">
           <div className={`relative h-full flex-1 ${hideGraph ? 'hidden' : ''}`}>
             <FlowCanvas
