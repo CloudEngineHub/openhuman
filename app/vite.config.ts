@@ -120,6 +120,13 @@ function devConnectPlugin(): PluginOption {
           process.env.VITE_OPENHUMAN_CORE_RPC_URL ?? ""
         ).trim();
 
+        // These are the same three keys BootCheckGate's picker writes on a
+        // cloud-mode confirm. The mode marker matters: without it
+        // `getStoredCoreMode()` returns null, which reads as "the picker has
+        // not run yet", and the gate parks the app on the Connect-to-Your-
+        // Runtime screen. A local core reached over an explicit URL + bearer
+        // is exactly what "cloud" means to that picker.
+        //
         // `</script>` inside a JSON string would close the block early.
         const json = (value: string) =>
           JSON.stringify(value).replace(/</g, "\\u003c");
@@ -135,11 +142,6 @@ function devConnectPlugin(): PluginOption {
         var token = ${json(token)};
         if (url) localStorage.setItem("openhuman_core_rpc_url", url);
         if (token) localStorage.setItem("openhuman_core_rpc_token", token);
-        // Same three keys BootCheckGate's picker writes on a cloud-mode
-        // confirm. Without the mode marker `getStoredCoreMode()` returns null,
-        // which reads as "the picker has not run yet" and the gate blocks the
-        // app on the Connect-to-Your-Runtime screen. A local core reached over
-        // an explicit URL + bearer is exactly what "cloud" means here.
         if (url && token) localStorage.setItem("openhuman_core_mode", "cloud");
       } catch (err) {
         document.body.textContent =
