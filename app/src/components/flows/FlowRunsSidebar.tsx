@@ -23,7 +23,7 @@ import {
   useRunsPendingApprovalSet,
 } from '../../hooks/useRunsPendingApprovalSet';
 import { useT } from '../../lib/i18n/I18nContext';
-import { Button, CenteredLoadingState, ErrorBanner } from '../ui';
+import { Button, CenteredLoadingState, EmptyState, ErrorBanner } from '../ui';
 import { type FlowRepairRequest, FlowRunInspectorDrawer } from './FlowRunInspectorDrawer';
 import { FlowRunStatus, flowRunStatusLabel } from './FlowRunStatus';
 
@@ -103,9 +103,15 @@ export default function FlowRunsSidebar({ flowId }: FlowRunsSidebarProps) {
   const pendingRunIds = useRunsPendingApprovalSet(runs);
 
   return (
+    // Laid out as one of the shell's sidebar regions, not as a bespoke panel:
+    // the heading and the rows below reuse `TwoPaneNav`'s exact specs (10px
+    // uppercase group label at `pt-0`; `h-auto w-full justify-start rounded-md
+    // px-2.5 py-1.5 text-[14px]` rows, primary-filled when active), so this
+    // list and the nav group above it in the same column read as one sidebar
+    // rather than two components that happen to be stacked.
     <div className="flex h-full flex-col" data-testid="flow-runs-sidebar">
-      <div className="flex shrink-0 items-center justify-between gap-2 px-3 py-2">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content-faint">
+      <div className="flex shrink-0 items-center justify-between gap-2 px-2 pb-0.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-content-muted">
           {t('flows.runs.sidebarTitle')}
         </span>
         <Button
@@ -134,7 +140,7 @@ export default function FlowRunsSidebar({ flowId }: FlowRunsSidebarProps) {
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
         {loading && runs.length === 0 && <CenteredLoadingState label={t('flows.runs.loading')} />}
 
         {error && (
@@ -144,38 +150,44 @@ export default function FlowRunsSidebar({ flowId }: FlowRunsSidebarProps) {
         )}
 
         {!loading && !error && runs.length === 0 && (
-          <p
-            className="px-2 py-6 text-center text-xs text-content-faint"
-            data-testid="flow-runs-sidebar-empty">
-            {t('flows.runs.empty')}
-          </p>
+          <EmptyState
+            className="px-2"
+            label={t('flows.runs.empty')}
+            data-testid="flow-runs-sidebar-empty"
+          />
         )}
 
-        <ul className="space-y-1">
+        <ul>
           {runs.map(run => {
             const displayStatus = resolveDisplayStatus(run, pendingRunIds);
+            const statusLabel = flowRunStatusLabel(displayStatus, t);
+            const active = selectedRunId === run.id;
             return (
               <li key={run.id}>
                 <Button
                   type="button"
                   variant="tertiary"
+                  aria-current={active ? 'page' : undefined}
                   data-testid={`flow-runs-sidebar-run-${run.id}`}
                   onClick={() => setSelectedRunId(run.id)}
-                  className={`h-auto w-full justify-start gap-2 rounded-lg px-2 py-1.5 text-left font-normal ${
-                    selectedRunId === run.id ? 'bg-surface-hover' : ''
+                  // `TwoPaneNav`'s row spec verbatim. The status used to be
+                  // painted TWICE per row — a coloured dot AND the same status
+                  // as an accented badge, with the time under it — so a list of
+                  // runs was three visual weights deep and the thing you
+                  // actually scan for (which run, how long ago) came third. The
+                  // dot carries the colour; the label and time are plain text.
+                  className={`h-auto w-full justify-start gap-2 rounded-md px-2.5 py-1.5 text-left text-[14px] ${
+                    active
+                      ? 'bg-primary-500 font-semibold text-content-inverted hover:bg-primary-500'
+                      : 'font-normal text-content-muted hover:bg-surface/40 hover:text-content-secondary'
                   }`}>
-                  <FlowRunStatus
-                    status={displayStatus}
-                    label={flowRunStatusLabel(displayStatus, t)}
-                    presentation="dot"
-                  />
+                  <FlowRunStatus status={displayStatus} label={statusLabel} presentation="dot" />
                   <span className="min-w-0 flex-1">
-                    <FlowRunStatus
-                      status={displayStatus}
-                      label={flowRunStatusLabel(displayStatus, t)}
-                      className="px-1.5 text-[10px]"
-                    />
-                    <span className="mt-0.5 block truncate text-[11px] text-content-faint">
+                    <span className="block truncate">{statusLabel}</span>
+                    <span
+                      className={`mt-0.5 block truncate text-[11px] font-normal ${
+                        active ? 'text-content-inverted/70' : 'text-content-faint'
+                      }`}>
                       {relativeTime(run.started_at, t)}
                     </span>
                   </span>
