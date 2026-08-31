@@ -9,7 +9,7 @@
  * seed is the fix (see `FlowCanvasPage.tsx`'s `locationKey`-based copilot
  * panel remount, which reacts to exactly this navigation).
  */
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -115,7 +115,7 @@ describe('FlowRunsSidebar', () => {
     // row whose job is "which run, how long ago". The dot is the only thing
     // carrying the accent now; the label beside it is plain text. Replaces an
     // assertion on that badge's padding override, which pinned the styling of
-    // a element that should not have been there.
+    // an element that should not have been there.
     expect(row.querySelectorAll('[aria-hidden="true"]')).toHaveLength(1);
     expect(row.querySelector('[aria-hidden="true"]')).toHaveClass('bg-coral-500');
     expect(within(row).getByText('Failed')).not.toHaveClass('bg-coral-50');
