@@ -145,11 +145,18 @@ function FlowNodeComponent({ id, data, selected }: NodeProps<FlowNode>) {
           border rather than resting it against the inside. */}
       {data.inputPorts.length > 0 && (
         <div
-          className="absolute inset-x-0 top-0 flex -translate-y-1/2 items-end justify-center gap-4"
+          className="absolute inset-x-0 top-0 flex -translate-y-1/2 items-center justify-center gap-6"
           data-testid="flow-node-inputs">
           {data.inputPorts.map(port => (
-            <div key={`in-${port}`} className="flex flex-col items-center gap-1">
-              {labelInputs && <span className={portPillClass(port)}>{port}</span>}
+            <div key={`in-${port}`} className="relative flex flex-col items-center">
+              {/* Absolute, so the label's height stays OUT of the column box.
+                  In flow it made the column taller than the dot, and the row's
+                  `-translate-y-1/2` then centred that taller box on the border
+                  — which pushed the dot itself down inside the card. Only the
+                  unlabelled ports looked right. */}
+              {labelInputs && (
+                <span className={`absolute bottom-full mb-1 ${portPillClass(port)}`}>{port}</span>
+              )}
               <Handle
                 id={port}
                 type="target"
@@ -242,10 +249,10 @@ function FlowNodeComponent({ id, data, selected }: NodeProps<FlowNode>) {
           given edge leaves by is readable without tracing it. */}
       {data.outputPorts.length > 0 && (
         <div
-          className="absolute inset-x-0 bottom-0 flex translate-y-1/2 items-start justify-center gap-4"
+          className="absolute inset-x-0 bottom-0 flex translate-y-1/2 items-center justify-center gap-6"
           data-testid="flow-node-outputs">
           {data.outputPorts.map(port => (
-            <div key={`out-${port}`} className="flex flex-col items-center gap-1">
+            <div key={`out-${port}`} className="relative flex flex-col items-center">
               <Handle
                 id={port}
                 type="source"
@@ -254,7 +261,10 @@ function FlowNodeComponent({ id, data, selected }: NodeProps<FlowNode>) {
                 className={HANDLE_CLASS}
                 title={port}
               />
-              {labelOutputs && <span className={portPillClass(port)}>{port}</span>}
+              {/* Absolute for the same reason as the input labels above. */}
+              {labelOutputs && (
+                <span className={`absolute top-full mt-1 ${portPillClass(port)}`}>{port}</span>
+              )}
             </div>
           ))}
         </div>
