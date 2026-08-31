@@ -37,8 +37,8 @@ import {
   setCopilotThreadId as setCopilotThreadIdCache,
 } from '../components/flows/workflowCopilotThreads';
 import { ToastContainer } from '../components/intelligence/Toast';
-import PanelPage from '../components/layout/PanelPage';
 import { SidebarContent } from '../components/layout/shell/SidebarSlot';
+import SettingsTabbedPage from '../components/settings/layout/SettingsTabbedPage';
 import {
   Alert,
   AlertDescription,
@@ -300,18 +300,21 @@ function CanvasBackButton({ onBack }: { onBack: () => void }) {
  * The chrome the canvas shows when there is no graph to edit — loading, load
  * error, not found, or a draft whose ephemeral `location.state` is gone. All
  * four rendered their own `PanelPage` with the same title/leading/body classes;
- * the only thing that differed was the message in the middle.
+ * the only thing that differed was the message in the middle. They share the
+ * standard page shell now, so a canvas that failed to load reads as the same
+ * page as one that loaded.
  */
 function CanvasStatePage({ onBack, children }: { onBack: () => void; children: ReactNode }) {
   const { t } = useT();
   return (
-    <PanelPage
-      testId="flow-canvas-page"
-      title={t('flows.canvas.title')}
-      leading={<CanvasBackButton onBack={onBack} />}
-      contentClassName="h-full p-0">
-      {children}
-    </PanelPage>
+    <div className="h-full p-4" data-testid="flow-canvas-page">
+      <SettingsTabbedPage
+        title={t('flows.canvas.title')}
+        leading={<CanvasBackButton onBack={onBack} />}
+        scrollable={false}>
+        {children}
+      </SettingsTabbedPage>
+    </div>
   );
 }
 
@@ -1191,17 +1194,25 @@ function FlowEditor({
           e.currentTarget.blur();
         }
       }}
-      className="w-full max-w-md truncate border-transparent bg-transparent text-base font-semibold hover:border-line"
+      // Sized to the standard page heading (`text-2xl font-semibold
+      // tracking-tight`, matching `SettingsTabbedPage`'s own `h1`) rather than
+      // the `text-base` `PanelPage` wanted, so the rename affordance reads as
+      // the page title on this page exactly like a static title does on every
+      // other one. `h-auto`/`px-2`/`py-0` strip the input's own control metrics
+      // so it sits on the heading's baseline instead of adding a form row's
+      // worth of height to the header band.
+      className="h-auto w-full max-w-lg truncate border-transparent bg-transparent px-2 py-0 text-2xl font-semibold tracking-tight hover:border-line"
     />
   );
 
   return (
-    <PanelPage
-      testId="flow-canvas-page"
-      title={titleNode}
-      leading={backButton}
-      action={headerActions}
-      contentClassName="h-full p-0">
+    // The standard page shell, with `scrollable={false}` so the canvas owns its
+    // own viewport instead of living inside a scroller. This was a `PanelPage`
+    // with a `text-base` title and a hairline; every other page in the app
+    // opens with `SettingsTabbedPage`'s 2xl heading over a full-bleed divider,
+    // and there was no reason for the builder to be the exception once it was
+    // back in the shell.
+    <div className="h-full p-4" data-testid="flow-canvas-page">
       {/* Run history + "Fix with agent" go through the shell's dynamic sidebar
           region, like every other page's rail. This used to be an in-page
           `hidden lg:flex w-60 border-r` column because the route was chromeless
