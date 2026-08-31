@@ -1227,163 +1227,169 @@ function FlowEditor({
           </div>
         </SidebarContent>
       )}
-      <div className="flex h-full w-full">
-        <div className={`relative h-full flex-1 ${hideGraph ? 'hidden' : ''}`}>
-          <FlowCanvas
-            key={`canvas-${canvasVersion}`}
-            ref={canvasRef}
-            editable
-            nodes={nodes}
-            edges={edges}
-            meta={meta}
-            onSave={onCanvasSave}
-            onDirtyChange={setDirty}
-            onSaveMetaChange={setSaveMeta}
-            activeRunId={activeRunId}
-            onGraphChange={handleGraphChange}
-            addedNodeIds={preview?.addedNodeIds}
-            removedNodeIds={preview?.removedNodeIds}
-            saveDisabled={preview !== null}
-            initialDirty={initialDirty}
-            showPalette={sidePanel === 'legend'}
-            savedViewport={viewportRef.current}
-            onViewportChange={handleViewportChange}
-          />
+      <SettingsTabbedPage
+        title={titleNode}
+        leading={backButton}
+        headerAction={headerActions}
+        scrollable={false}>
+        <div className="flex h-full w-full">
+          <div className={`relative h-full flex-1 ${hideGraph ? 'hidden' : ''}`}>
+            <FlowCanvas
+              key={`canvas-${canvasVersion}`}
+              ref={canvasRef}
+              editable
+              nodes={nodes}
+              edges={edges}
+              meta={meta}
+              onSave={onCanvasSave}
+              onDirtyChange={setDirty}
+              onSaveMetaChange={setSaveMeta}
+              activeRunId={activeRunId}
+              onGraphChange={handleGraphChange}
+              addedNodeIds={preview?.addedNodeIds}
+              removedNodeIds={preview?.removedNodeIds}
+              saveDisabled={preview !== null}
+              initialDirty={initialDirty}
+              showPalette={sidePanel === 'legend'}
+              savedViewport={viewportRef.current}
+              onViewportChange={handleViewportChange}
+            />
 
-          {runError && (
-            // top-14 (not top-3) so this never overlaps the canvas's own
-            // top-right undo/redo controls, which sit at top-3; max-w-md
-            // caps how wide a long nested error can grow. When the legend
-            // palette is open it also docks at top-14/right-3 (w-48), so we
-            // pull the banner's right edge in past it (right-56) rather than
-            // centering across the full width, which would let a long
-            // message reach under the palette and swallow its clicks.
-            <div
-              className={`pointer-events-none absolute left-3 top-14 z-20 flex justify-center ${
-                sidePanel === 'legend' ? 'right-56' : 'right-3'
-              }`}>
-              <Alert
-                variant="destructive"
-                density="compact"
-                data-testid="flow-canvas-run-error"
-                className="pointer-events-auto w-full max-w-md items-start gap-2">
-                <AlertDescription className="flex-1">
-                  {t('flows.editor.runFailed')}: {formatRunError(runError)}
-                </AlertDescription>
-                <Button
-                  type="button"
-                  variant="tertiary"
-                  size="xs"
-                  iconOnly
-                  onClick={() => setRunError(null)}
-                  aria-label={t('common.dismiss')}
-                  title={t('common.dismiss')}
-                  data-testid="flow-canvas-run-error-dismiss"
-                  className="shrink-0 text-coral-500 hover:bg-transparent hover:text-coral-700 dark:text-coral-300 dark:hover:text-coral-100">
-                  <svg
-                    className="h-3.5 w-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </Button>
-              </Alert>
-            </div>
+            {runError && (
+              // top-14 (not top-3) so this never overlaps the canvas's own
+              // top-right undo/redo controls, which sit at top-3; max-w-md
+              // caps how wide a long nested error can grow. When the legend
+              // palette is open it also docks at top-14/right-3 (w-48), so we
+              // pull the banner's right edge in past it (right-56) rather than
+              // centering across the full width, which would let a long
+              // message reach under the palette and swallow its clicks.
+              <div
+                className={`pointer-events-none absolute left-3 top-14 z-20 flex justify-center ${
+                  sidePanel === 'legend' ? 'right-56' : 'right-3'
+                }`}>
+                <Alert
+                  variant="destructive"
+                  density="compact"
+                  data-testid="flow-canvas-run-error"
+                  className="pointer-events-auto w-full max-w-md items-start gap-2">
+                  <AlertDescription className="flex-1">
+                    {t('flows.editor.runFailed')}: {formatRunError(runError)}
+                  </AlertDescription>
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    size="xs"
+                    iconOnly
+                    onClick={() => setRunError(null)}
+                    aria-label={t('common.dismiss')}
+                    title={t('common.dismiss')}
+                    data-testid="flow-canvas-run-error-dismiss"
+                    className="shrink-0 text-coral-500 hover:bg-transparent hover:text-coral-700 dark:text-coral-300 dark:hover:text-coral-100">
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </Button>
+                </Alert>
+              </div>
+            )}
+          </div>
+
+          {copilotOpen && (
+            <WorkflowCopilotPanel
+              // Stable ('copilot') across manual open/close and build-seed
+              // navigations (unaffected — those always land on a fresh
+              // `FlowEditor` mount already, see `locationKey`'s doc comment).
+              // Repair seeds fold in `locationKey` so a same-route "Fix with
+              // agent" click (no `FlowEditor` remount) still forces a fresh
+              // panel mount, resetting the once-per-mount `repairSentRef` guard
+              // so the repair turn actually (re)fires (issue B22).
+              key={initialCopilotSeed ? `copilot-repair-${locationKey}` : 'copilot'}
+              graph={preview?.base ?? draftGraph}
+              flowId={flowId}
+              onProposal={handleProposal}
+              onAccept={handleAcceptProposal}
+              onReject={handleRejectProposal}
+              onClose={() => setSidePanel(null)}
+              repairSeed={copilotRepairSeed}
+              buildSeed={initialBuildSeed}
+              onBuildSeedConsumed={onBuildSeedConsumed}
+              prefillSeed={initialPrefillSeed}
+              onPrefillSeedConsumed={onPrefillSeedConsumed}
+              seedThreadId={copilotThreadId}
+              onThreadIdChange={handleCopilotThreadId}
+              fullWidth={hideGraph}
+            />
           )}
-        </div>
 
-        {copilotOpen && (
-          <WorkflowCopilotPanel
-            // Stable ('copilot') across manual open/close and build-seed
-            // navigations (unaffected — those always land on a fresh
-            // `FlowEditor` mount already, see `locationKey`'s doc comment).
-            // Repair seeds fold in `locationKey` so a same-route "Fix with
-            // agent" click (no `FlowEditor` remount) still forces a fresh
-            // panel mount, resetting the once-per-mount `repairSentRef` guard
-            // so the repair turn actually (re)fires (issue B22).
-            key={initialCopilotSeed ? `copilot-repair-${locationKey}` : 'copilot'}
-            graph={preview?.base ?? draftGraph}
-            flowId={flowId}
-            onProposal={handleProposal}
-            onAccept={handleAcceptProposal}
-            onReject={handleRejectProposal}
-            onClose={() => setSidePanel(null)}
-            repairSeed={copilotRepairSeed}
-            buildSeed={initialBuildSeed}
-            onBuildSeedConsumed={onBuildSeedConsumed}
-            prefillSeed={initialPrefillSeed}
-            onPrefillSeedConsumed={onPrefillSeedConsumed}
-            seedThreadId={copilotThreadId}
-            onThreadIdChange={handleCopilotThreadId}
-            fullWidth={hideGraph}
-          />
-        )}
-
-        {/* Both confirms are `ConfirmDialog` now. They were two hand-rolled
+          {/* Both confirms are `ConfirmDialog` now. They were two hand-rolled
             overlays — an `absolute`/`fixed inset-0` scrim over a `max-w-sm`
             card — that between them reimplemented the shell twice and had no
             focus trap, no scroll lock and no focus restore. `ConfirmDialog`'s
             own spec already reserved these exact test ids for the migration. */}
-        {leaveConfirm && (
-          <ConfirmDialog
-            testId="flow-leave-confirm"
-            titleId="flow-leave-confirm-title"
-            title={t('flows.editor.leaveTitle')}
-            body={t('flows.editor.leaveBody')}
-            destructive
-            cancelLabel={t('flows.editor.leaveStay')}
-            cancelTestId="flow-leave-stay"
-            confirmLabel={t('flows.editor.leaveDiscard')}
-            confirmTestId="flow-leave-discard"
-            onCancel={() => setLeaveConfirm(false)}
-            onConfirm={() => {
-              log('back: confirmed leave — discarding unsaved edits');
-              goBack();
-            }}
-          />
-        )}
+          {leaveConfirm && (
+            <ConfirmDialog
+              testId="flow-leave-confirm"
+              titleId="flow-leave-confirm-title"
+              title={t('flows.editor.leaveTitle')}
+              body={t('flows.editor.leaveBody')}
+              destructive
+              cancelLabel={t('flows.editor.leaveStay')}
+              cancelTestId="flow-leave-stay"
+              confirmLabel={t('flows.editor.leaveDiscard')}
+              confirmTestId="flow-leave-discard"
+              onCancel={() => setLeaveConfirm(false)}
+              onConfirm={() => {
+                log('back: confirmed leave — discarding unsaved edits');
+                goBack();
+              }}
+            />
+          )}
 
-        {/* Confirm popup for the header's Run / Save / Discard icon buttons. */}
-        {confirmAction && (
-          <ConfirmDialog
-            testId="flow-action-confirm"
-            titleId="flow-action-confirm-title"
-            title={t(`flows.editor.confirm.${confirmAction}Title`)}
-            body={t(`flows.editor.confirm.${confirmAction}Body`)}
-            destructive={confirmAction === 'discard'}
-            cancelLabel={t('flows.editor.confirm.cancel')}
-            cancelTestId="flow-action-cancel"
-            confirmLabel={t('flows.editor.confirm.confirm')}
-            confirmTestId="flow-action-confirm-accept"
-            onCancel={() => setConfirmAction(null)}
-            onConfirm={() => {
-              const action = confirmAction;
-              setConfirmAction(null);
-              if (action === 'run') void handleRun();
-              else if (action === 'save') canvasRef.current?.save();
-              else if (action === 'discard') canvasRef.current?.discard();
-            }}
-          />
-        )}
+          {/* Confirm popup for the header's Run / Save / Discard icon buttons. */}
+          {confirmAction && (
+            <ConfirmDialog
+              testId="flow-action-confirm"
+              titleId="flow-action-confirm-title"
+              title={t(`flows.editor.confirm.${confirmAction}Title`)}
+              body={t(`flows.editor.confirm.${confirmAction}Body`)}
+              destructive={confirmAction === 'discard'}
+              cancelLabel={t('flows.editor.confirm.cancel')}
+              cancelTestId="flow-action-cancel"
+              confirmLabel={t('flows.editor.confirm.confirm')}
+              confirmTestId="flow-action-confirm-accept"
+              onCancel={() => setConfirmAction(null)}
+              onConfirm={() => {
+                const action = confirmAction;
+                setConfirmAction(null);
+                if (action === 'run') void handleRun();
+                else if (action === 'save') canvasRef.current?.save();
+                else if (action === 'discard') canvasRef.current?.discard();
+              }}
+            />
+          )}
 
-        {/* Consolidated save+enable pre-authorization card (Approve all / Deny). */}
-        {preauth.pending && (
-          <FlowPreauthorizationOverlay
-            entries={preauth.pending.manifest.entries}
-            busy={preauth.busy}
-            errorMsg={preauth.errorKey ? t('flows.enableApproval.error') : null}
-            onApproveAll={() => void preauth.approveAll()}
-            onDeny={() => void preauth.deny()}
-          />
-        )}
-      </div>
-    </PanelPage>
+          {/* Consolidated save+enable pre-authorization card (Approve all / Deny). */}
+          {preauth.pending && (
+            <FlowPreauthorizationOverlay
+              entries={preauth.pending.manifest.entries}
+              busy={preauth.busy}
+              errorMsg={preauth.errorKey ? t('flows.enableApproval.error') : null}
+              onApproveAll={() => void preauth.approveAll()}
+              onDeny={() => void preauth.deny()}
+            />
+          )}
+        </div>
+      </SettingsTabbedPage>
+    </div>
   );
 }
 
