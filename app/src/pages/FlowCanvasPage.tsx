@@ -1286,40 +1286,6 @@ function FlowEditor({
             </div>
           )}
 
-          {leaveConfirm && (
-            <div
-              className="absolute inset-0 z-30 flex items-center justify-center bg-surface-overlay/50 p-4 backdrop-blur-sm"
-              data-testid="flow-leave-confirm">
-              <div className="w-full max-w-sm rounded-xl border border-line bg-surface p-4 shadow-xl">
-                <h2 className="text-sm font-semibold text-content">
-                  {t('flows.editor.leaveTitle')}
-                </h2>
-                <p className="mt-1 text-xs text-content-muted">{t('flows.editor.leaveBody')}</p>
-                <div className="mt-4 flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    data-testid="flow-leave-stay"
-                    onClick={() => setLeaveConfirm(false)}>
-                    {t('flows.editor.leaveStay')}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    tone="danger"
-                    size="sm"
-                    data-testid="flow-leave-discard"
-                    onClick={() => {
-                      log('back: confirmed leave — discarding unsaved edits');
-                      goBack();
-                    }}>
-                    {t('flows.editor.leaveDiscard')}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {copilotOpen && (
@@ -1349,45 +1315,51 @@ function FlowEditor({
           />
         )}
 
+        {/* Both confirms are `ConfirmDialog` now. They were two hand-rolled
+            overlays — an `absolute`/`fixed inset-0` scrim over a `max-w-sm`
+            card — that between them reimplemented the shell twice and had no
+            focus trap, no scroll lock and no focus restore. `ConfirmDialog`'s
+            own spec already reserved these exact test ids for the migration. */}
+        {leaveConfirm && (
+          <ConfirmDialog
+            testId="flow-leave-confirm"
+            titleId="flow-leave-confirm-title"
+            title={t('flows.editor.leaveTitle')}
+            body={t('flows.editor.leaveBody')}
+            destructive
+            cancelLabel={t('flows.editor.leaveStay')}
+            cancelTestId="flow-leave-stay"
+            confirmLabel={t('flows.editor.leaveDiscard')}
+            confirmTestId="flow-leave-discard"
+            onCancel={() => setLeaveConfirm(false)}
+            onConfirm={() => {
+              log('back: confirmed leave — discarding unsaved edits');
+              goBack();
+            }}
+          />
+        )}
+
         {/* Confirm popup for the header's Run / Save / Discard icon buttons. */}
         {confirmAction && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-surface-overlay/50 p-4 backdrop-blur-sm"
-            data-testid="flow-action-confirm">
-            <div className="w-full max-w-sm rounded-xl border border-line bg-surface p-4 shadow-xl">
-              <h2 className="text-sm font-semibold text-content">
-                {t(`flows.editor.confirm.${confirmAction}Title`)}
-              </h2>
-              <p className="mt-1 text-xs text-content-muted">
-                {t(`flows.editor.confirm.${confirmAction}Body`)}
-              </p>
-              <div className="mt-4 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  data-testid="flow-action-cancel"
-                  onClick={() => setConfirmAction(null)}>
-                  {t('flows.editor.confirm.cancel')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  tone={confirmAction === 'discard' ? 'danger' : undefined}
-                  size="sm"
-                  data-testid="flow-action-confirm-accept"
-                  onClick={() => {
-                    const action = confirmAction;
-                    setConfirmAction(null);
-                    if (action === 'run') void handleRun();
-                    else if (action === 'save') canvasRef.current?.save();
-                    else if (action === 'discard') canvasRef.current?.discard();
-                  }}>
-                  {t('flows.editor.confirm.confirm')}
-                </Button>
-              </div>
-            </div>
-          </div>
+          <ConfirmDialog
+            testId="flow-action-confirm"
+            titleId="flow-action-confirm-title"
+            title={t(`flows.editor.confirm.${confirmAction}Title`)}
+            body={t(`flows.editor.confirm.${confirmAction}Body`)}
+            destructive={confirmAction === 'discard'}
+            cancelLabel={t('flows.editor.confirm.cancel')}
+            cancelTestId="flow-action-cancel"
+            confirmLabel={t('flows.editor.confirm.confirm')}
+            confirmTestId="flow-action-confirm-accept"
+            onCancel={() => setConfirmAction(null)}
+            onConfirm={() => {
+              const action = confirmAction;
+              setConfirmAction(null);
+              if (action === 'run') void handleRun();
+              else if (action === 'save') canvasRef.current?.save();
+              else if (action === 'discard') canvasRef.current?.discard();
+            }}
+          />
         )}
 
         {/* Consolidated save+enable pre-authorization card (Approve all / Deny). */}
