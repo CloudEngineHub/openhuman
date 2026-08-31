@@ -3,7 +3,7 @@ import { ReactFlow, ReactFlowProvider, Background } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './index.css';
 import FlowNodeComponent from './components/flows/canvas/FlowNodeComponent';
-import { StepNumberProvider } from './components/flows/canvas/stepNumbers';
+import { StepNumberContext } from './components/flows/canvas/stepNumbers';
 
 const mk = (id: string, kind: string, name: string, y: number, outs = ['main'], ins = ['main']) => ({
   id, type: 'flowNode', position: { x: 120, y },
@@ -25,7 +25,7 @@ const edges = [
 createRoot(document.getElementById('root')!).render(
   <div className="h-screen w-screen">
     <ReactFlowProvider>
-      <StepNumberProvider nodes={nodes as never} edges={edges as never}>
+      <StepNumberContext.Provider value={new Map([['t',1],['a',2],['c',3],['s',4]])}>
         <ReactFlow
           nodes={nodes as never}
           edges={edges as never}
@@ -34,7 +34,7 @@ createRoot(document.getElementById('root')!).render(
           fitViewOptions={{ padding: 0.15 }}>
           <Background />
         </ReactFlow>
-      </StepNumberProvider>
+      </StepNumberContext.Provider>
     </ReactFlowProvider>
   </div>
 );
