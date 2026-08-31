@@ -28,11 +28,21 @@
  * `line-strong`, and a two-layer shadow to separate from the canvas in both
  * themes.
  *
- * Ports read as labelled handle rows rather than a plaintext list: each port's
- * `Handle` sits inline next to its name so it's unambiguous which dot carries
- * which input/output (e.g. a `condition`'s `true`/`false` outputs). Branch ports
- * are colour-coded (true → sage, false/error → coral). A lone implicit `main`
- * port shows just its handle dot — left = input, right = output.
+ * **Ports connect vertically: inputs on the top edge, outputs on the bottom.**
+ * They used to sit on the left and right edges, which fought the graph's own
+ * shape — `autoLayout` has always laid flows out top-to-bottom (`y = depth *
+ * 160`, siblings spread across `x`), so every edge left a node sideways and
+ * doubled back to enter the next one sideways. Straightening the handles onto
+ * the axis the layout already uses is what makes an edge a straight drop.
+ *
+ * Each port's dot straddles its edge and its label, when it has one, sits
+ * OUTSIDE the card — above the top dots, below the bottom ones. Inside the card
+ * they would have to overlap the title band or the summary. Labels only appear
+ * when there is something to disambiguate (more than one port, or a single
+ * explicitly-named one), so the common node is a bare dot top and bottom and
+ * the labelled case is mostly a `condition`'s `true`/`false`, which is exactly
+ * where a label under the outgoing dot reads best. Branch ports stay
+ * colour-coded (true → sage, false/error → coral).
  *
  * When the card is selected in the editable canvas, an in-card action row
  * (Validate / Delete) appears via {@link useCanvasActions} — the read-only
@@ -54,10 +64,10 @@ import { useCanvasActions } from './canvasActions';
 import { useStepNumber } from './stepNumbers';
 
 /**
- * Inline the handle into the port row instead of React Flow's default absolute
- * edge placement, so each dot flows next to its label. React Flow still derives
- * the connection point from the handle's measured position, so edges attach
- * correctly.
+ * Inline the handle into its port column instead of React Flow's default
+ * absolute edge placement, so each dot flows above/below its own label. React
+ * Flow still derives the connection point from the handle's measured position,
+ * so edges attach correctly.
  */
 const INLINE_HANDLE_STYLE: CSSProperties = {
   position: 'relative',
@@ -66,6 +76,19 @@ const INLINE_HANDLE_STYLE: CSSProperties = {
   right: 'auto',
   transform: 'none',
 };
+
+/**
+ * The connector dot. React Flow's default is a 6px square in its own palette,
+ * which on this canvas reads as a speck rather than something you can grab.
+ * This is a 12px token-coloured circle ringed in the card's own surface, so it
+ * stays visible against both the card and the canvas behind it, and it grows on
+ * hover to advertise that it is a drag target.
+ *
+ * `!` on each utility because React Flow ships its own `.react-flow__handle`
+ * rule for these properties and loads its stylesheet after ours.
+ */
+const HANDLE_CLASS =
+  '!h-3 !w-3 !rounded-full !border-2 !border-surface !bg-primary-500 !transition-transform hover:!scale-125';
 
 /** The implicit single port; shown as a bare dot with no redundant label. */
 const IMPLICIT_PORT = 'main';
