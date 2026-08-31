@@ -1285,7 +1285,6 @@ function FlowEditor({
               </Alert>
             </div>
           )}
-
         </div>
 
         {copilotOpen && (
@@ -1502,25 +1501,8 @@ export default function FlowCanvasPage() {
     );
   }
 
-  const backButton = (
-    <Button
-      type="button"
-      variant="tertiary"
-      size="xs"
-      iconOnly
-      data-testid="flow-canvas-back"
-      aria-label={t('flows.canvas.backToList')}
-      onClick={() => navigate('/flows')}>
-      <BackIcon />
-    </Button>
-  );
-
   return (
-    <PanelPage
-      testId="flow-canvas-page"
-      title={t('flows.canvas.title')}
-      leading={backButton}
-      contentClassName="h-full p-0">
+    <CanvasStatePage onBack={() => navigate('/flows')}>
       {state.status === 'loading' && (
         <div className="flex h-full items-center justify-center">
           <CenteredLoadingState label={t('flows.canvas.loading')} />
@@ -1540,7 +1522,7 @@ export default function FlowCanvasPage() {
           </p>
         </div>
       )}
-    </PanelPage>
+    </CanvasStatePage>
   );
 }
 
@@ -1593,30 +1575,13 @@ export function FlowCanvasDraftPage() {
     );
   }
 
-  const backButton = (
-    <Button
-      type="button"
-      variant="tertiary"
-      size="xs"
-      iconOnly
-      data-testid="flow-canvas-back"
-      aria-label={t('flows.canvas.backToList')}
-      onClick={() => navigate('/flows')}>
-      <BackIcon />
-    </Button>
-  );
-
   return (
-    <PanelPage
-      testId="flow-canvas-page"
-      title={t('flows.canvas.title')}
-      leading={backButton}
-      contentClassName="h-full p-0">
+    <CanvasStatePage onBack={() => navigate('/flows')}>
       <div className="flex h-full items-center justify-center p-4">
         <p className="text-sm text-content-muted" data-testid="flow-canvas-draft-missing">
           {t('flows.canvas.draftMissing')}
         </p>
       </div>
-    </PanelPage>
+    </CanvasStatePage>
   );
 }
