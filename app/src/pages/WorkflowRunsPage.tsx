@@ -98,7 +98,7 @@ export default function WorkflowRunsPage() {
             </p>
           ) : (
             <ul
-              className="divide-y divide-line rounded-xl border border-line"
+              className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface"
               data-testid="workflow-runs-list">
               {runs.map(run => {
                 const displayStatus = resolveDisplayStatus(run, pendingRunIds);
