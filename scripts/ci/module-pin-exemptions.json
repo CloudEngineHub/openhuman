@@ -15,14 +15,62 @@
     {
       "id": "tinymcp",
       "submodule": "vendor/tinymcp",
-      "expect": "v0.3.1-15-g5909bd1",
-      "reason": "openhuman takes tinymcp with default-features = false (Cargo.toml:296), which switches the module adapter off, so the 0.3.1 artifact this record would download is never loaded. The submodule is the compile-time contract; the record is inert. Tracked by openhuman#5727."
+      "expect": "v0.3.2",
+      "reason": "The v0.3.2 source tag is the current compile-time contract, but no v0.3.2 GitHub Release artifact exists. The registry therefore deliberately retains the last published v0.3.1 runtime artifact."
     },
     {
       "id": "tinywallet",
       "submodule": "vendor/tinywallet",
-      "expect": "v0.5.0-8-g8c728de",
-      "reason": "v0.5.0 is still the newest tinywallet release, so there is no tag to re-pin the record to. The eight commits past it are dependabot bumps, two of them major (coins-bip32 0.8.7 to 0.13.1, sha3 0.10.9 to 0.12.0). Whether the loaded 0.5.0 cdylib and the compiled 8c728de bus crate still agree on the wire is UNDETERMINED. Tracked by openhuman#5727."
+      "expect": "v0.5.1",
+      "reason": "The v0.5.1 source tag is the current compile-time contract, but no v0.5.1 GitHub Release artifact exists. The registry deliberately retains the last published v0.5.0 runtime artifact."
+    },
+    {
+      "id": "tinydocs",
+      "submodule": "vendor/tinydocs",
+      "expect": "v0.1.15",
+      "reason": "The v0.1.15 source tag is current, but no corresponding GitHub Release artifact exists; the registry retains the last published runtime artifact."
+    },
+    {
+      "id": "tinymemory",
+      "submodule": "vendor/tinymemory",
+      "expect": "v1.13.4-31-g97d3e08",
+      "reason": "The current source revision is ahead of v1.13.4 and has no published GitHub Release artifact; registry and CI retain the last published runtime artifact set."
+    },
+    {
+      "id": "tinyjuice",
+      "submodule": "vendor/tinyjuice",
+      "expect": "v0.2.5",
+      "reason": "The v0.2.5 source tag is current, but no corresponding GitHub Release artifact exists; the registry retains the last published runtime artifact."
+    },
+    {
+      "id": "tinyvoice",
+      "submodule": "vendor/tinyvoice",
+      "expect": "v0.1.6",
+      "reason": "The v0.1.6 source tag is current, but no corresponding GitHub Release artifact exists; the registry retains the last published runtime artifact."
+    },
+    {
+      "id": "tinyruntime",
+      "submodule": "vendor/tinyruntime",
+      "expect": "v0.2.4",
+      "reason": "The v0.2.4 source tag is current, but no corresponding GitHub Release artifact exists; the registry retains the last published runtime artifact."
+    },
+    {
+      "id": "tinyruntime-nodejs",
+      "submodule": "vendor/tinyruntime",
+      "expect": "v0.2.4",
+      "reason": "Published from tinyruntime; the current source tag has no corresponding GitHub Release artifact, so the registry retains the last published provider artifact."
+    },
+    {
+      "id": "tinyruntime-python",
+      "submodule": "vendor/tinyruntime",
+      "expect": "v0.2.4",
+      "reason": "Published from tinyruntime; the current source tag has no corresponding GitHub Release artifact, so the registry retains the last published provider artifact."
+    },
+    {
+      "id": "tinyconnectors",
+      "submodule": "vendor/tinyconnectors",
+      "expect": "v0.7.1",
+      "reason": "The v0.7.1 source tag is current, but no corresponding GitHub Release artifact exists; the registry retains the last published runtime artifact."
     }
   ]
 }
