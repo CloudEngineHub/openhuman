@@ -109,6 +109,18 @@ fn handle_subagent_cancel(params: Map<String, Value>) -> ControllerFuture {
         );
 
         let cancelled = match running_subagents::cancel_by_task(&task_id) {
+            // Finished before the click landed (it stays registered until the
+            // terminal sweep). Its outcome is already recorded and delivered;
+            // announcing a cancellation would overwrite a completed session
+            // with "cancelled by user" and post a false notice into the chat.
+            Some(meta) if meta.already_finished => {
+                log::debug!(
+                    target: "subagent_control_rpc",
+                    "[subagent_control_rpc][{cid}] cancel.already_finished task_id={task_id} agent_id={}",
+                    meta.agent_id
+                );
+                false
+            }
             Some(meta) => {
                 let summary = match reason.as_deref().map(str::trim).filter(|r| !r.is_empty()) {
                     Some(r) => format!(

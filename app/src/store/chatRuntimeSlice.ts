@@ -1965,6 +1965,34 @@ const chatRuntimeSlice = createSlice({
         if (isDirty !== undefined) s.isDirty = isDirty;
       }
     },
+    /**
+     * Settle a delegation card from the core's answer to "Cancel task".
+     *
+     * `cancelled: true` — the run was aborted. `cancelled: false` — nothing is
+     * running under that id any more (it already finished, or the core no
+     * longer knows it), so the card must stop spinning: its outcome, if any,
+     * was already delivered into the chat as a follow-up turn. Without this a
+     * card whose terminal event was missed kept a live spinner and a Cancel
+     * button that answered "not running" forever. Matched by task id across
+     * every thread, live and settled, because the card knows no row id.
+     */
+    subagentCancelResolved: (
+      state,
+      action: PayloadAction<{ taskId: string; cancelled: boolean }>
+    ) => {
+      const { taskId, cancelled } = action.payload;
+      for (const threadId of Object.keys(state.toolTimelineByThread).concat(
+        Object.keys(state.settledTurnsByThread)
+      )) {
+        for (const entry of subagentRows(
+          state,
+          threadId,
+          e => e.subagent?.taskId === taskId && isActiveTimelineStatus(e.status)
+        )) {
+          entry.status = cancelled ? 'cancelled' : 'success';
+        }
+      }
+    },
     subagentIterationStarted: (
       state,
       action: PayloadAction<{
@@ -2850,6 +2878,7 @@ export const {
   streamDeltaReceived,
   subagentAwaitingUser,
   subagentDone,
+  subagentCancelResolved,
   subagentIterationStarted,
   subagentSpawned,
   subagentToolCallReceived,

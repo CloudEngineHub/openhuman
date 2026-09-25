@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 
 use tinyagents_harness::ids::TaskId;
 
-use super::registry::registry;
+use super::registry::{registry, SubagentStatus};
 use super::resolve::{task_id_for_session, task_id_for_session_in_workspace};
 use super::task_ledger::record_cancelled;
 
@@ -21,6 +21,11 @@ pub(crate) struct CancelledSubagent {
     pub(crate) subagent_session_id: Option<String>,
     pub(crate) workspace_dir: PathBuf,
     pub(crate) parent_thread_id: Option<String>,
+    /// The run had already completed or failed before the cancel arrived. A
+    /// finished entry stays registered until `sweep_terminal`, so a late
+    /// "Cancel" still finds it; the caller must not rewrite its outcome as a
+    /// user cancellation.
+    pub(crate) already_finished: bool,
 }
 
 /// Abort and drop the sub-agent with `task_id`, returning its metadata so the
@@ -32,8 +37,14 @@ pub(crate) struct CancelledSubagent {
 /// affordance, and the desktop user owns every sub-agent in their own core.
 pub(crate) fn cancel_by_task(task_id: &str) -> Option<CancelledSubagent> {
     let cancelled = registry().cancel_trusted(&TaskId::new(task_id)).ok()?;
+    let already_finished = matches!(
+        cancelled.status,
+        SubagentStatus::Completed { .. } | SubagentStatus::Failed { .. }
+    );
     let metadata = cancelled.metadata;
-    record_cancelled(&metadata.workspace_dir, task_id);
+    if !already_finished {
+        record_cancelled(&metadata.workspace_dir, task_id);
+    }
     log::debug!(
         "[running_subagents] cancel_by_task task_id={} agent_id={} parent_thread_id={:?} live_entries={}",
         task_id,
@@ -49,6 +60,7 @@ pub(crate) fn cancel_by_task(task_id: &str) -> Option<CancelledSubagent> {
         subagent_session_id: metadata.subagent_session_id,
         workspace_dir: metadata.workspace_dir,
         parent_thread_id: metadata.parent_thread_id,
+        already_finished,
     })
 }
 

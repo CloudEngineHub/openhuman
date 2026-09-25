@@ -417,13 +417,13 @@ impl SpawnAsyncSubagentTool {
             register_parent_thread_id.as_deref().unwrap_or("none")
         );
         let background_prompt = add_background_contract(&prompt);
-        // The detached child starts on a fresh task. Its explicit carrier keeps
-        // authority, origin, thread, and workspace while deliberately dropping
-        // the originating turn's accounting, dispatch refusal, and cancellation.
-        // Approval/origin and workspace policy remain task-local until B2h
-        // moves the security boundary onto this carrier, so propagation below
-        // is a staging bridge for those two scopes only.
+        // The detached child starts on a fresh task. Its explicit carrier keeps authority, origin,
+        // thread, and workspace while deliberately dropping the originating turn's accounting,
+        // dispatch refusal, and cancellation. Approval/origin and workspace policy remain
+        // task-local until B2h moves the security boundary onto this carrier, so propagation
+        // below is a staging bridge for those two scopes only.
         let detached_run_context = detached_parent.data.child();
+        let mut abort_report = AbortReport::arm(progress_sink.clone(), &definition.id, &task_id);
         let join = tokio::spawn(crate::agent::turn_origin::propagate(
             crate::agent::turn_workspace::propagate(async move {
                 let options = SubagentRunOptions {
@@ -449,7 +449,7 @@ impl SpawnAsyncSubagentTool {
                     options,
                 )
                 .await;
-
+                abort_report.disarm();
                 match result {
                     Ok(outcome) => {
                         let emit_lifecycle_effects = outcome.should_emit_lifecycle_effects();

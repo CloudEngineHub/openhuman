@@ -23,6 +23,7 @@ import reducer, {
   setToolTimelineForThread,
   streamDeltaReceived,
   subagentAwaitingUser,
+  subagentCancelResolved,
   subagentDone,
   subagentIterationStarted,
   subagentSpawned,
@@ -1452,6 +1453,27 @@ describe('subagent event reducers (Phase 3)', () => {
     // A second done cannot re-settle a terminal row.
     const again = reducer(state, subagentDone({ threadId: 't1', rowId: row, success: false }));
     expect(again.toolTimelineByThread['t1'][0].status).toBe('success');
+  });
+
+  it('subagentCancelResolved settles a spinning row by task id from the cancel answer', () => {
+    // Aborted: the run was cancelled.
+    const aborted = reducer(spawn(), subagentCancelResolved({ taskId: 'task-1', cancelled: true }));
+    expect(aborted.toolTimelineByThread['t1'][0].status).toBe('cancelled');
+
+    // Not running any more (finished, terminal event missed): stop spinning.
+    const gone = reducer(spawn(), subagentCancelResolved({ taskId: 'task-1', cancelled: false }));
+    expect(gone.toolTimelineByThread['t1'][0].status).toBe('success');
+
+    // Another task's answer leaves this row alone.
+    const other = reducer(spawn(), subagentCancelResolved({ taskId: 'task-2', cancelled: true }));
+    expect(other.toolTimelineByThread['t1'][0].status).toBe('running');
+  });
+
+  it('subagentCancelResolved never rewrites a row that already settled', () => {
+    const row = 't1:subagent:task-1:researcher';
+    let state = reducer(spawn(), subagentDone({ threadId: 't1', rowId: row, success: false }));
+    state = reducer(state, subagentCancelResolved({ taskId: 'task-1', cancelled: false }));
+    expect(state.toolTimelineByThread['t1'][0].status).toBe('error');
   });
 
   it('subagentSpawned is idempotent — a redelivered event does not duplicate the row', () => {
