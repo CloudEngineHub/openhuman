@@ -3063,6 +3063,23 @@ pub fn run() {
         .setup(move |app| {
             #[cfg(windows)]
             {
+                if let Ok(resource_dir) = app.path().resource_dir() {
+                    let bundled = resource_dir.join("bundled-modules");
+                    if bundled.is_dir() {
+                        if openhuman_core::modules::ops::set_bundled_releases_dir(bundled)
+                            .is_err()
+                        {
+                            log::warn!("[modules] bundled release directory was already set");
+                        }
+                    } else {
+                        log::warn!("[modules] installer has no bundled release directory");
+                    }
+                } else {
+                    log::warn!("[modules] installer resource directory is unavailable");
+                }
+            }
+            #[cfg(windows)]
+            {
                 // `register_all` writes HKCU\Software\Classes\openhuman so the
                 // browser can hand `openhuman://auth?...` callbacks back to
                 // the running instance. The plugin only returns an Err — and
