@@ -68,6 +68,7 @@ Applies to every release, all platforms.
 
 ### Windows
 
+- [ ] **Custom window frame and exit** — Launch with no saved window geometry. Expected: the window opens near 800 × 720 with compact rounded corners; the top-right controls minimize, maximize/restore, and close. Drag the window from the top strip on both the loading screen and main app. Closing exits the host and its embedded core (no lingering `OpenHuman.exe` or core listener).
 - [ ] **SmartScreen does not block install** — Run the installer from a fresh download. Expected: SmartScreen passes (signed binary). If `Windows protected your PC` appears, the EV signature is missing or the reputation has not built up — escalate before shipping.
 - [ ] **Installer creates Start Menu + Desktop shortcuts** — Defaults preserved. Expected: both shortcuts launch the app.
 - [ ] **Chat links preserve the desktop UI** — Click an HTTPS PR link in an assistant reply. Expected: the default browser opens the PR and OpenHuman stays on the same conversation. If the OS opener fails, the app must remain visible instead of navigating to the remote page. Check internal chat/settings navigation still works.
