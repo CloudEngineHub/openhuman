@@ -3,7 +3,7 @@
 // a build-time operation; a shipped installer needs no GitHub access to load.
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -56,6 +56,8 @@ export function stageWindowsModules(output = OUTPUT) {
   }
   const assets = bundledAssets(readRegistrySource());
   rmSync(output, { recursive: true, force: true });
+  mkdirSync(output, { recursive: true });
+  writeFileSync(join(output, ".gitkeep"), "");
   for (const asset of assets) {
     const dir = join(output, asset.id, asset.version, asset.hostKey);
     mkdirSync(dir, { recursive: true });
