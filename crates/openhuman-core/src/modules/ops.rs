@@ -32,12 +32,23 @@
 //! as still loading instead of hanging into that deadline.
 
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 use std::time::Duration;
 
 use super::resolution::{self, Claim, Resolution, ResolutionState, ResolutionTable, Waited};
 use super::types::{ModuleRecord, ModuleState, ModuleStatus};
 use super::{host, platform, registry};
 use crate::config::Config;
+
+/// Installer-owned, read-only release cache. The desktop host sets this before
+/// starting the embedded core; other hosts continue using the user cache.
+static BUNDLED_RELEASES: OnceLock<PathBuf> = OnceLock::new();
+
+/// Register the directory of release archives shipped with the desktop app.
+/// Its contents still pass the compiled digest and TinyBus admission gates.
+pub fn set_bundled_releases_dir(path: PathBuf) -> Result<(), PathBuf> {
+    BUNDLED_RELEASES.set(path)
+}
 
 /// Why a bounded [`ensure_loaded_within`] did not end with the module serving.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -297,6 +308,49 @@ fn load_cached(
     }
 
     let mut last_error = String::new();
+    let mut found_bundled = false;
+    if let Some(bundled_root) = BUNDLED_RELEASES.get() {
+        for asset in &assets {
+            let Some(cache_dir) = artifact_dir(bundled_root, record, asset.host_key) else {
+                continue;
+            };
+            if !cache_dir.join(asset.archive).is_file() {
+                continue;
+            }
+            found_bundled = true;
+            let release = tinybus::module::CachedRelease {
+                release_url: record.release_url,
+                asset_name: asset.archive,
+                expected_sha256: Some(asset.sha256),
+                cache_dir: &cache_dir,
+                allow_download: false,
+            };
+            match runtime
+                .host()
+                .load_github_release_cached(&release, module_config.clone())
+            {
+                Ok(_) => {
+                    log::info!("[modules] loaded '{}' from the installer bundle", record.id);
+                    return Ok(());
+                }
+                Err(err) => {
+                    last_error = err.to_string();
+                    log::warn!(
+                        "[modules] bundled '{}' artifact for {} was not admitted: {last_error}",
+                        record.id,
+                        asset.host_key
+                    );
+                }
+            }
+        }
+    }
+    if found_bundled {
+        return Err(format!(
+            "module '{}' could not be loaded from the installer bundle: {last_error}. \
+             Restart the app after repairing the installation",
+            record.id
+        ));
+    }
     for asset in assets {
         let Some(cache_dir) = artifact_dir(install_root, record, asset.host_key) else {
             last_error =
