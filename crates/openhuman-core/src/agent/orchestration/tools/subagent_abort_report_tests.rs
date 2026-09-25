@@ -54,3 +54,31 @@ async fn a_disarmed_guard_sends_nothing() {
 fn no_sink_is_a_no_op() {
     drop(AbortReport::arm(None, "help", "sub-3"));
 }
+
+/// A busy parent can have the progress channel full at the moment of the
+/// abort. The report is the only thing that settles the card, so it must wait
+/// for room rather than be dropped.
+#[tokio::test]
+async fn a_full_channel_still_delivers_the_report_once_there_is_room() {
+    let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+    tx.send(AgentProgress::TurnStarted)
+        .await
+        .expect("fill the channel");
+
+    drop(AbortReport::arm(Some(tx), "help", "sub-full"));
+
+    // Drain the event that was filling the channel; the deferred report follows.
+    assert!(matches!(rx.recv().await, Some(AgentProgress::TurnStarted)));
+    let event = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+        .await
+        .expect("deferred report arrives")
+        .expect("channel still open");
+    assert_eq!(
+        failed(event),
+        (
+            "help".to_string(),
+            "sub-full".to_string(),
+            ABORTED_ERROR.to_string()
+        )
+    );
+}

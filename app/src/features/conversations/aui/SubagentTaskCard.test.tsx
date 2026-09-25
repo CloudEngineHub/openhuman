@@ -121,11 +121,14 @@ describe('SubagentTaskCard', () => {
   // The card has no other signal for a run the core aborted (the aborted task
   // never reports) or one that already ended: the cancel answer must settle it,
   // or the spinner and a dead Cancel button stay forever.
-  it.each([true, false])(
-    'settles the card from the core cancel answer (cancelled=%s)',
-    async cancelled => {
+  it.each([
+    { cancelled: true, outcome: undefined },
+    { cancelled: false, outcome: 'failed' as const },
+  ])(
+    'settles the card from the core cancel answer (cancelled=$cancelled)',
+    async ({ cancelled, outcome }) => {
       dispatch.mockClear();
-      cancel.mockResolvedValueOnce({ cancelled, taskId: 'sub-1' });
+      cancel.mockResolvedValueOnce({ cancelled, taskId: 'sub-1', outcome });
       render(
         <SubagentTaskCard
           type="tool-call"
@@ -144,7 +147,7 @@ describe('SubagentTaskCard', () => {
       fireEvent.click(screen.getByTestId('subagent-cancel-task'));
       await waitFor(() =>
         expect(dispatch).toHaveBeenCalledWith(
-          subagentCancelResolved({ taskId: 'sub-1', cancelled })
+          subagentCancelResolved({ taskId: 'sub-1', cancelled, outcome })
         )
       );
       expect(cancel).toHaveBeenCalledWith('sub-1');

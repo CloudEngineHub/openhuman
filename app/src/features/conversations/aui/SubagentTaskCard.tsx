@@ -164,8 +164,8 @@ function CancelTaskAction({ taskId }: { taskId: string }) {
       // The core's answer is the only signal this card gets for a run it just
       // aborted or that already ended, so settle on it rather than waiting for
       // a `subagent_failed` that may never come.
-      .then(({ cancelled }) => {
-        dispatch(subagentCancelResolved({ taskId, cancelled }));
+      .then(({ cancelled, outcome }) => {
+        dispatch(subagentCancelResolved({ taskId, cancelled, outcome }));
       })
       .catch(() => {
         setFailed(true);

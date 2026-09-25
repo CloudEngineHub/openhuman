@@ -14,10 +14,13 @@
 //!
 //! [`AbortReport`] is armed around the run and disarmed once the run returns
 //! (every branch after that reports itself). If the future is dropped while
-//! still armed, `Drop` sends the missing `SubagentFailed`. `try_send` because
-//! `Drop` cannot await; a full or closed channel only loses the UI update,
-//! which is what already happened before this guard existed.
+//! still armed, `Drop` sends the missing `SubagentFailed`. `Drop` cannot await,
+//! so it tries `try_send` first; if the channel is momentarily full it hands
+//! the event to a spawned task that waits for room, because this event is the
+//! only thing that settles the card. A closed channel has no reader left to
+//! settle anything, so that case is logged and dropped.
 
+use tokio::sync::mpsc::error::TrySendError;
 use tokio::sync::mpsc::Sender;
 
 use crate::agent::progress::AgentProgress;
@@ -77,11 +80,34 @@ impl Drop for AbortReport {
                 self.task_id,
                 self.agent_id
             ),
-            Err(err) => log::warn!(
-                "[subagent_abort_report] could not report aborted sub-agent task_id={} agent_id={} error={}",
+            Err(TrySendError::Full(event)) => {
+                let Ok(runtime) = tokio::runtime::Handle::try_current() else {
+                    log::warn!(
+                        "[subagent_abort_report] channel full and no runtime to wait on task_id={} agent_id={}",
+                        self.task_id,
+                        self.agent_id
+                    );
+                    return;
+                };
+                log::info!(
+                    "[subagent_abort_report] channel full; deferring report task_id={} agent_id={}",
+                    self.task_id,
+                    self.agent_id
+                );
+                let tx = tx.clone();
+                let task_id = self.task_id.clone();
+                runtime.spawn(async move {
+                    if tx.send(event).await.is_err() {
+                        log::warn!(
+                            "[subagent_abort_report] deferred report lost: channel closed task_id={task_id}"
+                        );
+                    }
+                });
+            }
+            Err(TrySendError::Closed(_)) => log::warn!(
+                "[subagent_abort_report] could not report aborted sub-agent: channel closed task_id={} agent_id={}",
                 self.task_id,
-                self.agent_id,
-                err
+                self.agent_id
             ),
         }
     }

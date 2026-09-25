@@ -1969,27 +1969,43 @@ const chatRuntimeSlice = createSlice({
      * Settle a delegation card from the core's answer to "Cancel task".
      *
      * `cancelled: true` — the run was aborted. `cancelled: false` — nothing is
-     * running under that id any more (it already finished, or the core no
-     * longer knows it), so the card must stop spinning: its outcome, if any,
-     * was already delivered into the chat as a follow-up turn. Without this a
-     * card whose terminal event was missed kept a live spinner and a Cancel
-     * button that answered "not running" forever. Matched by task id across
-     * every thread, live and settled, because the card knows no row id.
+     * running under that id any more, and `outcome` says how it had ended:
+     * `completed` / `failed` as the core recorded it, or `unknown` when the
+     * core no longer knows the task. Unknown settles as `cancelled` — the user
+     * asked to stop it and nothing is running — never as a success it cannot
+     * vouch for. Without this a card whose terminal event was missed kept a
+     * live spinner and a Cancel button that answered "not running" forever.
+     * Matched by task id across every thread — live, settled, and restored
+     * past-turn timelines — because the card knows no row id.
      */
     subagentCancelResolved: (
       state,
-      action: PayloadAction<{ taskId: string; cancelled: boolean }>
+      action: PayloadAction<{
+        taskId: string;
+        cancelled: boolean;
+        outcome?: 'completed' | 'failed' | 'unknown';
+      }>
     ) => {
-      const { taskId, cancelled } = action.payload;
+      const { taskId, cancelled, outcome } = action.payload;
+      const status: ToolTimelineEntryStatus = cancelled
+        ? 'cancelled'
+        : outcome === 'completed'
+          ? 'success'
+          : outcome === 'failed'
+            ? 'error'
+            : 'cancelled';
+      const matches = (e: ToolTimelineEntry) =>
+        e.subagent?.taskId === taskId && isActiveTimelineStatus(e.status);
       for (const threadId of Object.keys(state.toolTimelineByThread).concat(
         Object.keys(state.settledTurnsByThread)
       )) {
-        for (const entry of subagentRows(
-          state,
-          threadId,
-          e => e.subagent?.taskId === taskId && isActiveTimelineStatus(e.status)
-        )) {
-          entry.status = cancelled ? 'cancelled' : 'success';
+        for (const entry of subagentRows(state, threadId, matches)) {
+          entry.status = status;
+        }
+      }
+      for (const timelines of Object.values(state.turnTimelinesByThread)) {
+        for (const entry of Object.values(timelines).flat().filter(matches)) {
+          entry.status = status;
         }
       }
     },
