@@ -67,6 +67,12 @@ async fn cancel_of_a_finished_run_reports_its_outcome_and_rewrites_nothing() {
         .lock()
         .unwrap_or_else(|e| e.into_inner());
     let workspace = tempfile::tempdir().expect("tempdir");
+    // Snapshot the durable session store before and after: a real cancel
+    // would `mark_failed` the session and rewrite this file.
+    let store = SubagentSessionStore::new(workspace.path().to_path_buf());
+    std::fs::create_dir_all(store.path().parent().expect("store has a parent")).expect("mkdir");
+    let before = "[]";
+    std::fs::write(store.path(), before).expect("seed store");
     for (task_id, status, outcome) in [
         (
             "sub-rpc-done",
@@ -105,10 +111,9 @@ async fn cancel_of_a_finished_run_reports_its_outcome_and_rewrites_nothing() {
         assert_eq!(field(&out, "cancelled"), Some(json!(false)), "{task_id}");
         assert_eq!(field(&out, "outcome"), Some(json!(outcome)), "{task_id}");
     }
-    assert!(
-        !SubagentSessionStore::new(workspace.path().to_path_buf())
-            .path()
-            .exists(),
+    assert_eq!(
+        std::fs::read_to_string(store.path()).expect("store still readable"),
+        before,
         "a finished run's session must not be rewritten as cancelled"
     );
 }

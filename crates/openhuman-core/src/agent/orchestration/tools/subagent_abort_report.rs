@@ -12,9 +12,13 @@
 //! `Cancelled` branch. Nothing was sent, and the card spun forever with a
 //! "Cancel task" button that could no longer do anything.
 //!
-//! [`AbortReport`] is armed around the run and disarmed once the run returns
-//! (every branch after that reports itself). If the future is dropped while
-//! still armed, `Drop` sends the missing `SubagentFailed`. `Drop` cannot await,
+//! [`AbortReport`] is armed for the whole detached task and disarmed only when
+//! it ends. The task's own terminal event goes through [`AbortReport::deliver`],
+//! which remembers it while the send is in flight: an abort that lands during
+//! that send (a late Cancel on a run that just finished aborts too — the
+//! registry cannot tell) re-sends the *real* outcome instead of losing it. If
+//! the future is dropped before any terminal event, `Drop` sends a synthetic
+//! `SubagentFailed`. `Drop` cannot await,
 //! so it tries `try_send` first; if the channel is momentarily full it hands
 //! the event to a spawned task that waits for room, because this event is the
 //! only thing that settles the card. A closed channel has no reader left to
@@ -34,6 +38,11 @@ pub(crate) struct AbortReport {
     agent_id: String,
     task_id: String,
     armed: bool,
+    /// The terminal event being sent right now, re-sent by `Drop` if the send
+    /// is aborted.
+    pending: Option<AgentProgress>,
+    /// A terminal event already reached the channel; nothing left to report.
+    delivered: bool,
 }
 
 impl AbortReport {
@@ -47,10 +56,24 @@ impl AbortReport {
             agent_id: agent_id.to_string(),
             task_id: task_id.to_string(),
             armed: true,
+            pending: None,
+            delivered: false,
         }
     }
 
-    /// The run returned; its own branches report the outcome from here on.
+    /// Send the task's own terminal event, guarded: if this send is aborted,
+    /// `Drop` delivers the same event instead of a synthetic failure.
+    pub(crate) async fn deliver(&mut self, event: AgentProgress) {
+        let Some(tx) = self.progress.clone() else {
+            return;
+        };
+        self.pending = Some(event.clone());
+        let _ = tx.send(event).await;
+        self.pending = None;
+        self.delivered = true;
+    }
+
+    /// The task ended normally; nothing is left for `Drop` to report.
     pub(crate) fn disarm(&mut self) {
         self.armed = false;
     }
@@ -58,7 +81,7 @@ impl AbortReport {
 
 impl Drop for AbortReport {
     fn drop(&mut self) {
-        if !self.armed {
+        if !self.armed || self.delivered {
             return;
         }
         let Some(tx) = self.progress.as_ref() else {
@@ -69,11 +92,14 @@ impl Drop for AbortReport {
             );
             return;
         };
-        let event = AgentProgress::SubagentFailed {
-            agent_id: self.agent_id.clone(),
-            task_id: self.task_id.clone(),
-            error: ABORTED_ERROR.to_string(),
-        };
+        let event = self
+            .pending
+            .take()
+            .unwrap_or_else(|| AgentProgress::SubagentFailed {
+                agent_id: self.agent_id.clone(),
+                task_id: self.task_id.clone(),
+                error: ABORTED_ERROR.to_string(),
+            });
         match tx.try_send(event) {
             Ok(()) => log::info!(
                 "[subagent_abort_report] reported aborted sub-agent task_id={} agent_id={}",

@@ -82,3 +82,65 @@ async fn a_full_channel_still_delivers_the_report_once_there_is_room() {
         )
     );
 }
+
+fn completed(task_id: &str) -> AgentProgress {
+    AgentProgress::SubagentCompleted {
+        agent_id: "agent_memory".into(),
+        task_id: task_id.into(),
+        elapsed_ms: 1,
+        iterations: 1,
+        output_chars: 2,
+        output: "ok".into(),
+        usage: None,
+        worktree_path: None,
+        changed_files: Vec::new(),
+        dirty_status: None,
+    }
+}
+
+/// A late Cancel aborts a run that has already finished and is still waiting
+/// to send its completion (the registry cannot tell). The guard must deliver
+/// that real completion, not a synthetic failure and not nothing.
+#[tokio::test]
+async fn an_abort_during_delivery_resends_the_real_outcome() {
+    let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+    tx.send(AgentProgress::TurnStarted)
+        .await
+        .expect("fill the channel");
+    let (sending_tx, sending_rx) = tokio::sync::oneshot::channel();
+    let task = tokio::spawn(async move {
+        let mut report = AbortReport::arm(Some(tx), "agent_memory", "sub-late");
+        let _ = sending_tx.send(());
+        report.deliver(completed("sub-late")).await; // blocks: channel full
+        report.disarm();
+    });
+    sending_rx.await.expect("task reached delivery");
+    tokio::task::yield_now().await;
+    task.abort();
+    let _ = task.await;
+
+    assert!(matches!(rx.recv().await, Some(AgentProgress::TurnStarted)));
+    let event = tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+        .await
+        .expect("the real outcome arrives")
+        .expect("channel open");
+    assert!(
+        matches!(event, AgentProgress::SubagentCompleted { ref task_id, .. } if task_id == "sub-late"),
+        "expected the real completion, got {event:?}"
+    );
+}
+
+/// Once the terminal event reached the channel, nothing more is reported —
+/// even if the task is dropped before it disarms.
+#[tokio::test]
+async fn a_delivered_outcome_is_not_reported_twice() {
+    let (tx, mut rx) = tokio::sync::mpsc::channel(4);
+    let mut report = AbortReport::arm(Some(tx), "agent_memory", "sub-once");
+    report.deliver(completed("sub-once")).await;
+    drop(report);
+    assert!(matches!(
+        rx.recv().await,
+        Some(AgentProgress::SubagentCompleted { .. })
+    ));
+    assert!(rx.recv().await.is_none(), "no second, synthetic report");
+}

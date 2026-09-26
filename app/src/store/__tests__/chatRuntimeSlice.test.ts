@@ -15,6 +15,7 @@ import reducer, {
   endInferenceTurn,
   hydrateRuntimeFromRunLedger,
   hydrateRuntimeFromSnapshot,
+  isActiveTimelineStatus,
   markInferenceTurnStreaming,
   removeArtifactForThread,
   setInferenceStatusForThread,
@@ -1459,18 +1460,28 @@ describe('subagent event reducers (Phase 3)', () => {
   it('subagentCancelResolved settles a spinning row by task id from the cancel answer', () => {
     // Aborted: the run was cancelled.
     const aborted = reducer(spawn(), subagentCancelResolved({ taskId: 'task-1', cancelled: true }));
-    expect(aborted.toolTimelineByThread['t1'][0].status).toBe('cancelled');
+    const row = aborted.toolTimelineByThread['t1'][0];
+    expect(row.status).toBe('cancelled');
+    // Consumers decide "still running?" from these, not the raw strings: the
+    // settled row and its nested activity must both read as inactive.
+    expect(isActiveTimelineStatus(row.status)).toBe(false);
+    expect(row.subagent?.status).toBe('cancelled');
+    expect(isActiveTimelineStatus(row.subagent?.status)).toBe(false);
 
     // Not running any more: settle on how the core says it ended — never
     // assume success. A failed run stays failed; an unknown one reads as
     // cancelled (the user asked to stop it and nothing is running).
-    const settle = (outcome?: 'completed' | 'failed' | 'unknown') =>
-      reducer(spawn(), subagentCancelResolved({ taskId: 'task-1', cancelled: false, outcome }))
-        .toolTimelineByThread['t1'][0].status;
-    expect(settle('completed')).toBe('success');
-    expect(settle('failed')).toBe('error');
-    expect(settle('unknown')).toBe('cancelled');
-    expect(settle(undefined)).toBe('cancelled');
+    const settle = (outcome?: 'completed' | 'failed' | 'unknown') => {
+      const r = reducer(
+        spawn(),
+        subagentCancelResolved({ taskId: 'task-1', cancelled: false, outcome })
+      ).toolTimelineByThread['t1'][0];
+      return [r.status, r.subagent?.status];
+    };
+    expect(settle('completed')).toEqual(['success', 'completed']);
+    expect(settle('failed')).toEqual(['error', 'failed']);
+    expect(settle('unknown')).toEqual(['cancelled', 'cancelled']);
+    expect(settle(undefined)).toEqual(['cancelled', 'cancelled']);
 
     // Another task's answer leaves this row alone.
     const other = reducer(spawn(), subagentCancelResolved({ taskId: 'task-2', cancelled: true }));

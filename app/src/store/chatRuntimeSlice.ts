@@ -1994,19 +1994,23 @@ const chatRuntimeSlice = createSlice({
           : outcome === 'failed'
             ? 'error'
             : 'cancelled';
+      // The nested activity drives the card's own transcript status, so it
+      // settles with the row (its vocabulary: completed / failed / cancelled).
+      const activityStatus =
+        status === 'success' ? 'completed' : status === 'error' ? 'failed' : 'cancelled';
       const matches = (e: ToolTimelineEntry) =>
         e.subagent?.taskId === taskId && isActiveTimelineStatus(e.status);
+      const settle = (entry: ToolTimelineEntry) => {
+        entry.status = status;
+        if (entry.subagent) entry.subagent.status = activityStatus;
+      };
       for (const threadId of Object.keys(state.toolTimelineByThread).concat(
         Object.keys(state.settledTurnsByThread)
       )) {
-        for (const entry of subagentRows(state, threadId, matches)) {
-          entry.status = status;
-        }
+        subagentRows(state, threadId, matches).forEach(settle);
       }
       for (const timelines of Object.values(state.turnTimelinesByThread)) {
-        for (const entry of Object.values(timelines).flat().filter(matches)) {
-          entry.status = status;
-        }
+        Object.values(timelines).flat().filter(matches).forEach(settle);
       }
     },
     subagentIterationStarted: (
