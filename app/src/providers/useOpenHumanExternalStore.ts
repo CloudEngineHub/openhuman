@@ -27,6 +27,7 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   FEEDBACK_ROW_IDS_METADATA_KEY,
   persistMessageFeedback,
+  removeMessagesById,
   truncateMessagesFrom,
 } from '../store/threadSlice';
 import type { DerivedDisplayItem } from '../types/derivedTranscript';
