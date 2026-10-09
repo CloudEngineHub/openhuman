@@ -143,7 +143,10 @@ async fn without_a_backend_only_the_local_scope_runs() {
         Ok(None),
         "nothing anywhere"
     );
-    assert_eq!(find_owner("test", || async { Ok(true) }).await, Ok(Some(None)));
+    assert_eq!(
+        find_owner("test", || async { Ok(true) }).await,
+        Ok(Some(None))
+    );
     assert!(
         find_owner("test", || async { Err("down".to_string()) })
             .await
@@ -178,7 +181,10 @@ fn the_first_scope_reporting_the_record_owns_it() {
         (Some("b".into()), Ok(true)),
     ]);
     assert_eq!(found, Ok(Some(Some("b".to_string()))));
-    let failed = decide(vec![(None, Ok(false)), (Some("a".into()), Err("down".into()))]);
+    let failed = decide(vec![
+        (None, Ok(false)),
+        (Some("a".into()), Err("down".into())),
+    ]);
     let failed = failed.unwrap_err();
     assert_eq!(failed.agent.as_deref(), Some("a"));
     assert_eq!(failed.to_string(), "lookup failed in scope a: down");
