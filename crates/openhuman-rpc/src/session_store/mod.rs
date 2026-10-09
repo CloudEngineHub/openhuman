@@ -193,10 +193,11 @@ pub fn provider() -> Arc<dyn SessionStoreProvider> {
 ///
 /// # Errors
 ///
-/// When a URL is configured but cannot be parsed or opened. A deployment that
-/// asked for a backend must not quietly fall back to local files.
+/// When a URL is configured but cannot be parsed or opened, or the config
+/// that may name one cannot be loaded. A deployment that asked for a backend
+/// must not quietly fall back to local files.
 pub async fn install_for_host() -> anyhow::Result<()> {
-    install_for_url(configured_storage_url().await).await
+    install_for_url(configured_storage_url().await?).await
 }
 
 /// The session store the host's configuration asks for, as a provider a
@@ -212,27 +213,52 @@ pub async fn install_for_host() -> anyhow::Result<()> {
 ///
 /// When a URL is configured but cannot be parsed or opened.
 pub async fn provider_for_host() -> anyhow::Result<Arc<dyn SessionStoreProvider>> {
-    provider_for_url(configured_storage_url().await).await
+    provider_for_url(configured_storage_url().await?).await
+}
+
+/// The storage-backed session store, only when the host's configuration
+/// names a storage URL; `None` leaves the classic layout and any process
+/// state untouched. For one-shot CLI commands, which have no reason to
+/// install the classic store but must see the same backend the server does.
+///
+/// # Errors
+///
+/// When the URL cannot be resolved, parsed or opened.
+pub async fn provider_if_configured() -> anyhow::Result<Option<Arc<dyn SessionStoreProvider>>> {
+    match configured_storage_url().await? {
+        Some(url) => provider_for_url(Some(url)).await.map(Some),
+        None => Ok(None),
+    }
 }
 
 /// The storage URL the host asks for: `OPENHUMAN_STORAGE_URL`, else
 /// `[storage] url` from the config, else `None` (the classic layout).
-async fn configured_storage_url() -> Option<String> {
-    match std::env::var(crate::core_host::storage::STORAGE_URL_VAR) {
-        Ok(url) if !url.trim().is_empty() => Some(url.trim().to_string()),
-        _ => match crate::core_host::config::rpc::load_config_with_timeout().await {
-            Ok(config) => crate::core_host::storage::configured_url(&config),
-            // An unreadable config keeps the desktop booting on the classic
-            // layout, as it always has. Remote deployments pin the backend
-            // with `OPENHUMAN_STORAGE_URL`, which never reads the config.
-            Err(error) => {
-                log::warn!(
-                    "[rpc:session_store] config unavailable ({error}); keeping the on-disk layout"
-                );
-                None
-            }
-        },
+///
+/// # Errors
+///
+/// When no environment URL pins the backend and the config cannot be loaded:
+/// the config may name a `[storage] url`, and a deployment that asked for a
+/// backend must not quietly fall back to local files.
+async fn configured_storage_url() -> anyhow::Result<Option<String>> {
+    let env = std::env::var(crate::core_host::storage::STORAGE_URL_VAR).ok();
+    // A URL in the environment wins and never reads the config.
+    if env.as_deref().is_some_and(|url| !url.trim().is_empty()) {
+        return Ok(storage_url_from(env, &Default::default()));
     }
+    let config = crate::core_host::config::rpc::load_config_with_timeout()
+        .await
+        .map_err(|error| {
+            anyhow::anyhow!("loading the config to resolve the storage url: {error}")
+        })?;
+    Ok(storage_url_from(env, &config))
+}
+
+/// The core's URL rule ([`crate::core_host::storage::url_from`]) over `config`.
+fn storage_url_from(
+    env: Option<String>,
+    config: &crate::core_host::config::Config,
+) -> Option<String> {
+    crate::core_host::storage::url_from(env, config)
 }
 
 /// [`install_for_host`] with the URL already resolved: `None` installs the
