@@ -208,3 +208,26 @@ async fn a_leftover_pairing_session_does_not_outlive_a_revocation() {
         .remove("owner-test-leftover");
     assert!(owner.is_err(), "{owner:?}");
 }
+
+/// A handshake whose device could not be persisted leaves neither its pairing
+/// session nor its cipher behind, so later frames are not accepted.
+#[test]
+fn an_unpersisted_pairing_is_abandoned() {
+    let id = "owner-test-abandon";
+    super::super::rpc::PENDING_SESSIONS
+        .lock()
+        .unwrap()
+        .insert(id.to_string(), session(None));
+    super::super::rpc::ACTIVE_CIPHERS.lock().unwrap().insert(
+        id.to_string(),
+        std::sync::Arc::new(std::sync::Mutex::new(
+            super::super::crypto::TunnelCipher::new(&[5u8; 32]),
+        )),
+    );
+    super::super::bus::abandon_unpersisted_pairing(id);
+    assert!(!super::super::rpc::PENDING_SESSIONS
+        .lock()
+        .unwrap()
+        .contains_key(id));
+    assert!(!has_active_cipher(id));
+}
