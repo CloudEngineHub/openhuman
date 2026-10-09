@@ -71,6 +71,11 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
     );
     let mut builder = cli_builder();
     if cli_command_uses_storage(args) {
+        // The preflight reads the URL before the dispatcher loads `.env`
+        // itself, so a URL supplied through the dotenv file must be loaded now.
+        if let Err(error) = crate::core_host::core::cli::load_dotenv_for_cli() {
+            log::debug!("[rpc:host] cli: early dotenv load failed: {error}");
+        }
         // A one-shot command reads the same backend the server would: the
         // configured storage URL, opened on the core's storage runtime so the
         // backend outlives this call. No URL leaves the classic layout alone.
@@ -90,28 +95,33 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
 /// the moved TUI names and `sentry-test` never touch stored state.
 #[cfg(feature = "server")]
 fn cli_command_uses_storage(args: &[String]) -> bool {
-    let mut args = args.iter().map(String::as_str);
-    let mut command = None;
-    while let Some(arg) = args.next() {
+    let is_help = |arg: &str| matches!(arg, "-h" | "--help" | "help");
+    // Help is answered before any command runs, wherever it appears.
+    if args.iter().any(|arg| is_help(arg)) {
+        return false;
+    }
+    let mut rest = args.iter().map(String::as_str);
+    let mut positional = Vec::new();
+    while let Some(arg) = rest.next() {
         match arg {
             // Launch-wide flags with a separate value.
             "--model" | "--model-id" | "-m" | "--provider" | "--provider-id" | "-p" => {
-                args.next();
+                rest.next();
             }
             _ if arg.starts_with("--model=")
                 || arg.starts_with("--model-id=")
                 || arg.starts_with("--provider=")
                 || arg.starts_with("--provider-id=") => {}
-            _ => {
-                command = Some(arg);
-                break;
-            }
+            _ if arg.starts_with('-') => {}
+            _ => positional.push(arg),
         }
     }
-    !matches!(
-        command,
-        None | Some("run" | "serve" | "help" | "-h" | "--help" | "tui" | "chat" | "sentry-test")
-    )
+    match positional.as_slice() {
+        [] | ["run" | "serve" | "tui" | "chat" | "sentry-test", ..] => false,
+        // A bare namespace prints its help instead of running a function.
+        [namespace] => matches!(*namespace, "mcp" | "mcp-server"),
+        _ => true,
+    }
 }
 
 /// What the embedded desktop server binds and how it authenticates.

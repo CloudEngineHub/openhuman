@@ -31,6 +31,7 @@ fn a_one_shot_command_refuses_a_storage_url_it_cannot_open() {
 fn a_one_shot_command_opens_a_valid_storage_url_and_help_does_not_need_one() {
     let tmp = tempfile::tempdir().unwrap();
     let output = core(tmp.path(), Some("memory"), &["cron", "list"]);
+    assert!(output.status.success(), "a valid URL must open the backend");
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         !stderr.contains("opening the configured storage backend"),
@@ -39,4 +40,10 @@ fn a_one_shot_command_opens_a_valid_storage_url_and_help_does_not_need_one() {
     // Help never opens the backend, even a bad one.
     let help = core(tmp.path(), Some("nonsense://nowhere"), &["--help"]);
     assert!(help.status.success());
+    let nested = core(
+        tmp.path(),
+        Some("nonsense://nowhere"),
+        &["cron", "list", "--help"],
+    );
+    assert!(nested.status.success(), "nested help never opens storage");
 }

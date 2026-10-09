@@ -115,4 +115,10 @@ fn cli_storage_is_opened_for_one_shot_commands_only() {
     ])));
     assert!(!cli_command_uses_storage(&args(&[])));
     assert!(!cli_command_uses_storage(&args(&["--help"])));
+    assert!(!cli_command_uses_storage(&args(&["cron", "--help"])));
+    assert!(!cli_command_uses_storage(&args(&["cron", "list", "-h"])));
+    assert!(!cli_command_uses_storage(&args(&["cron"])));
+    assert!(!cli_command_uses_storage(&args(&[
+        "--config", "p", "--help"
+    ])));
 }
