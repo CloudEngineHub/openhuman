@@ -94,6 +94,10 @@ pub(crate) async fn saas_gateway(operator: Arc<CoreContext>, req: Request, next:
 /// unix seconds and `resolve` maps the checked headers to a scope
 /// ([`resolve_scope`] in production). Taking them as arguments keeps the
 /// decision free of process-wide state.
+// The refusal is the axum `Response` the gateway sends as-is, built once per
+// refused request; boxing it would only move the allocation (same as
+// `http_host::auth`).
+#[allow(clippy::result_large_err)]
 pub(crate) fn decide(
     req: &Request,
     secret: Option<&str>,
