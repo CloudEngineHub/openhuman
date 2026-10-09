@@ -3,8 +3,8 @@
 //!
 //! | Entry | Replaces | Builder |
 //! |---|---|---|
-//! | [`cli`] | `tinyhumans::install` → `server::install_cli_server` → `run_core_from_args` | [`cli_builder`]: the `cli` preset, connected, with the server launcher and the `http_host` controllers |
-//! | [`desktop`] | `tinyhumans::install` + `server::run_server_embedded_with_ready` | [`desktop_builder`]: the `desktop` preset, connected, with the bearer, listener, services, server launcher and `http_host` controllers |
+//! | [`cli`] | `tinyhumans::install` → the server launcher → `run_core_from_args` | [`cli_builder`]: the `cli` preset, connected, with the server launcher and the `http_host` controllers |
+//! | [`desktop`] | `tinyhumans::install` + the embedded server entry | [`desktop_builder`]: the `desktop` preset, connected, with the bearer, listener, services, server launcher and `http_host` controllers |
 //! | [`tui`] | `tinyhumans::install` + `session_store::install_for_host` + `CoreBuilder(full, none)` | [`tui_builder`]: the `tui` preset, connected, with the on-disk session store ([`tui`] swaps in the configured storage URL's store) |
 //!
 //! Each `*_builder` returns a [`tinyhumans::RuntimeBuilder`] so a host can
