@@ -6,8 +6,7 @@
 use super::credentials::{self, UserCredentialKind};
 use super::host::{self, ProfileHost};
 use super::types::{
-    CredentialResult, DeprovisionResult, ProfileId, ProfileSummary, ProvisionResult,
-    ReleaseResult,
+    CredentialResult, DeprovisionResult, ProfileId, ProfileSummary, ProvisionResult, ReleaseResult,
 };
 use crate::core::Outcome;
 

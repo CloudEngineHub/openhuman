@@ -173,7 +173,11 @@ fn cluster_settings_default_and_resolve() {
     let mut fresh = SaasConfig::new("/srv/oh");
     let random = fresh.resolve_node_id(None).to_owned();
     assert!(random.starts_with("node-"), "{random}");
-    assert_eq!(fresh.resolve_node_id(Some("ignored")), random, "resolved once");
+    assert_eq!(
+        fresh.resolve_node_id(Some("ignored")),
+        random,
+        "resolved once"
+    );
     let mut configured = SaasConfig::new("/srv/oh");
     configured.node_id = Some("node-file".into());
     assert_eq!(configured.resolve_node_id(Some("node-env")), "node-file");

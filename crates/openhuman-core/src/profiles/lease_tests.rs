@@ -140,7 +140,10 @@ async fn eviction_and_shutdown_release_the_lease() {
 
     let busy = a.open(&bob).await.unwrap();
     a.release_idle_on_shutdown().await;
-    assert!(a.is_open(&bob), "a profile in use keeps its lease at shutdown");
+    assert!(
+        a.is_open(&bob),
+        "a profile in use keeps its lease at shutdown"
+    );
     drop(busy);
     a.release_idle_on_shutdown().await;
     assert!(!a.is_open(&bob));

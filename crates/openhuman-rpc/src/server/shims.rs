@@ -80,7 +80,11 @@ pub async fn run_server_saas(
     let storage_url = config.resolved_storage_url();
     log::info!(
         "[rpc:saas] session store: {}",
-        if storage_url.is_some() { "storage backend" } else { "on-disk" }
+        if storage_url.is_some() {
+            "storage backend"
+        } else {
+            "on-disk"
+        }
     );
     crate::session_store::install_for_saas(storage_url).await?;
     let runtime =

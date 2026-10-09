@@ -25,8 +25,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::core_host::core::runtime::CoreContext;
 use crate::core_host::profiles::gateway::{
-    resolve_scope, GatewayRefusal, GatewayScope, PROFILE_OWNER_HEADER, USER_HEADER,
-    USER_SIG_HEADER,
+    resolve_scope, GatewayRefusal, GatewayScope, PROFILE_OWNER_HEADER, USER_HEADER, USER_SIG_HEADER,
 };
 use axum::extract::Request;
 use axum::http::{header, StatusCode};

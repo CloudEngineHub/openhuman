@@ -17,7 +17,10 @@ async fn provisioning_creates_the_layout_once() {
     let host = host(&tmp, 4, 60);
     let id = profile("alice");
     assert!(host.provision(&id).await.unwrap());
-    assert!(!host.provision(&id).await.unwrap(), "second provision is a no-op");
+    assert!(
+        !host.provision(&id).await.unwrap(),
+        "second provision is a no-op"
+    );
     let layout = ProfileLayout::new(tmp.path(), &id);
     assert!(layout.workspace_dir.is_dir() && layout.sandbox_dir.is_dir());
     let summary = host.summary(&id).await.unwrap().unwrap();

@@ -134,7 +134,11 @@ fn start_node(
                 node.log_tail()
             );
         }
-        assert!(Instant::now() < deadline, "core {} never became healthy", name);
+        assert!(
+            Instant::now() < deadline,
+            "core {} never became healthy",
+            name
+        );
         std::thread::sleep(Duration::from_millis(250));
     }
     node
@@ -240,7 +244,8 @@ fn turn_state(node: &Node, user: &str, thread: &str) -> Option<String> {
 /// both cores (cluster leases), or `None` (file locks on the shared root).
 fn one_core_at_a_time(storage_url: Option<&str>) {
     let d = deployment(true);
-    let storage_url = storage_url.map(|url| url.replace("{tmp}", &d.tmp.path().display().to_string()));
+    let storage_url =
+        storage_url.map(|url| url.replace("{tmp}", &d.tmp.path().display().to_string()));
     let backend = hanging_backend();
     let one = start_node(&d, "1", storage_url.as_deref(), "", Some(backend));
     let mut two = start_node(&d, "2", storage_url.as_deref(), "", Some(backend));
@@ -256,7 +261,10 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     assert_eq!(body["owner"], "core-1");
     if storage_url.is_some() {
         assert_eq!(body["endpoint"], one.base.as_str(), "{body}");
-        assert!(body["retry_after_ms"].as_u64().is_some_and(|ms| ms > 0), "{body}");
+        assert!(
+            body["retry_after_ms"].as_u64().is_some_and(|ms| ms > 0),
+            "{body}"
+        );
     }
 
     // An operator release on core 1 hands alice over at once.
@@ -267,7 +275,10 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     );
     assert!(body.to_string().contains("\"released\":true"), "{body}");
     let (status, _, body) = call(&two, "alice", "core.ping", json!({}));
-    assert_eq!(status, 200, "core 2 hosts alice right after the release: {body}");
+    assert_eq!(
+        status, 200,
+        "core 2 hosts alice right after the release: {body}"
+    );
     let (status, owner, _) = call(&one, "alice", "core.ping", json!({}));
     assert_eq!((status, owner.as_deref()), (409, Some("core-2")));
 
@@ -281,9 +292,12 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     assert!(body.get("result").is_some(), "{body}");
     start_turn(&two, "alice", "t-kill");
     // In flight, and far enough that its snapshot is on disk.
-    wait_until("alice's turn in flight on core 2", &two, Duration::from_secs(90), || {
-        active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()
-    });
+    wait_until(
+        "alice's turn in flight on core 2",
+        &two,
+        Duration::from_secs(90),
+        || active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some(),
+    );
     let live = turn_state(&two, "alice", "t-kill");
     assert!(
         matches!(live.as_deref(), Some("started" | "streaming")),
@@ -293,9 +307,12 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
 
     // Core 1 takes alice over once the lease lapses (at once for a file
     // lock, which dies with its process), and the turn reads interrupted.
-    wait_until("core 1 to take alice over", &one, Duration::from_secs(30), || {
-        call(&one, "alice", "core.ping", json!({})).0 == 200
-    });
+    wait_until(
+        "core 1 to take alice over",
+        &one,
+        Duration::from_secs(30),
+        || call(&one, "alice", "core.ping", json!({})).0 == 200,
+    );
     assert_eq!(
         turn_state(&one, "alice", "t-kill").as_deref(),
         Some("interrupted"),
@@ -335,9 +352,12 @@ fn a_profile_in_use_is_not_evicted_mid_turn() {
 
     // Alice's request returns at once; her turn keeps running.
     start_turn(&node, "alice", "t1");
-    wait_until("alice's turn in flight", &node, Duration::from_secs(60), || {
-        active(&node, "alice", "t1")
-    });
+    wait_until(
+        "alice's turn in flight",
+        &node,
+        Duration::from_secs(60),
+        || active(&node, "alice", "t1"),
+    );
 
     // The only slot is busy with a live turn, though no request holds it.
     let (status, _, body) = call(&node, "bob", "core.ping", json!({}));
@@ -353,9 +373,12 @@ fn a_profile_in_use_is_not_evicted_mid_turn() {
     assert!(body.to_string().contains("\"cancelled\":true"), "{body}");
 
     // Once the turn is gone alice is idle, and bob gets the slot.
-    wait_until("bob to get the slot", &node, Duration::from_secs(30), || {
-        call(&node, "bob", "core.ping", json!({})).0 == 200
-    });
+    wait_until(
+        "bob to get the slot",
+        &node,
+        Duration::from_secs(30),
+        || call(&node, "bob", "core.ping", json!({})).0 == 200,
+    );
 }
 
 #[test]
@@ -372,9 +395,12 @@ fn two_users_with_the_same_thread_id_stay_apart() {
         let b = s.spawn(|| start_turn(&node, "bob", "t1"));
         (a.join().unwrap(), b.join().unwrap())
     });
-    wait_until("both turns in flight", &node, Duration::from_secs(60), || {
-        active(&node, "alice", "t1") && active(&node, "bob", "t1")
-    });
+    wait_until(
+        "both turns in flight",
+        &node,
+        Duration::from_secs(60),
+        || active(&node, "alice", "t1") && active(&node, "bob", "t1"),
+    );
     let request_id = |body: &Value| {
         find_key(body, "request_id")
             .and_then(Value::as_str)
@@ -411,7 +437,6 @@ fn two_users_with_the_same_thread_id_stay_apart() {
         "alice's turn on the same thread id is untouched"
     );
 }
-
 
 /// The first value under `key` anywhere in `value`.
 fn find_key<'a>(value: &'a Value, key: &str) -> Option<&'a Value> {

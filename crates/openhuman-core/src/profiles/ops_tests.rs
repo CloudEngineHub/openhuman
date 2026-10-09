@@ -32,7 +32,8 @@ async fn status_and_deprovision_take_profile_ids_only() {
     assert!(deprovision_on(&host, "../operator").await.is_err());
 
     let id = ProfileId::for_user("alice", crate::profiles::ProfileIdMode::Raw).unwrap();
-    assert!(status_on(&host, id.as_str()).await
+    assert!(status_on(&host, id.as_str())
+        .await
         .unwrap_err()
         .contains("not provisioned"));
     provision_on(&host, "alice").await.unwrap();

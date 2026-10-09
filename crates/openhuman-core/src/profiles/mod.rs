@@ -36,8 +36,8 @@ pub mod tools;
 pub mod types;
 
 pub use host::{current, Profile, ProfileHost};
+pub use layout::ProfileLayout;
 pub use lease::OpenError;
 pub use registry::ProfileRegistry;
-pub use layout::ProfileLayout;
 pub use schemas::{all_profiles_controller_schemas, all_profiles_registered_controllers};
 pub use types::{ProfileId, ProfileIdMode, ProfileSummary};

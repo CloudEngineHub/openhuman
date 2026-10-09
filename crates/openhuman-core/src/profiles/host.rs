@@ -210,7 +210,11 @@ impl ProfileHost {
         }
         let grant = match held {
             Some(grant) => grant,
-            None => match self.leases.acquire(id.as_str(), profile_lease::now_ms()).await {
+            None => match self
+                .leases
+                .acquire(id.as_str(), profile_lease::now_ms())
+                .await
+            {
                 Ok(grant) => grant,
                 Err(LeaseError::Held(record)) => {
                     return Err(format!(
@@ -514,9 +518,11 @@ impl ProfileHost {
             "[profiles] fenced profile={id} node={} ({why}); stopping its turns",
             self.node
         );
-        let stopped =
-            CoreContext::scope(Arc::clone(state.context()), crate::web_chat::cancel_all_turns())
-                .await;
+        let stopped = CoreContext::scope(
+            Arc::clone(state.context()),
+            crate::web_chat::cancel_all_turns(),
+        )
+        .await;
         log::info!("[profiles] fenced profile={id}: stopped {stopped} thread(s)");
     }
 
@@ -530,9 +536,7 @@ impl ProfileHost {
         let idle_limit = Duration::from_secs(self.saas.idle_evict_secs);
         let idle: Vec<ProfileId> = open
             .iter()
-            .filter(|(_, slot)| {
-                !in_use(slot) && now.duration_since(slot.last_used) >= idle_limit
-            })
+            .filter(|(_, slot)| !in_use(slot) && now.duration_since(slot.last_used) >= idle_limit)
             .map(|(id, _)| id.clone())
             .collect();
         idle.into_iter()
@@ -633,7 +637,11 @@ fn recover_session_store(id: &ProfileId, context: &Arc<CoreContext>) {
     }
     let key = crate::core::runtime::session_key(&crate::core::runtime::Tenant::of(context));
     let now = chrono::Utc::now().to_rfc3339();
-    match provider.for_agent(&key).turn_states.mark_all_interrupted(&now) {
+    match provider
+        .for_agent(&key)
+        .turn_states
+        .mark_all_interrupted(&now)
+    {
         Ok(0) => {}
         Ok(turns) => {
             log::info!("[profiles] profile={id} recovered {turns} interrupted stored turn(s)");

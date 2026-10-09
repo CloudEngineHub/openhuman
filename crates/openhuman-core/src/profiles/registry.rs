@@ -39,7 +39,10 @@ impl std::fmt::Debug for ProfileRegistry {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Documents { .. } => f.write_str("ProfileRegistry::Documents"),
-            Self::Files { root } => f.debug_struct("ProfileRegistry::Files").field("root", root).finish(),
+            Self::Files { root } => f
+                .debug_struct("ProfileRegistry::Files")
+                .field("root", root)
+                .finish(),
         }
     }
 }
@@ -116,7 +119,8 @@ impl ProfileRegistry {
     pub async fn create(&self, meta: &ProfileMeta) -> Result<bool, String> {
         let id = &meta.profile_id;
         if let Some(docs) = self.docs().await? {
-            let doc = serde_json::to_value(meta).map_err(|e| format!("encoding profile {id}: {e}"))?;
+            let doc =
+                serde_json::to_value(meta).map_err(|e| format!("encoding profile {id}: {e}"))?;
             return match docs
                 .put(REGISTRY_COLLECTION, id.as_str(), doc, Precondition::Absent)
                 .await

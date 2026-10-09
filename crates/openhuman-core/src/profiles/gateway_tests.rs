@@ -68,11 +68,8 @@ fn a_profile_held_elsewhere_is_a_409_naming_the_holder() {
         expires_at_ms: 10_000,
         released: false,
     };
-    let refusal = GatewayRefusal::from_open_error(
-        &id("alice"),
-        OpenError::HeldElsewhere(record),
-        4_000,
-    );
+    let refusal =
+        GatewayRefusal::from_open_error(&id("alice"), OpenError::HeldElsewhere(record), 4_000);
     assert_eq!(refusal.status, 409);
     assert_eq!(refusal.message, PROFILE_HELD);
     assert_eq!(

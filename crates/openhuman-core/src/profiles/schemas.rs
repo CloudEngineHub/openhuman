@@ -216,13 +216,15 @@ fn handle_status(params: Map<String, Value>) -> ControllerFuture {
 fn handle_set_credential(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let payload = deserialize_params::<CredentialParams>(params)?;
-        to_json(super::ops::set_credential(
-            &payload.profile_id,
-            payload.kind,
-            &payload.token,
-            payload.expires_at.as_deref(),
+        to_json(
+            super::ops::set_credential(
+                &payload.profile_id,
+                payload.kind,
+                &payload.token,
+                payload.expires_at.as_deref(),
+            )
+            .await?,
         )
-        .await?)
     })
 }
 
