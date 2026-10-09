@@ -50,7 +50,7 @@ async fn the_shared_registry_records_lists_and_forgets() {
 async fn the_file_registry_keeps_profile_toml_beside_each_profile() {
     let tmp = tempfile::tempdir().unwrap();
     for id in ["alice", "bob"] {
-        let layout = ProfileLayout::new(tmp.path(), &ProfileId::parse(id).unwrap());
+        let layout = ProfileLayout::new(tmp.path(), ProfileId::parse(id).unwrap());
         std::fs::create_dir_all(&layout.dir).unwrap();
     }
     let registry = ProfileRegistry::files(tmp.path());
