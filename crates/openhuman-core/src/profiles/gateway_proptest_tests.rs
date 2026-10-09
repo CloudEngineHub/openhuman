@@ -217,8 +217,13 @@ proptest! {
         let unknown = "mallory";
         let known_header = build_sig(&sig, known);
         let unknown_header = build_sig(&sig, unknown);
-        prop_assume!(!is_valid_for(known, known_header.as_deref().unwrap_or("")));
-        prop_assume!(!is_valid_for(unknown, unknown_header.as_deref().unwrap_or("")));
+        // A genuinely valid signature is not a probe (and would push proptest
+        // past its global reject cap at high case counts if assumed away).
+        if is_valid_for(known, known_header.as_deref().unwrap_or(""))
+            || is_valid_for(unknown, unknown_header.as_deref().unwrap_or(""))
+        {
+            return Ok(());
+        }
         let a = resolve_user_on(host, known, known_header.as_deref(), SECRET, NOW).unwrap_err();
         let b = resolve_user_on(host, unknown, unknown_header.as_deref(), SECRET, NOW).unwrap_err();
         prop_assert_eq!(a.status, 401);
