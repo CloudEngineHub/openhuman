@@ -137,7 +137,7 @@ pub struct ProfileMeta {
 }
 
 /// The current [`ProfileMeta::layout_version`].
-pub const LAYOUT_VERSION: u32 = 1;
+pub const LAYOUT_VERSION: u32 = 2;
 
 /// What [`provision`](super::ops::provision) did.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
