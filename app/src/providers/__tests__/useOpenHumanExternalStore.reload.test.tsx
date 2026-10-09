@@ -165,6 +165,23 @@ describe('onReload — regenerating an assistant reply', () => {
     expect(hoisted.toastAdd).toHaveBeenCalledWith(expect.objectContaining({ type: 'error' }));
   });
 
+  it('keeps a new reply that streamed in before the RPC resolved', async () => {
+    const store = buildStore();
+    const { result } = mountAdapter(store);
+    // The regenerated turn can finish over the socket before the RPC's own
+    // response arrives; trimming "everything after the prompt" then would
+    // drop the fresh reply along with the discarded one.
+    hoisted.regenerate.mockImplementation(async () => {
+      store.dispatch(
+        addMessageLocal({ threadId: THREAD_ID, message: row('agent:req-new', 'agent') })
+      );
+    });
+
+    await reload(result, 'msg_u4', 'msg_a4');
+
+    expect(cachedIds(store)).toEqual([...messages.slice(0, 7).map(m => m.id), 'agent:req-new']);
+  });
+
   it('keeps the cache and does not reject when the RPC fails', async () => {
     hoisted.regenerate.mockRejectedValue(
       new Error('message msg_u1 is not a regenerable assistant reply')
