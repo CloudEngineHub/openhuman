@@ -26,14 +26,20 @@ async fn get(router: axum::Router, uri: &str) -> (StatusCode, serde_json::Value)
         .await
         .unwrap();
     let status = resp.status();
-    let bytes = axum::body::to_bytes(resp.into_body(), 1 << 20).await.unwrap();
+    let bytes = axum::body::to_bytes(resp.into_body(), 1 << 20)
+        .await
+        .unwrap();
     (status, serde_json::from_slice(&bytes).unwrap_or_default())
 }
 
 #[tokio::test]
 async fn disabled_socketio_answers_503_with_cause_not_401() {
     ensure_rpc_token();
-    for uri in ["/socket.io/?EIO=4&transport=polling", "/socket.io/", "/socket.io"] {
+    for uri in [
+        "/socket.io/?EIO=4&transport=polling",
+        "/socket.io/",
+        "/socket.io",
+    ] {
         let (status, body) = get(build_core_http_router(false), uri).await;
         assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "{uri}");
         assert_eq!(body["error"], SOCKETIO_DISABLED_ERROR, "{uri}");
