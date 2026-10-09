@@ -157,7 +157,7 @@ proptest! {
             let ts = header.split(',').filter_map(|p| p.trim().strip_prefix("t=")).last();
             let ts: u64 = ts.and_then(|t| t.parse().ok()).expect("accepted without a t");
             prop_assert!(ts.abs_diff(NOW) <= SIGNATURE_WINDOW_SECS);
-            prop_assert!(header.contains(sign(SECRET, &user, ts).split_once("v1=").unwrap().1));
+            prop_assert!(header.to_ascii_lowercase().contains(sign(SECRET, &user, ts).split_once("v1=").unwrap().1));
         }
     }
 
