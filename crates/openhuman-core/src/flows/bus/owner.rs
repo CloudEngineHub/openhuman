@@ -92,6 +92,19 @@ pub(super) async fn as_owner<F: std::future::Future<Output = ()>>(
     }
 }
 
+/// The configuration to handle a flow event under: the acting agent's own
+/// when the handler runs as one ([`as_owner`]) — its provider, access
+/// policy, memory and action directory — else `registered`, the one the
+/// subscriber was registered with.
+pub(super) fn config_for_scope(registered: &std::sync::Arc<Config>) -> std::sync::Arc<Config> {
+    let acting = crate::core::runtime::CoreContext::current()
+        .is_some_and(|context| context.session_agent().is_some());
+    match acting.then(crate::core::runtime::CoreContext::current_embedder_config) {
+        Some(Some(config)) => std::sync::Arc::new(config),
+        _ => std::sync::Arc::clone(registered),
+    }
+}
+
 /// Forgets a cached owner (a removed flow's id may be reused).
 pub(super) fn forget(flow_id: &str) {
     OWNERS

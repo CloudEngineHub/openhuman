@@ -222,6 +222,8 @@ impl DedupCommitSubscriber {
     }
 
     async fn handle_finished(&self, flow_id: &str, run_id: &str, status: &str) {
+        // As the flow's owner: its own configuration (`super::owner`).
+        let config = super::owner::config_for_scope(&config);
         let node_ids = self.dedup_node_ids(flow_id);
         if node_ids.is_empty() {
             tracing::trace!(target: "flows", %flow_id, %run_id, %status, "[dedup-commit] no dedup nodes in this flow — nothing to settle");
@@ -246,7 +248,7 @@ impl DedupCommitSubscriber {
         tracing::trace!(target: "flows", %flow_id, %run_id, "[dedup-commit] acquired per-flow commit lock");
         self.maybe_test_delay().await;
 
-        let state = FlowState::open(&self.config, format!("flow:{flow_id}"));
+        let state = FlowState::open(&config, format!("flow:{flow_id}"));
         for node_id in node_ids {
             self.settle_node(&state, &node_id, success, flow_id, run_id);
         }
