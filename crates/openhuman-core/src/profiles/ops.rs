@@ -24,6 +24,15 @@ pub(crate) async fn provision_on(
     user_id: &str,
 ) -> Result<Outcome<ProvisionResult>, String> {
     let profile_id = ProfileId::for_user(user_id, host.saas().profile_ids)?;
+    if names_operator_state(&profile_id, &host.saas().operator_dir()) {
+        log::warn!(
+            "[profiles] refusing to provision a profile named like the operator's state dir"
+        );
+        return Err(format!(
+            "profile id {profile_id} is reserved on this deployment: it is the name of the \
+             operator's state directory"
+        ));
+    }
     let created = host.provision(&profile_id).await?;
     let log = if created {
         format!("provisioned {profile_id}")
@@ -37,6 +46,18 @@ pub(crate) async fn provision_on(
         },
         log,
     ))
+}
+
+/// Whether `id` is the file name of the operator's state directory.
+///
+/// Credential secrets are namespaced in the process keyring by the name of
+/// the directory their store sits in: `users/<id>` for a profile, the
+/// operator directory for the operator. A profile named like the operator
+/// directory (`operator` is reserved for the default; a configured
+/// `operator_dir` can be any name) would read and overwrite the operator's
+/// own secrets.
+fn names_operator_state(id: &ProfileId, operator_dir: &std::path::Path) -> bool {
+    operator_dir.file_name().and_then(|name| name.to_str()) == Some(id.as_str())
 }
 
 /// Close profile `profile_id` and archive its state.

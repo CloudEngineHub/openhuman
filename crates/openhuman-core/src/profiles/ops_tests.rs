@@ -81,3 +81,19 @@ async fn credentials_are_set_and_cleared_per_profile_and_never_echoed() {
     clear_credential_on(&host, alice.as_str()).await.unwrap();
     assert!(!host.summary(&alice).await.unwrap().unwrap().has_credential);
 }
+
+/// Keyring secrets are namespaced by their store's directory name, so a
+/// profile named like a configured operator directory would share the
+/// operator's credential slots.
+#[tokio::test]
+async fn a_profile_named_like_the_operator_dir_is_refused() {
+    let tmp = tempfile::tempdir().unwrap();
+    let mut saas = SaasConfig::new(tmp.path());
+    saas.operator_dir = Some(tmp.path().join("node-a"));
+    let host = ProfileHost::new(saas, CoreContext::for_test(DomainSet::full(), None));
+
+    let err = provision_on(&host, "node-a").await.unwrap_err();
+    assert!(err.contains("reserved"), "{err}");
+    assert!(!tmp.path().join("users").join("node-a").exists());
+    provision_on(&host, "node-b").await.unwrap();
+}

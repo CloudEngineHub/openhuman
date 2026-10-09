@@ -40,6 +40,10 @@ not migrated.
 - Anything else, or every id under `"hashed"`, becomes `h-` + the first 32 hex
   characters of `sha256(user_id)`.
 
+Provisioning also refuses a profile id equal to the file name of the node's
+`operator_dir`: keyring secrets are namespaced by their store's directory name,
+so such a profile would share the operator's credential slots.
+
 Both forms fit the agent-id charset and can never contain a path separator.
 Changing the mode re-maps users onto different profiles.
 
