@@ -6,13 +6,11 @@
 //! then handed back to every caller. Re-reporting it per call carries no new
 //! signal, so [`super::expected_error_kind`] demotes all of them.
 
-use super::ExpectedErrorKind;
-
 /// Sentinel prefix on the error string a backend-touching call returns when
 /// the core has no [`BackendTransport`](crate::backend::transport::BackendTransport)
 /// installed. `backend::client::flatten_authed_error` and the integrations client
 /// build their message from this constant; [`is_backend_unavailable_message`]
-/// classifies it as [`ExpectedErrorKind::BackendUnavailable`].
+/// classifies it as [`super::ExpectedErrorKind::BackendUnavailable`].
 pub const BACKEND_UNAVAILABLE_PREFIX: &str = "BACKEND_UNAVAILABLE:";
 
 /// Sentinel prefix on the error string a backend call returns when the backend
@@ -35,7 +33,7 @@ pub fn is_backend_unavailable_message(msg: &str) -> bool {
 }
 
 /// Whether `msg` is a native module's cached load failure
-/// ([`ExpectedErrorKind::ModuleUnavailable`]).
+/// ([`super::ExpectedErrorKind::ModuleUnavailable`]).
 ///
 /// tinybus never unloads a library, so `modules::ops` caches a load failure for
 /// the life of the process and returns it instantly to every later caller; only
@@ -64,7 +62,7 @@ pub fn is_module_unavailable_message(msg: &str) -> bool {
         || lower.contains("the memory module failed to load")
 }
 
-/// The demoted report for [`ExpectedErrorKind::ModuleUnavailable`]: warn, so
+/// The demoted report for [`super::ExpectedErrorKind::ModuleUnavailable`]: warn, so
 /// the breadcrumb survives and a sustained spike still shows in logs, but no
 /// Sentry error event — the one event was sent at resolution.
 pub(super) fn log_module_unavailable(domain: &str, operation: &str, message: &str) {
