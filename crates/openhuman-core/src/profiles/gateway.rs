@@ -22,8 +22,8 @@ use std::sync::Arc;
 use hmac::{Hmac, KeyInit, Mac};
 use sha2_011::Sha256;
 
-use super::host::{self, UserAgentState};
-use super::types::UserAgentId;
+use super::host::{self, Profile};
+use super::types::ProfileId;
 
 /// The gateway's user header.
 pub const USER_HEADER: &str = "x-openhuman-user";
@@ -92,7 +92,7 @@ pub enum GatewayScope {
     /// No user header: the operator plane.
     Operator,
     /// One user's agent.
-    User(Arc<UserAgentState>),
+    User(Arc<Profile>),
 }
 
 /// Pick the scope for a request that already presented the service bearer.
@@ -108,18 +108,18 @@ pub fn resolve_scope(
         return Ok(GatewayScope::Operator);
     };
     let host = host::host().ok_or_else(|| GatewayRefusal::new(503, "this core serves no users"))?;
-    let agent = UserAgentId::for_user(user_id).map_err(|e| GatewayRefusal::new(400, e))?;
+    let agent = ProfileId::for_user(user_id).map_err(|e| GatewayRefusal::new(400, e))?;
     if host.saas().require_user_signature {
         let signature = signature
             .ok_or_else(|| GatewayRefusal::new(401, format!("missing {USER_SIG_HEADER}")))?;
         verify(secret, user_id, signature, now).map_err(|e| {
-            log::warn!("[user_agents][gateway] refused agent={agent}: {e}");
+            log::warn!("[profiles][gateway] refused agent={agent}: {e}");
             GatewayRefusal::new(401, e)
         })?;
     }
     match host.open(&agent) {
         Ok(state) => {
-            log::debug!("[user_agents][gateway] scoped request to agent={agent}");
+            log::debug!("[profiles][gateway] scoped request to agent={agent}");
             Ok(GatewayScope::User(state))
         }
         Err(e) if e.contains("not provisioned") => Err(GatewayRefusal::new(403, e)),

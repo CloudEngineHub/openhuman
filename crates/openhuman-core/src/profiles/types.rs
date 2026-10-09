@@ -14,12 +14,12 @@ pub const MAX_USER_ID_LEN: usize = 256;
 /// memory namespaces.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
-pub struct UserAgentId(String);
+pub struct ProfileId(String);
 
 const PREFIX: &str = "u-";
 const HASH_HEX_LEN: usize = 32;
 
-impl UserAgentId {
+impl ProfileId {
     /// The agent for gateway user `user_id`.
     pub fn for_user(user_id: &str) -> Result<Self, String> {
         if user_id.is_empty() {
@@ -56,13 +56,13 @@ impl UserAgentId {
     }
 }
 
-impl std::fmt::Display for UserAgentId {
+impl std::fmt::Display for ProfileId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.0)
     }
 }
 
-impl TryFrom<String> for UserAgentId {
+impl TryFrom<String> for ProfileId {
     type Error = String;
 
     fn try_from(raw: String) -> Result<Self, Self::Error> {
@@ -70,8 +70,8 @@ impl TryFrom<String> for UserAgentId {
     }
 }
 
-impl From<UserAgentId> for String {
-    fn from(id: UserAgentId) -> Self {
+impl From<ProfileId> for String {
+    fn from(id: ProfileId) -> Self {
         id.0
     }
 }
@@ -79,21 +79,21 @@ impl From<UserAgentId> for String {
 /// Written beside a provisioned agent's state, so the operator plane can list
 /// agents without opening them.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct UserAgentMeta {
-    pub agent_id: UserAgentId,
+pub struct ProfileMeta {
+    pub profile_id: ProfileId,
     /// Unix seconds.
     pub created_at: u64,
     /// Layout version, for future migrations.
     pub layout_version: u32,
 }
 
-/// The current [`UserAgentMeta::layout_version`].
+/// The current [`ProfileMeta::layout_version`].
 pub const LAYOUT_VERSION: u32 = 1;
 
 /// What [`provision`](super::ops::provision) did.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProvisionResult {
-    pub agent_id: UserAgentId,
+    pub profile_id: ProfileId,
     /// `false` when the agent already existed.
     pub created: bool,
 }
@@ -101,15 +101,15 @@ pub struct ProvisionResult {
 /// What [`deprovision`](super::ops::deprovision) did.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DeprovisionResult {
-    pub agent_id: UserAgentId,
+    pub profile_id: ProfileId,
     /// `false` when there was no such agent.
     pub removed: bool,
 }
 
 /// One provisioned agent, as the operator plane sees it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct UserAgentSummary {
-    pub agent_id: UserAgentId,
+pub struct ProfileSummary {
+    pub profile_id: ProfileId,
     pub created_at: u64,
     /// Whether it is loaded in this process right now.
     pub open: bool,
@@ -122,7 +122,7 @@ pub struct UserAgentSummary {
 /// itself is never echoed.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CredentialResult {
-    pub agent_id: UserAgentId,
+    pub profile_id: ProfileId,
     pub has_credential: bool,
 }
 

@@ -2,7 +2,7 @@
 //!
 //! ```text
 //! <root>/agents/<agent-id>/
-//!   agent.toml        UserAgentMeta
+//!   agent.toml        ProfileMeta
 //!   config.toml       the agent's config_path
 //!   workspace/        sessions, memory, threads, cron, cost — internal state
 //!   sandbox/          the agent's action_dir: the only place it may act
@@ -15,13 +15,13 @@
 
 use std::path::{Path, PathBuf};
 
-use super::types::UserAgentId;
+use super::types::ProfileId;
 use crate::config::Config;
 use crate::security::AutonomyLevel;
 
 /// Resolved paths of one user agent.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UserAgentLayout {
+pub struct ProfileLayout {
     pub dir: PathBuf,
     pub meta_path: PathBuf,
     pub config_path: PathBuf,
@@ -29,8 +29,8 @@ pub struct UserAgentLayout {
     pub sandbox_dir: PathBuf,
 }
 
-impl UserAgentLayout {
-    pub fn new(saas_root: &Path, id: &UserAgentId) -> Self {
+impl ProfileLayout {
+    pub fn new(saas_root: &Path, id: &ProfileId) -> Self {
         let dir = agents_dir(saas_root).join(id.as_str());
         Self {
             meta_path: dir.join("agent.toml"),
@@ -53,7 +53,7 @@ pub fn archive_dir(saas_root: &Path) -> PathBuf {
 }
 
 /// The memory namespace root of agent `id`.
-pub fn memory_root(id: &UserAgentId) -> String {
+pub fn memory_root(id: &ProfileId) -> String {
     format!("user:{id}")
 }
 
@@ -69,7 +69,7 @@ pub fn memory_root(id: &UserAgentId) -> String {
 /// - the autonomy policy is on and supervised, with no auto-approval, no tool
 ///   installation, no trusted roots beyond the sandbox, and workspace-only
 ///   paths.
-pub fn agent_config(layout: &UserAgentLayout, id: &UserAgentId) -> Config {
+pub fn profile_config(layout: &ProfileLayout, id: &ProfileId) -> Config {
     let mut config = Config {
         config_path: layout.config_path.clone(),
         workspace_dir: layout.workspace_dir.clone(),

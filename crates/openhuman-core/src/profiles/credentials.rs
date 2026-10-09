@@ -81,13 +81,13 @@ pub fn store(
         UserCredentialKind::ApiKey => remove_provider(config, APP_SESSION_PROVIDER),
     };
     if let Err(error) = replaced {
-        log::warn!("[user_agents][credentials] stored {kind:?} but could not remove the other kind: {error}");
+        log::warn!("[profiles][credentials] stored {kind:?} but could not remove the other kind: {error}");
         return Err(format!(
             "stored the new credential but could not remove the previous one: {error}"
         ));
     }
     log::debug!(
-        "[user_agents][credentials] stored {kind:?} credential in {}",
+        "[profiles][credentials] stored {kind:?} credential in {}",
         config
             .config_path
             .parent()

@@ -1,14 +1,14 @@
 use super::*;
 
-fn host(tmp: &tempfile::TempDir, max_open: usize, idle_secs: u64) -> AgentHost {
+fn host(tmp: &tempfile::TempDir, max_open: usize, idle_secs: u64) -> ProfileHost {
     let mut saas = SaasConfig::new(tmp.path());
-    saas.max_agents_open = max_open;
+    saas.max_profiles_open = max_open;
     saas.idle_evict_secs = idle_secs;
-    AgentHost::new(saas, CoreContext::for_test(DomainSet::full(), None))
+    ProfileHost::new(saas, CoreContext::for_test(DomainSet::full(), None))
 }
 
-fn agent(name: &str) -> UserAgentId {
-    UserAgentId::for_user(name).unwrap()
+fn agent(name: &str) -> ProfileId {
+    ProfileId::for_user(name).unwrap()
 }
 
 #[test]
@@ -18,10 +18,10 @@ fn provisioning_creates_the_layout_once() {
     let id = agent("alice");
     assert!(host.provision(&id).unwrap());
     assert!(!host.provision(&id).unwrap(), "second provision is a no-op");
-    let layout = UserAgentLayout::new(tmp.path(), &id);
+    let layout = ProfileLayout::new(tmp.path(), &id);
     assert!(layout.workspace_dir.is_dir() && layout.sandbox_dir.is_dir());
     let summary = host.summary(&id).unwrap().unwrap();
-    assert_eq!(summary.agent_id, id);
+    assert_eq!(summary.profile_id, id);
     assert!(!summary.open);
 }
 
@@ -133,7 +133,7 @@ fn list_reports_provisioned_agents_only() {
     let open: Vec<_> = listed
         .iter()
         .filter(|s| s.open)
-        .map(|s| &s.agent_id)
+        .map(|s| &s.profile_id)
         .collect();
     assert_eq!(open, vec![&b]);
 }
@@ -240,13 +240,13 @@ fn one_unreadable_agent_does_not_hide_the_rest() {
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
     std::fs::write(
-        UserAgentLayout::new(tmp.path(), &a).meta_path,
+        ProfileLayout::new(tmp.path(), &a).meta_path,
         "not toml = [",
     )
     .unwrap();
     let listed = host.list().unwrap();
     assert_eq!(listed.len(), 1);
-    assert_eq!(listed[0].agent_id, b);
+    assert_eq!(listed[0].profile_id, b);
 }
 
 #[test]

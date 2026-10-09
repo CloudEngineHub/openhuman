@@ -8,7 +8,7 @@
 //! [`SaasToolGroup`] at a time:
 //!
 //! - `host_files`: the file tools. They run in-process, confined by the
-//!   user's policy (`layout::agent_config`: autonomy on, workspace-only,
+//!   user's policy (`layout::profile_config`: autonomy on, workspace-only,
 //!   `action_dir` = the user's `sandbox/`, no other trusted roots).
 //! - `host_shell`: the shell. Every command runs in a fresh container
 //!   ([`sandbox_policy`]) whose only writable mount is the user's `sandbox/`.
@@ -166,7 +166,7 @@ pub fn admits(tool: &str, domain_ok: bool) -> bool {
     }
     let admitted = admits_with(tool, domain_ok, &allowlisted());
     if !admitted && domain_ok {
-        log::debug!("[user_agents][tools] withholding `{tool}` from user agents");
+        log::debug!("[profiles][tools] withholding `{tool}` from user agents");
     }
     admitted
 }
@@ -186,7 +186,7 @@ pub fn gate_verdict_with(tool: &str, groups: &[SaasToolGroup]) -> Result<(), Str
 pub fn gate_verdict(tool: &str) -> Result<(), String> {
     let verdict = gate_verdict_with(tool, &allowlisted());
     log::debug!(
-        "[user_agents][tools] approval gate tool={tool} allowed={}",
+        "[profiles][tools] approval gate tool={tool} allowed={}",
         verdict.is_ok()
     );
     verdict
@@ -213,7 +213,7 @@ pub fn sandbox_policy_with(
         && agent_dir
             .and_then(Path::file_name)
             .and_then(|name| name.to_str())
-            .is_some_and(|name| super::types::UserAgentId::parse(name).is_ok())
+            .is_some_and(|name| super::types::ProfileId::parse(name).is_ok())
         && action_dir.file_name().is_some_and(|name| name == "sandbox");
     if !is_user_sandbox {
         return Err(format!(

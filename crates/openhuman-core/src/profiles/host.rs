@@ -1,9 +1,9 @@
-//! [`AgentHost`]: the user agents a SaaS process has open.
+//! [`ProfileHost`]: the user agents a SaaS process has open.
 //!
 //! A user agent is opened lazily on first use and kept until it has been idle
 //! for [`SaasConfig::idle_evict_secs`] or the host needs its slot
-//! ([`SaasConfig::max_agents_open`]). An agent still in use — anyone holding
-//! its [`UserAgentState`] — is never evicted.
+//! ([`SaasConfig::max_profiles_open`]). An agent still in use — anyone holding
+//! its [`Profile`] — is never evicted.
 //!
 //! Each open agent carries its own [`CoreContext`], derived from the operator
 //! context with the agent's forced config and `session_agent` set to its id.
@@ -14,29 +14,29 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use super::layout::{self, UserAgentLayout};
-use super::types::{UserAgentId, UserAgentMeta, UserAgentSummary, LAYOUT_VERSION};
+use super::layout::{self, ProfileLayout};
+use super::types::{ProfileId, ProfileMeta, ProfileSummary, LAYOUT_VERSION};
 use crate::config::Config;
 use crate::core::runtime::{ContextOverlay, CoreContext, DomainSet, SaasConfig};
 use crate::tools::toolpacks::ToolGroups;
 
 /// One open user agent.
-pub struct UserAgentState {
-    pub id: UserAgentId,
-    pub layout: UserAgentLayout,
+pub struct Profile {
+    pub id: ProfileId,
+    pub layout: ProfileLayout,
     pub config: Config,
     context: Arc<CoreContext>,
 }
 
-impl std::fmt::Debug for UserAgentState {
+impl std::fmt::Debug for Profile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("UserAgentState")
+        f.debug_struct("Profile")
             .field("id", &self.id)
             .finish()
     }
 }
 
-impl UserAgentState {
+impl Profile {
     /// The context every piece of this agent's work runs under.
     pub fn context(&self) -> &Arc<CoreContext> {
         &self.context
@@ -44,25 +44,25 @@ impl UserAgentState {
 }
 
 struct Slot {
-    state: Arc<UserAgentState>,
+    state: Arc<Profile>,
     last_used: Instant,
 }
 
 /// The open user agents of one SaaS process.
-pub struct AgentHost {
+pub struct ProfileHost {
     saas: SaasConfig,
     operator: Arc<CoreContext>,
-    open: Mutex<HashMap<UserAgentId, Slot>>,
+    open: Mutex<HashMap<ProfileId, Slot>>,
     /// Agents whose leftovers from a previous process were already swept
     /// (see [`recover_workspace`]). Kept across evictions: a re-open after an
     /// eviction must not mark a turn this process is still running as
     /// interrupted.
-    recovered: Mutex<std::collections::HashSet<UserAgentId>>,
+    recovered: Mutex<std::collections::HashSet<ProfileId>>,
 }
 
-impl std::fmt::Debug for AgentHost {
+impl std::fmt::Debug for ProfileHost {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("AgentHost")
+        f.debug_struct("ProfileHost")
             .field("root", &self.saas.root)
             .field("open", &self.open_count())
             .finish()
@@ -80,7 +80,7 @@ pub fn user_domains() -> DomainSet {
     }
 }
 
-impl AgentHost {
+impl ProfileHost {
     pub fn new(saas: SaasConfig, operator: Arc<CoreContext>) -> Self {
         Self {
             saas,
@@ -96,36 +96,36 @@ impl AgentHost {
     }
 
     /// Where agent `id`'s state lives, provisioned or not.
-    pub fn layout_of(&self, id: &UserAgentId) -> UserAgentLayout {
+    pub fn layout_of(&self, id: &ProfileId) -> ProfileLayout {
         self.layout(id)
     }
 
-    fn layout(&self, id: &UserAgentId) -> UserAgentLayout {
-        UserAgentLayout::new(&self.saas.root, id)
+    fn layout(&self, id: &ProfileId) -> ProfileLayout {
+        ProfileLayout::new(&self.saas.root, id)
     }
 
     /// Create agent `id`'s directories. Returns whether it was new.
-    pub fn provision(&self, id: &UserAgentId) -> Result<bool, String> {
+    pub fn provision(&self, id: &ProfileId) -> Result<bool, String> {
         // Under the open-agent lock, like `deprovision`, so the two never
         // interleave on one agent's directory.
         let _guard = self.lock();
         let layout = self.layout(id);
         if layout.meta_path.exists() {
-            log::debug!("[user_agents] provision agent={id}: already provisioned");
+            log::debug!("[profiles] provision agent={id}: already provisioned");
             return Ok(false);
         }
         for dir in [&layout.workspace_dir, &layout.sandbox_dir] {
             std::fs::create_dir_all(dir).map_err(|e| format!("creating {}: {e}", dir.display()))?;
         }
-        let meta = UserAgentMeta {
-            agent_id: id.clone(),
+        let meta = ProfileMeta {
+            profile_id: id.clone(),
             created_at: unix_now(),
             layout_version: LAYOUT_VERSION,
         };
         let raw = toml::to_string(&meta).map_err(|e| format!("encoding agent meta: {e}"))?;
         std::fs::write(&layout.meta_path, raw)
             .map_err(|e| format!("writing {}: {e}", layout.meta_path.display()))?;
-        log::info!("[user_agents] provisioned agent={id}");
+        log::info!("[profiles] provisioned agent={id}");
         Ok(true)
     }
 
@@ -136,7 +136,7 @@ impl AgentHost {
     /// re-open the agent between closing it and moving its directory. An
     /// agent still in use (a request holds its state) is not archived from
     /// under it: deprovisioning fails and can be retried.
-    pub fn deprovision(&self, id: &UserAgentId) -> Result<bool, String> {
+    pub fn deprovision(&self, id: &ProfileId) -> Result<bool, String> {
         let mut open = self.lock();
         if let Some(slot) = open.get(id) {
             if Arc::strong_count(&slot.state) > 1 {
@@ -151,8 +151,8 @@ impl AgentHost {
         // Credential secrets live in the process keyring under the agent id,
         // not only in the agent's directory, so archiving the directory alone
         // would let a re-provisioned agent pick the old credential back up.
-        if let Err(e) = super::credentials::clear(&layout::agent_config(&layout, id)) {
-            log::warn!("[user_agents] clearing credentials of agent={id} before archiving: {e}");
+        if let Err(e) = super::credentials::clear(&layout::profile_config(&layout, id)) {
+            log::warn!("[profiles] clearing credentials of agent={id} before archiving: {e}");
         }
         let archive = layout::archive_dir(&self.saas.root);
         std::fs::create_dir_all(&archive)
@@ -166,22 +166,22 @@ impl AgentHost {
         std::fs::rename(&layout.dir, &dest)
             .map_err(|e| format!("archiving {}: {e}", layout.dir.display()))?;
         drop(open);
-        log::info!("[user_agents] deprovisioned agent={id} (archived)");
+        log::info!("[profiles] deprovisioned agent={id} (archived)");
         Ok(true)
     }
 
     /// The forced config of provisioned agent `id`, without opening it (and
     /// so without taking an agent slot).
-    pub fn provisioned_config(&self, id: &UserAgentId) -> Result<crate::config::Config, String> {
+    pub fn provisioned_config(&self, id: &ProfileId) -> Result<crate::config::Config, String> {
         let layout = self.layout(id);
         if !layout.meta_path.exists() {
             return Err(format!("agent {id} is not provisioned"));
         }
-        Ok(layout::agent_config(&layout, id))
+        Ok(layout::profile_config(&layout, id))
     }
 
     /// Agent `id`, opening it if it is provisioned and not open yet.
-    pub fn open(&self, id: &UserAgentId) -> Result<Arc<UserAgentState>, String> {
+    pub fn open(&self, id: &ProfileId) -> Result<Arc<Profile>, String> {
         let now = Instant::now();
         let mut open = self.lock();
         if let Some(slot) = open.get_mut(id) {
@@ -199,10 +199,10 @@ impl AgentHost {
             return Err(format!("agent {id} is not provisioned"));
         }
         self.evict_locked(&mut open, now);
-        if open.len() >= self.saas.max_agents_open.max(1) {
+        if open.len() >= self.saas.max_profiles_open.max(1) {
             return Err(format!(
                 "all {} agent slots are in use; try again shortly",
-                self.saas.max_agents_open
+                self.saas.max_profiles_open
             ));
         }
 
@@ -214,13 +214,13 @@ impl AgentHost {
         if first_open {
             recover_workspace(id, &layout.workspace_dir);
         }
-        let config = layout::agent_config(&layout, id);
+        let config = layout::profile_config(&layout, id);
         let context = self.operator.derive_with(
             ContextOverlay::new(config.clone(), user_domains(), ToolGroups::none())
                 .without_user_skill_roots()
                 .session_agent(id.as_str()),
         );
-        let state = Arc::new(UserAgentState {
+        let state = Arc::new(Profile {
             id: id.clone(),
             layout,
             config,
@@ -233,16 +233,16 @@ impl AgentHost {
                 last_used: now,
             },
         );
-        log::debug!("[user_agents] opened agent={id} ({} open)", open.len());
+        log::debug!("[profiles] opened agent={id} ({} open)", open.len());
         Ok(state)
     }
 
     /// Agent `id` if it is open.
-    pub fn get(&self, id: &UserAgentId) -> Option<Arc<UserAgentState>> {
+    pub fn get(&self, id: &ProfileId) -> Option<Arc<Profile>> {
         self.lock().get(id).map(|slot| Arc::clone(&slot.state))
     }
 
-    pub fn is_open(&self, id: &UserAgentId) -> bool {
+    pub fn is_open(&self, id: &ProfileId) -> bool {
         self.lock().contains_key(id)
     }
 
@@ -251,7 +251,7 @@ impl AgentHost {
     }
 
     /// Every provisioned agent, open or not.
-    pub fn list(&self) -> Result<Vec<UserAgentSummary>, String> {
+    pub fn list(&self) -> Result<Vec<ProfileSummary>, String> {
         let dir = layout::agents_dir(&self.saas.root);
         let entries = match std::fs::read_dir(&dir) {
             Ok(entries) => entries,
@@ -263,7 +263,7 @@ impl AgentHost {
             let Some(name) = entry.file_name().to_str().map(str::to_owned) else {
                 continue;
             };
-            let Ok(id) = UserAgentId::parse(&name) else {
+            let Ok(id) = ProfileId::parse(&name) else {
                 continue;
             };
             // One unreadable agent must not hide the rest (or stop the
@@ -271,28 +271,28 @@ impl AgentHost {
             match self.summary(&id) {
                 Ok(Some(summary)) => found.push(summary),
                 Ok(None) => {}
-                Err(error) => log::warn!("[user_agents] skipping agent={id} in listing: {error}"),
+                Err(error) => log::warn!("[profiles] skipping agent={id} in listing: {error}"),
             }
         }
-        found.sort_by(|a, b| a.agent_id.cmp(&b.agent_id));
+        found.sort_by(|a, b| a.profile_id.cmp(&b.profile_id));
         Ok(found)
     }
 
     /// Agent `id`, or `None` when it is not provisioned.
-    pub fn summary(&self, id: &UserAgentId) -> Result<Option<UserAgentSummary>, String> {
+    pub fn summary(&self, id: &ProfileId) -> Result<Option<ProfileSummary>, String> {
         let layout = self.layout(id);
         let raw = match std::fs::read_to_string(&layout.meta_path) {
             Ok(raw) => raw,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
             Err(e) => return Err(format!("reading {}: {e}", layout.meta_path.display())),
         };
-        let meta: UserAgentMeta = toml::from_str(&raw)
+        let meta: ProfileMeta = toml::from_str(&raw)
             .map_err(|e| format!("parsing {}: {e}", layout.meta_path.display()))?;
-        Ok(Some(UserAgentSummary {
-            agent_id: id.clone(),
+        Ok(Some(ProfileSummary {
+            profile_id: id.clone(),
             created_at: meta.created_at,
             open: self.is_open(id),
-            has_credential: super::credentials::has(&layout::agent_config(&layout, id)),
+            has_credential: super::credentials::has(&layout::profile_config(&layout, id)),
         }))
     }
 
@@ -303,23 +303,23 @@ impl AgentHost {
     }
 
     /// Close agents idle past `idle_evict_secs` that nothing is using.
-    fn sweep_idle_locked(&self, open: &mut HashMap<UserAgentId, Slot>, now: Instant) {
+    fn sweep_idle_locked(&self, open: &mut HashMap<ProfileId, Slot>, now: Instant) {
         let idle_limit = Duration::from_secs(self.saas.idle_evict_secs);
         open.retain(|id, slot| {
             let keep = Arc::strong_count(&slot.state) > 1
                 || now.duration_since(slot.last_used) < idle_limit;
             if !keep {
-                log::debug!("[user_agents] evicted idle agent={id}");
+                log::debug!("[profiles] evicted idle agent={id}");
             }
             keep
         });
     }
 
-    fn evict_locked(&self, open: &mut HashMap<UserAgentId, Slot>, now: Instant) {
+    fn evict_locked(&self, open: &mut HashMap<ProfileId, Slot>, now: Instant) {
         let in_use = |slot: &Slot| Arc::strong_count(&slot.state) > 1;
         self.sweep_idle_locked(open, now);
         // Still full: make room by closing the least recently used idle one.
-        if open.len() >= self.saas.max_agents_open.max(1) {
+        if open.len() >= self.saas.max_profiles_open.max(1) {
             let victim = open
                 .iter()
                 .filter(|(_, slot)| !in_use(slot))
@@ -327,12 +327,12 @@ impl AgentHost {
                 .map(|(id, _)| id.clone());
             if let Some(id) = victim {
                 open.remove(&id);
-                log::debug!("[user_agents] evicted least recently used agent={id}");
+                log::debug!("[profiles] evicted least recently used agent={id}");
             }
         }
     }
 
-    fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<UserAgentId, Slot>> {
+    fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<ProfileId, Slot>> {
         self.open.lock().unwrap_or_else(PoisonError::into_inner)
     }
 }
@@ -341,42 +341,42 @@ impl AgentHost {
 /// were mid-flight become interrupted and run-ledger rows left running are
 /// closed. The sweep a single-user core runs at boot, run per agent on its
 /// first open in this process. Failures are logged; the agent still opens.
-pub(crate) fn recover_workspace(id: &UserAgentId, workspace_dir: &std::path::Path) {
+pub(crate) fn recover_workspace(id: &ProfileId, workspace_dir: &std::path::Path) {
     let now = chrono::Utc::now().to_rfc3339();
     match tinyagents_session::turn_state::store::mark_all_interrupted(
         workspace_dir.to_path_buf(),
         &now,
     ) {
         Ok(0) => {}
-        Ok(turns) => log::info!("[user_agents] agent={id} recovered {turns} interrupted turn(s)"),
-        Err(error) => log::warn!("[user_agents] agent={id} turn recovery failed: {error}"),
+        Ok(turns) => log::info!("[profiles] agent={id} recovered {turns} interrupted turn(s)"),
+        Err(error) => log::warn!("[profiles] agent={id} turn recovery failed: {error}"),
     }
     match tinyagents_session::run_ledger::interrupt_orphaned_agent_runs(workspace_dir) {
         Ok(0) => {}
-        Ok(runs) => log::info!("[user_agents] agent={id} settled {runs} orphaned run(s)"),
-        Err(error) => log::warn!("[user_agents] agent={id} run recovery failed: {error:#}"),
+        Ok(runs) => log::info!("[profiles] agent={id} settled {runs} orphaned run(s)"),
+        Err(error) => log::warn!("[profiles] agent={id} run recovery failed: {error:#}"),
     }
 }
 
-static HOST: OnceLock<Arc<AgentHost>> = OnceLock::new();
+static HOST: OnceLock<Arc<ProfileHost>> = OnceLock::new();
 
 /// Install the process's agent host. A SaaS boot does this once; later calls
 /// are ignored.
-pub fn install(host: Arc<AgentHost>) {
+pub fn install(host: Arc<ProfileHost>) {
     if HOST.set(host).is_err() {
-        log::warn!("[user_agents] agent host already installed; keeping the first");
+        log::warn!("[profiles] agent host already installed; keeping the first");
     }
 }
 
 /// The process's agent host, when this is a SaaS process.
-pub fn host() -> Option<Arc<AgentHost>> {
+pub fn host() -> Option<Arc<ProfileHost>> {
     HOST.get().cloned()
 }
 
 /// The user agent the current work runs for, if any.
-pub fn current() -> Option<Arc<UserAgentState>> {
+pub fn current() -> Option<Arc<Profile>> {
     let agent = CoreContext::current()?.session_agent()?.to_owned();
-    let id = UserAgentId::parse(&agent).ok()?;
+    let id = ProfileId::parse(&agent).ok()?;
     host()?.get(&id)
 }
 

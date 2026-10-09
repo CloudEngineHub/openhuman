@@ -1,12 +1,12 @@
 use super::*;
 
-fn id() -> UserAgentId {
-    UserAgentId::for_user("layout-user").unwrap()
+fn id() -> ProfileId {
+    ProfileId::for_user("layout-user").unwrap()
 }
 
 #[test]
 fn every_path_sits_under_the_agent_directory() {
-    let layout = UserAgentLayout::new(Path::new("/srv/oh"), &id());
+    let layout = ProfileLayout::new(Path::new("/srv/oh"), &id());
     assert_eq!(layout.dir, Path::new("/srv/oh/agents").join(id().as_str()));
     for path in [
         &layout.meta_path,
@@ -20,8 +20,8 @@ fn every_path_sits_under_the_agent_directory() {
 
 #[test]
 fn the_config_is_rooted_in_the_agent_and_bound_to_its_memory() {
-    let layout = UserAgentLayout::new(Path::new("/srv/oh"), &id());
-    let config = agent_config(&layout, &id());
+    let layout = ProfileLayout::new(Path::new("/srv/oh"), &id());
+    let config = profile_config(&layout, &id());
     assert_eq!(config.config_path, layout.config_path);
     assert_eq!(config.workspace_dir, layout.workspace_dir);
     assert_eq!(config.action_dir, layout.sandbox_dir);
@@ -37,8 +37,8 @@ fn the_memory_root_is_a_valid_layout_root() {
 #[test]
 fn the_memory_binding_wins_over_pins_and_teams() {
     use crate::memory::scope::MemoryIdentity;
-    let layout = UserAgentLayout::new(Path::new("/srv/oh"), &id());
-    let mut config = agent_config(&layout, &id());
+    let layout = ProfileLayout::new(Path::new("/srv/oh"), &id());
+    let mut config = profile_config(&layout, &id());
     config.memory.agents.insert(
         "planner".into(),
         toml::from_str("agent_id = \"other\"\nroot = \"team:shared\"").unwrap(),
@@ -50,8 +50,8 @@ fn the_memory_binding_wins_over_pins_and_teams() {
 
 #[test]
 fn the_policy_is_on_and_closed() {
-    let layout = UserAgentLayout::new(Path::new("/srv/oh"), &id());
-    let autonomy = agent_config(&layout, &id()).autonomy;
+    let layout = ProfileLayout::new(Path::new("/srv/oh"), &id());
+    let autonomy = profile_config(&layout, &id()).autonomy;
     assert!(autonomy.enabled);
     assert_eq!(autonomy.level, AutonomyLevel::Supervised);
     assert!(autonomy.workspace_only);
@@ -62,8 +62,8 @@ fn the_policy_is_on_and_closed() {
 
 #[test]
 fn artifacts_land_in_the_agents_sandbox() {
-    let id = UserAgentId::for_user("alice").unwrap();
-    let layout = UserAgentLayout::new(std::path::Path::new("/srv/oh"), &id);
-    let config = agent_config(&layout, &id);
+    let id = ProfileId::for_user("alice").unwrap();
+    let layout = ProfileLayout::new(std::path::Path::new("/srv/oh"), &id);
+    let config = profile_config(&layout, &id);
     assert!(config.files_dir().starts_with(&layout.sandbox_dir));
 }

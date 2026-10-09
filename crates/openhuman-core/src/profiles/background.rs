@@ -19,7 +19,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use super::host::AgentHost;
+use super::host::ProfileHost;
 use crate::core::runtime::CoreContext;
 use crate::memory::lifecycle::jobs::{self, Selection};
 
@@ -36,10 +36,10 @@ pub struct TickReport {
 }
 
 /// Start the loop. It runs until the process exits.
-pub fn spawn(host: Arc<AgentHost>) -> tokio::task::JoinHandle<()> {
+pub fn spawn(host: Arc<ProfileHost>) -> tokio::task::JoinHandle<()> {
     crate::core::runtime::spawn_scoped(async move {
         log::info!(
-            "[user_agents][background] started (every {}s)",
+            "[profiles][background] started (every {}s)",
             TICK_INTERVAL.as_secs()
         );
         let mut interval = tokio::time::interval(TICK_INTERVAL);
@@ -49,7 +49,7 @@ pub fn spawn(host: Arc<AgentHost>) -> tokio::task::JoinHandle<()> {
             let report = tick(&host).await;
             if report != TickReport::default() {
                 log::debug!(
-                    "[user_agents][background] tick ran={} skipped={}",
+                    "[profiles][background] tick ran={} skipped={}",
                     report.ran,
                     report.skipped
                 );
@@ -59,25 +59,25 @@ pub fn spawn(host: Arc<AgentHost>) -> tokio::task::JoinHandle<()> {
 }
 
 /// One visit to every provisioned agent.
-pub async fn tick(host: &AgentHost) -> TickReport {
+pub async fn tick(host: &ProfileHost) -> TickReport {
     host.evict_idle();
     let mut report = TickReport::default();
     let agents = match host.list() {
         Ok(agents) => agents,
         Err(error) => {
-            log::warn!("[user_agents][background] listing agents failed: {error}");
+            log::warn!("[profiles][background] listing agents failed: {error}");
             return report;
         }
     };
     for summary in agents {
-        let id = summary.agent_id;
+        let id = summary.profile_id;
         if !jobs::has_pending(&host.layout_of(&id).workspace_dir) {
             continue;
         }
         let state = match host.open(&id) {
             Ok(state) => state,
             Err(error) => {
-                log::debug!("[user_agents][background] agent={id} not opened: {error}");
+                log::debug!("[profiles][background] agent={id} not opened: {error}");
                 report.skipped += 1;
                 continue;
             }
@@ -90,13 +90,13 @@ pub async fn tick(host: &AgentHost) -> TickReport {
         match result {
             Ok(runs) => {
                 log::debug!(
-                    "[user_agents][background] agent={id} ran {} memory job(s)",
+                    "[profiles][background] agent={id} ran {} memory job(s)",
                     runs.len()
                 );
                 report.ran += 1;
             }
             Err(error) => {
-                log::debug!("[user_agents][background] agent={id} memory jobs not run: {error}");
+                log::debug!("[profiles][background] agent={id} memory jobs not run: {error}");
                 report.skipped += 1;
             }
         }
