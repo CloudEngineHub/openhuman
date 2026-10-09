@@ -47,7 +47,14 @@ pub(super) async fn dictation_ws_handler(
                 return;
             }
         };
+        #[cfg(all(feature = "voice", feature = "http-server"))]
         crate::core_host::voice::streaming::handle_dictation_ws(socket, config).await;
+        #[cfg(not(all(feature = "voice", feature = "http-server")))]
+        {
+            // The core only carries the dictation socket with voice compiled in.
+            let _ = (socket, config);
+            log::warn!("[ws] dictation requested but this build has no voice support");
+        }
     })
 }
 
