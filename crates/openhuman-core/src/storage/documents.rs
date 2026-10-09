@@ -132,7 +132,7 @@ impl Repo {
             .into_iter()
             .filter(|spec| {
                 origin.as_ref().is_none_or(|origin| {
-                    !is_declared(&origin.backend, &origin.scope, spec.name)
+                    !is_declared(&origin.backend, &origin.scope, &spec.name)
                 })
             })
             .collect();
@@ -142,7 +142,7 @@ impl Repo {
             for spec in &specs {
                 docs.ensure_collection(spec).await?;
                 if let Some(origin) = &origin {
-                    mark_declared(&origin.backend, &origin.scope, spec.name);
+                    mark_declared(&origin.backend, &origin.scope, &spec.name);
                 }
             }
             future.await
