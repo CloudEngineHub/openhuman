@@ -78,7 +78,10 @@ fn apply(method: &str, mutation: &Mutation) -> String {
         Mutation::Suffix(s) => format!("{method}{s}"),
         Mutation::DotToUnderscore => method.replace('.', "_"),
         Mutation::UnderscoreToDot => method.replacen('_', ".", 1),
-        Mutation::Trim(n) => method.chars().take(method.chars().count().saturating_sub(*n)).collect(),
+        Mutation::Trim(n) => method
+            .chars()
+            .take(method.chars().count().saturating_sub(*n))
+            .collect(),
         Mutation::Pad => format!(" {method} "),
     }
 }
@@ -148,7 +151,13 @@ fn lookalike() -> impl Strategy<Value = char> {
 /// A reserved prefix with case changes and lookalike substitutions.
 fn reserved_variant() -> impl Strategy<Value = String> {
     (
-        prop::sample::select(vec!["channel:", "proactive:", "subagent:", "cron:", "system:"]),
+        prop::sample::select(vec![
+            "channel:",
+            "proactive:",
+            "subagent:",
+            "cron:",
+            "system:",
+        ]),
         prop::collection::vec(any::<bool>(), 12),
         prop::collection::vec(prop::option::of(lookalike()), 12),
         "[A-Za-z0-9_-]{0,16}",

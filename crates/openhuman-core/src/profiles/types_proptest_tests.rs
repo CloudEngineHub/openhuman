@@ -39,12 +39,17 @@ fn user_id() -> impl Strategy<Value = String> {
         "[a-z0-9_-]{0,80}",
         prop::collection::vec(fragment(), 0..12).prop_map(|parts| parts.concat()),
         (
-            prop::sample::select(vec!["local", "operator", "h-", "Local", "LOCAL", "OPERATOR", "H-"]),
+            prop::sample::select(vec![
+                "local", "operator", "h-", "Local", "LOCAL", "OPERATOR", "H-"
+            ]),
             "[a-fA-F0-9]{0,40}",
         )
             .prop_map(|(head, tail)| format!("{head}{tail}")),
         prop::collection::vec(any::<char>(), 0..=512).prop_map(String::from_iter),
-        (0usize..=512, prop::sample::select(vec!['a', '0', '-', 'Z', '/', 'é']))
+        (
+            0usize..=512,
+            prop::sample::select(vec!['a', '0', '-', 'Z', '/', 'é'])
+        )
             .prop_map(|(n, c)| std::iter::repeat_n(c, n).collect()),
     ]
 }

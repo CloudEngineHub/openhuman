@@ -72,13 +72,23 @@ fn user_header() -> impl Strategy<Value = String> {
 enum Sig {
     Missing,
     /// Signed for `signed_for` at `NOW + skew`.
-    Signed { signed_for: SignedFor, skew: i64 },
+    Signed {
+        signed_for: SignedFor,
+        skew: i64,
+    },
     /// A valid header with the tag cut to `keep` hex characters.
-    Truncated { keep: usize },
+    Truncated {
+        keep: usize,
+    },
     /// A valid header with extra parts, duplicates or whitespace around it.
-    Decorated { before: String, after: String },
+    Decorated {
+        before: String,
+        after: String,
+    },
     /// A valid tag paired with a different timestamp.
-    WrongT { delta: u64 },
+    WrongT {
+        delta: u64,
+    },
     Garbage(String),
 }
 
