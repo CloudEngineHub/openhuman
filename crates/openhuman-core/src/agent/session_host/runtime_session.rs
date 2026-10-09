@@ -1419,10 +1419,12 @@ impl OpenHumanSessionHost {
                 let tenant = crate::core::runtime::tenant::current_tenant_or_isolated(
                     "session_locator",
                 );
-                let session_agent_id = match (&tenant.profile, tenant.agent) {
-                    (Some(_), _) => crate::core::runtime::session_key(&tenant),
-                    (None, Some(agent)) => agent,
-                    (None, None) => self.agent_definition_id.clone(),
+                let session_agent_id = if tenant.profile.is_some() {
+                    crate::core::runtime::session_key(&tenant)
+                } else {
+                    tenant
+                        .agent
+                        .unwrap_or_else(|| self.agent_definition_id.clone())
                 };
                 transcripts_or_files(&session_agent_id, &self.workspace_dir)
             })
