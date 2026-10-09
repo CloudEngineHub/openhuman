@@ -88,7 +88,7 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
         "deprovision" => ControllerSchema {
             namespace: "profiles",
             function: "deprovision",
-            description: "Close a user agent and archive its state. Nothing is deleted.",
+            description: "Close a profile and archive its state. Nothing is deleted.",
             inputs: vec![string_field("profile_id", "The agent to deprovision.")],
             outputs: vec![
                 string_field("profile_id", "The agent."),
@@ -98,10 +98,10 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
         "list" => ControllerSchema {
             namespace: "profiles",
             function: "list",
-            description: "List every provisioned user agent.",
+            description: "List every provisioned profile.",
             inputs: vec![],
             outputs: vec![FieldSchema {
-                name: "agents",
+                name: "profiles",
                 ty: TypeSchema::Array(Box::new(TypeSchema::Json)),
                 comment: "profile_id, created_at and whether it is open.",
                 required: true,
@@ -110,7 +110,7 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
         "status" => ControllerSchema {
             namespace: "profiles",
             function: "status",
-            description: "Report one provisioned user agent.",
+            description: "Report one provisioned profile.",
             inputs: vec![string_field("profile_id", "The agent to report.")],
             outputs: vec![
                 string_field("profile_id", "The agent."),
@@ -127,7 +127,7 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
         "set_credential" => ControllerSchema {
             namespace: "profiles",
             function: "set_credential",
-            description: "Install the TinyHumans credential the gateway holds for a user agent. \
+            description: "Install the TinyHumans credential the gateway holds for a profile. \
                           The core stores it beside the agent's state and never validates or echoes it.",
             inputs: vec![
                 string_field("profile_id", "The agent the credential belongs to."),
@@ -155,7 +155,7 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
         "clear_credential" => ControllerSchema {
             namespace: "profiles",
             function: "clear_credential",
-            description: "Remove every credential a user agent holds.",
+            description: "Remove every credential a profile holds.",
             inputs: vec![string_field("profile_id", "The agent.")],
             outputs: vec![
                 string_field("profile_id", "The agent."),
@@ -165,7 +165,7 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
         _ => ControllerSchema {
             namespace: "profiles",
             function: "unknown",
-            description: "Unknown user_agents controller.",
+            description: "Unknown profiles controller.",
             inputs: vec![],
             outputs: vec![string_field("error", "Lookup error details.")],
         },

@@ -7,7 +7,7 @@ fn every_controller_has_a_schema_and_a_handler() {
     assert_eq!(schemas.len(), FUNCTIONS.len());
     assert_eq!(controllers.len(), FUNCTIONS.len());
     for (schema, controller) in schemas.iter().zip(&controllers) {
-        assert_eq!(schema.namespace, "user_agents");
+        assert_eq!(schema.namespace, "profiles");
         assert_eq!(schema.function, controller.schema.function);
         assert_ne!(schema.function, "unknown");
     }

@@ -1,6 +1,6 @@
 //! Which agent tools a user gets in SaaS mode, and where they run.
 //!
-//! A user agent's tool list starts from its domain families
+//! A profile's tool list starts from its domain families
 //! ([`host::user_domains`](super::host::user_domains)): memory and thread
 //! tools, nothing that reaches the host. Shell and file tools sit in the
 //! `Platform` family, which a user context never enables. The operator opts
@@ -166,7 +166,7 @@ pub fn admits(tool: &str, domain_ok: bool) -> bool {
     }
     let admitted = admits_with(tool, domain_ok, &allowlisted());
     if !admitted && domain_ok {
-        log::debug!("[profiles][tools] withholding `{tool}` from user agents");
+        log::debug!("[profiles][tools] withholding `{tool}` from profiles");
     }
     admitted
 }

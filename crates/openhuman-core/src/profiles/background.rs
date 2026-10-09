@@ -1,4 +1,4 @@
-//! Background work for user agents.
+//! Background work for profiles.
 //!
 //! A single-user core drains its memory job queue from a cron system job,
 //! gated by the process-wide scheduler gate. Neither fits SaaS: the cron

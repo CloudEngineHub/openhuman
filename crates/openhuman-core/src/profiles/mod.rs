@@ -1,4 +1,4 @@
-//! User agents: in SaaS mode, each user is served as one agent.
+//! Profiles: in SaaS mode, each user is served as one agent.
 //!
 //! The gateway authenticates users; this domain turns a gateway user id into
 //! the agent that serves that user ([`ProfileId`]), lays out the agent's

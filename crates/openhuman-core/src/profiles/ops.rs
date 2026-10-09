@@ -1,4 +1,4 @@
-//! Operator-plane operations on user agents.
+//! Operator-plane operations on profiles.
 //!
 //! Gateway user ids are taken here and turned into agent ids at once; they
 //! are never logged, stored or returned.
@@ -11,7 +11,7 @@ use super::types::{
 use crate::core::Outcome;
 
 fn require_host() -> Result<std::sync::Arc<ProfileHost>, String> {
-    host::host().ok_or_else(|| "user agents exist only in SaaS mode".to_string())
+    host::host().ok_or_else(|| "profiles exist only in SaaS mode".to_string())
 }
 
 /// Create the agent for gateway user `user_id`, if it does not exist yet.
@@ -61,7 +61,7 @@ pub(crate) fn deprovision_on(
 /// Every provisioned agent.
 pub fn list() -> Result<Outcome<Vec<ProfileSummary>>, String> {
     let agents = require_host()?.list()?;
-    let log = format!("{} user agent(s)", agents.len());
+    let log = format!("{} profile(s)", agents.len());
     Ok(Outcome::single_log(agents, log))
 }
 

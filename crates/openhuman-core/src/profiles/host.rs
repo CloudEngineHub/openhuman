@@ -1,6 +1,6 @@
-//! [`ProfileHost`]: the user agents a SaaS process has open.
+//! [`ProfileHost`]: the profiles a SaaS process has open.
 //!
-//! A user agent is opened lazily on first use and kept until it has been idle
+//! A profile is opened lazily on first use and kept until it has been idle
 //! for [`SaasConfig::idle_evict_secs`] or the host needs its slot
 //! ([`SaasConfig::max_profiles_open`]). An agent still in use — anyone holding
 //! its [`Profile`] — is never evicted.
@@ -20,7 +20,7 @@ use crate::config::Config;
 use crate::core::runtime::{ContextOverlay, CoreContext, DomainSet, SaasConfig};
 use crate::tools::toolpacks::ToolGroups;
 
-/// One open user agent.
+/// One open profile.
 pub struct Profile {
     pub id: ProfileId,
     pub layout: ProfileLayout,
@@ -48,7 +48,7 @@ struct Slot {
     last_used: Instant,
 }
 
-/// The open user agents of one SaaS process.
+/// The open profiles of one SaaS process.
 pub struct ProfileHost {
     saas: SaasConfig,
     operator: Arc<CoreContext>,
@@ -69,7 +69,7 @@ impl std::fmt::Debug for ProfileHost {
     }
 }
 
-/// The domain families a user agent's context serves. Within them, only the
+/// The domain families a profile's context serves. Within them, only the
 /// methods on [`USER_METHODS`](super::surface::USER_METHODS) are reachable.
 pub fn user_domains() -> DomainSet {
     DomainSet {
@@ -373,7 +373,7 @@ pub fn host() -> Option<Arc<ProfileHost>> {
     HOST.get().cloned()
 }
 
-/// The user agent the current work runs for, if any.
+/// The profile the current work runs for, if any.
 pub fn current() -> Option<Arc<Profile>> {
     let agent = CoreContext::current()?.session_agent()?.to_owned();
     let id = ProfileId::parse(&agent).ok()?;
