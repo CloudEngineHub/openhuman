@@ -27,11 +27,11 @@
 // Exit 0 when the chain holds, 1 on a violation, 2 when the inputs could not
 // be read or parsed (the check refuses to pass vacuously).
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { stripComments } from "../lib/feature-forwarding.mjs";
+import { stripComments } from '../lib/feature-forwarding.mjs';
 
 /**
  * Package name -> the OpenHuman packages it may name as normal dependencies.
@@ -40,68 +40,60 @@ import { stripComments } from "../lib/feature-forwarding.mjs";
  */
 export const CHAIN = {
   openhuman: [],
-  "openhuman-embed": ["openhuman"],
-  "openhuman-tinyhumans": ["openhuman-embed"],
-  "openhuman-rpc": ["openhuman-tinyhumans"],
-  "openhuman-app": ["openhuman-rpc"],
-  "openhuman-cli": ["openhuman-rpc"],
-  "openhuman-tui": ["openhuman-rpc"],
+  'openhuman-embed': ['openhuman'],
+  'openhuman-tinyhumans': ['openhuman-embed'],
+  'openhuman-rpc': ['openhuman-tinyhumans'],
+  'openhuman-app': ['openhuman-rpc'],
+  'openhuman-cli': ['openhuman-rpc'],
+  'openhuman-tui': ['openhuman-rpc'],
 };
 
 /** The host crates whose `src/` must not reach core internals by path. */
 export const HOST_SOURCE_DIRS = [
-  "crates/openhuman-app/src",
-  "crates/openhuman-cli/src",
-  "crates/openhuman-tui/src",
+  'crates/openhuman-app/src',
+  'crates/openhuman-cli/src',
+  'crates/openhuman-tui/src',
 ];
 
 /** Paths a host must never name (see the header). */
 export const FORBIDDEN_HOST_PATTERNS = [
-  { name: "__host", regex: /\b__host\b/ },
-  { name: "core_host", regex: /\bcore_host\b/ },
-  { name: "openhuman_core::", regex: /\bopenhuman_core::/ },
+  { name: '__host', regex: /\b__host\b/ },
+  { name: 'core_host', regex: /\bcore_host\b/ },
+  { name: 'openhuman_core::', regex: /\bopenhuman_core::/ },
 ];
 
 /** Layer crates whose `src/` must not re-export the layer below wholesale. */
-export const LAYER_SOURCE_DIRS = [
-  "crates/openhuman-tinyhumans/src",
-  "crates/openhuman-rpc/src",
-];
+export const LAYER_SOURCE_DIRS = ['crates/openhuman-tinyhumans/src', 'crates/openhuman-rpc/src'];
 
 /** Wholesale re-exports of a lower layer (matched across lines, comments stripped). */
 export const WHOLESALE_REEXPORT_PATTERNS = [
   {
-    name: "pub use openhuman_embed as …",
+    name: 'pub use openhuman_embed as …',
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_embed\s+as\b/,
   },
   {
-    name: "pub use openhuman_tinyhumans as …",
+    name: 'pub use openhuman_tinyhumans as …',
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_tinyhumans\s+as\b/,
   },
   {
-    name: "pub use openhuman_embed::*",
-    regex:
-      /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)(?:::embed)?::\*/,
+    name: 'pub use openhuman_embed::*',
+    regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)(?:::embed)?::\*/,
   },
   {
-    name: "pub use openhuman_tinyhumans::embed (the crate, not a list)",
-    regex:
-      /\bpub(?:\([^)]*\))?\s+use\s+openhuman_tinyhumans::embed\s*(?:as\s+\w+\s*)?;/,
+    name: 'pub use openhuman_tinyhumans::embed (the crate, not a list)',
+    regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_tinyhumans::embed\s*(?:as\s+\w+\s*)?;/,
   },
 ];
 
 /** `pub use` of the internal list from rpc (it may only be `pub(crate)`). */
 export const RPC_INTERNAL_REEXPORT_PATTERNS = [
-  {
-    name: "pub use … __host / core_host",
-    regex: /\bpub\s+use\b[^;]*\b(?:__host|core_host)\b/,
-  },
+  { name: 'pub use … __host / core_host', regex: /\bpub\s+use\b[^;]*\b(?:__host|core_host)\b/ },
 ];
 
 /** Hosts, root tests and examples must not reach the internal list through rpc. */
 export const HOST_RPC_INTERNAL_PATTERNS = [
   {
-    name: "openhuman_rpc::…__host / core_host",
+    name: 'openhuman_rpc::…__host / core_host',
     regex: /\bopenhuman_rpc\s*::[^;]*\b(?:__host|core_host)\b/,
   },
 ];
@@ -109,8 +101,8 @@ export const HOST_RPC_INTERNAL_PATTERNS = [
 /** Blank out Rust comments, keeping line structure. */
 export function stripRustComments(text) {
   return text
-    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
-    .replace(/\/\/[^\n]*/g, "");
+    .replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' '))
+    .replace(/\/\/[^\n]*/g, '');
 }
 
 /** `{ file, line, pattern }` for each multi-line pattern match in one source text. */
@@ -118,13 +110,9 @@ export function findPatternHits(text, file, patterns) {
   const code = stripRustComments(text);
   const hits = [];
   for (const { name, regex } of patterns) {
-    const global = new RegExp(regex.source, "g");
+    const global = new RegExp(regex.source, 'g');
     for (const m of code.matchAll(global)) {
-      hits.push({
-        file,
-        line: code.slice(0, m.index).split("\n").length,
-        pattern: name,
-      });
+      hits.push({ file, line: code.slice(0, m.index).split('\n').length, pattern: name });
     }
   }
   return hits;
@@ -132,7 +120,7 @@ export function findPatternHits(text, file, patterns) {
 
 /** Whether a package name belongs to this repository's OpenHuman crates. */
 export function isOpenhumanPackage(name) {
-  return name === "openhuman" || name.startsWith("openhuman-");
+  return name === 'openhuman' || name.startsWith('openhuman-');
 }
 
 function tableBody(text, start) {
@@ -159,23 +147,21 @@ export function parseWorkspaceMembers(toml) {
   const body = tableBody(text, header.index + header[0].length);
   const at = body.search(/^[ \t]*members[ \t]*=[ \t]*\[/m);
   if (at === -1) return [];
-  const open = body.indexOf("[", at);
-  const close = body.indexOf("]", open);
-  return [...body.slice(open + 1, close).matchAll(/"([^"]+)"/g)].map(
-    (m) => m[1],
-  );
+  const open = body.indexOf('[', at);
+  const close = body.indexOf(']', open);
+  return [...body.slice(open + 1, close).matchAll(/"([^"]+)"/g)].map(m => m[1]);
 }
 
 /** One dependency entry's value text (inline table or string), joined across lines. */
 function entryValue(body, valueStart) {
-  if (body[valueStart] !== "{") {
-    const end = body.indexOf("\n", valueStart);
+  if (body[valueStart] !== '{') {
+    const end = body.indexOf('\n', valueStart);
     return end === -1 ? body.slice(valueStart) : body.slice(valueStart, end);
   }
   let depth = 0;
   for (let i = valueStart; i < body.length; i++) {
-    if (body[i] === "{") depth++;
-    else if (body[i] === "}") {
+    if (body[i] === '{') depth++;
+    else if (body[i] === '}') {
       depth--;
       if (depth === 0) return body.slice(valueStart, i + 1);
     }
@@ -192,14 +178,11 @@ function entryValue(body, valueStart) {
  */
 export function parseDependencyEntries(body) {
   const entries = [];
-  for (const match of body.matchAll(
-    /^[ \t]*([A-Za-z0-9_-]+)((?:\.workspace)?)[ \t]*=[ \t]*/gm,
-  )) {
+  for (const match of body.matchAll(/^[ \t]*([A-Za-z0-9_-]+)((?:\.workspace)?)[ \t]*=[ \t]*/gm)) {
     const key = match[1];
     const value = entryValue(body, match.index + match[0].length);
     const pkg = value.match(/package[ \t]*=[ \t]*"([^"]+)"/);
-    const workspace =
-      match[2] === ".workspace" || /workspace[ \t]*=[ \t]*true/.test(value);
+    const workspace = match[2] === '.workspace' || /workspace[ \t]*=[ \t]*true/.test(value);
     entries.push({ key, package: pkg ? pkg[1] : key, workspace });
   }
   return entries;
@@ -216,13 +199,11 @@ export function parseNormalDependencies(toml) {
   for (const header of text.matchAll(/^[ \t]*\[([^\]\n]+)\][ \t]*$/gm)) {
     const table = header[1].trim();
     const body = tableBody(text, header.index + header[0].length);
-    if (table === "dependencies" || /^target\..+\.dependencies$/.test(table)) {
+    if (table === 'dependencies' || /^target\..+\.dependencies$/.test(table)) {
       deps.push(...parseDependencyEntries(body));
       continue;
     }
-    const sub = table.match(
-      /^(?:target\..+\.)?dependencies\.([A-Za-z0-9_-]+)$/,
-    );
+    const sub = table.match(/^(?:target\..+\.)?dependencies\.([A-Za-z0-9_-]+)$/);
     if (sub) {
       const pkg = body.match(/^[ \t]*package[ \t]*=[ \t]*"([^"]+)"/m);
       const workspace = /^[ \t]*workspace[ \t]*=[ \t]*true/m.test(body);
@@ -238,43 +219,34 @@ export function parseWorkspaceDependencies(toml) {
   const header = text.match(/^[ \t]*\[workspace\.dependencies\][ \t]*$/m);
   if (!header) return new Map();
   const body = tableBody(text, header.index + header[0].length);
-  return new Map(
-    parseDependencyEntries(body).map((entry) => [entry.key, entry.package]),
-  );
+  return new Map(parseDependencyEntries(body).map(entry => [entry.key, entry.package]));
 }
 
 /**
  * Violations of {@link CHAIN} for one manifest. Each is
  * `{ crate, dependency, reason }`.
  */
-export function checkManifestEdges({
-  crate,
-  deps,
-  workspaceDeps = new Map(),
-  chain = CHAIN,
-}) {
+export function checkManifestEdges({ crate, deps, workspaceDeps = new Map(), chain = CHAIN }) {
   const violations = [];
   if (!Object.prototype.hasOwnProperty.call(chain, crate)) {
     violations.push({
       crate,
       dependency: null,
-      reason: "unknown OpenHuman crate: add it to CHAIN",
+      reason: 'unknown OpenHuman crate: add it to CHAIN',
     });
     return violations;
   }
   const allowed = new Set(chain[crate]);
   for (const dep of deps) {
-    const pkg = dep.workspace
-      ? (workspaceDeps.get(dep.key) ?? dep.package)
-      : dep.package;
+    const pkg = dep.workspace ? (workspaceDeps.get(dep.key) ?? dep.package) : dep.package;
     if (!isOpenhumanPackage(pkg)) continue;
     if (!allowed.has(pkg)) {
       violations.push({
         crate,
         dependency: pkg,
         reason: allowed.size
-          ? `may only depend on ${[...allowed].join(", ")} among OpenHuman crates`
-          : "may not depend on any OpenHuman crate",
+          ? `may only depend on ${[...allowed].join(', ')} among OpenHuman crates`
+          : 'may not depend on any OpenHuman crate',
       });
     }
   }
@@ -282,11 +254,7 @@ export function checkManifestEdges({
 }
 
 /** `{ file, line, pattern }` for every forbidden path in one source text. */
-export function findForbiddenPaths(
-  text,
-  file,
-  patterns = FORBIDDEN_HOST_PATTERNS,
-) {
+export function findForbiddenPaths(text, file, patterns = FORBIDDEN_HOST_PATTERNS) {
   const hits = [];
   text.split(/\r?\n/).forEach((line, index) => {
     for (const { name, regex } of patterns) {
@@ -301,75 +269,63 @@ function rustFiles(dir) {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     if (statSync(path).isDirectory()) out.push(...rustFiles(path));
-    else if (entry.endsWith(".rs")) out.push(path);
+    else if (entry.endsWith('.rs')) out.push(path);
   }
   return out;
 }
 
 /** Run both checks against a repository checkout. */
 export function checkRepository(root) {
-  const rootToml = readFileSync(join(root, "Cargo.toml"), "utf8");
+  const rootToml = readFileSync(join(root, 'Cargo.toml'), 'utf8');
   const members = parseWorkspaceMembers(rootToml);
   if (members.length === 0) {
-    throw new Error("parsed zero workspace members from the root Cargo.toml");
+    throw new Error('parsed zero workspace members from the root Cargo.toml');
   }
   const workspaceDeps = parseWorkspaceDependencies(rootToml);
   // The desktop shell is its own Cargo world, excluded from the workspace.
-  const manifestDirs = [...members, "crates/openhuman-app"];
+  const manifestDirs = [...members, 'crates/openhuman-app'];
   const edgeViolations = [];
   const checked = [];
   for (const dir of manifestDirs) {
-    const manifest = join(root, dir, "Cargo.toml");
-    if (!existsSync(manifest))
-      throw new Error(`missing manifest ${relative(root, manifest)}`);
-    const toml = readFileSync(manifest, "utf8");
+    const manifest = join(root, dir, 'Cargo.toml');
+    if (!existsSync(manifest)) throw new Error(`missing manifest ${relative(root, manifest)}`);
+    const toml = readFileSync(manifest, 'utf8');
     const crate = parsePackageName(toml);
-    if (!crate)
-      throw new Error(`no [package] name in ${relative(root, manifest)}`);
+    if (!crate) throw new Error(`no [package] name in ${relative(root, manifest)}`);
     if (!isOpenhumanPackage(crate)) continue;
     checked.push(crate);
     edgeViolations.push(
-      ...checkManifestEdges({
-        crate,
-        deps: parseNormalDependencies(toml),
-        workspaceDeps,
-      }),
+      ...checkManifestEdges({ crate, deps: parseNormalDependencies(toml), workspaceDeps })
     );
   }
   const sourceViolations = [];
   for (const dir of HOST_SOURCE_DIRS) {
     const abs = join(root, dir);
-    if (!existsSync(abs))
-      throw new Error(`missing host source directory ${dir}`);
+    if (!existsSync(abs)) throw new Error(`missing host source directory ${dir}`);
     for (const file of rustFiles(abs)) {
       sourceViolations.push(
-        ...findForbiddenPaths(readFileSync(file, "utf8"), relative(root, file)),
+        ...findForbiddenPaths(readFileSync(file, 'utf8'), relative(root, file))
       );
     }
   }
   const facadeViolations = [];
   for (const dir of LAYER_SOURCE_DIRS) {
     const abs = join(root, dir);
-    if (!existsSync(abs))
-      throw new Error(`missing layer source directory ${dir}`);
-    const patterns = dir.includes("openhuman-rpc")
+    if (!existsSync(abs)) throw new Error(`missing layer source directory ${dir}`);
+    const patterns = dir.includes('openhuman-rpc')
       ? [...WHOLESALE_REEXPORT_PATTERNS, ...RPC_INTERNAL_REEXPORT_PATTERNS]
       : WHOLESALE_REEXPORT_PATTERNS;
     for (const file of rustFiles(abs)) {
       facadeViolations.push(
-        ...findPatternHits(
-          readFileSync(file, "utf8"),
-          relative(root, file),
-          patterns,
-        ),
+        ...findPatternHits(readFileSync(file, 'utf8'), relative(root, file), patterns)
       );
     }
   }
   const reachDirs = [
     ...HOST_SOURCE_DIRS,
-    "tests",
-    "examples",
-    ...HOST_SOURCE_DIRS.map((d) => d.replace(/src$/, "tests")),
+    'tests',
+    'examples',
+    ...HOST_SOURCE_DIRS.map(d => d.replace(/src$/, 'tests')),
   ];
   for (const dir of reachDirs) {
     const abs = join(root, dir);
@@ -377,60 +333,48 @@ export function checkRepository(root) {
     for (const file of rustFiles(abs)) {
       facadeViolations.push(
         ...findPatternHits(
-          readFileSync(file, "utf8"),
+          readFileSync(file, 'utf8'),
           relative(root, file),
-          HOST_RPC_INTERNAL_PATTERNS,
-        ),
+          HOST_RPC_INTERNAL_PATTERNS
+        )
       );
     }
   }
   return { checked, edgeViolations, sourceViolations, facadeViolations };
 }
 
-export function formatReport({
-  checked,
-  edgeViolations,
-  sourceViolations,
-  facadeViolations = [],
-}) {
-  const lines = [
-    `Crate chain: core -> embed -> tinyhumans -> rpc -> app/cli/tui`,
-  ];
-  lines.push(`Checked ${checked.length} manifests: ${checked.join(", ")}`);
+export function formatReport({ checked, edgeViolations, sourceViolations, facadeViolations = [] }) {
+  const lines = [`Crate chain: core -> embed -> tinyhumans -> rpc -> app/cli/tui`];
+  lines.push(`Checked ${checked.length} manifests: ${checked.join(', ')}`);
   if (edgeViolations.length > 0) {
-    lines.push("", "Normal-dependency edges that break the chain:");
+    lines.push('', 'Normal-dependency edges that break the chain:');
     for (const v of edgeViolations) {
-      lines.push(`  - ${v.crate} -> ${v.dependency ?? "?"}: ${v.reason}`);
+      lines.push(`  - ${v.crate} -> ${v.dependency ?? '?'}: ${v.reason}`);
     }
     lines.push(
-      "",
-      "Reach the layer below through its curated facade instead. Hosts name",
-      "`openhuman-rpc` only (`openhuman_rpc::embed`, `openhuman_rpc::tinyhumans`);",
-      "a test-only need belongs in [dev-dependencies].",
+      '',
+      'Reach the layer below through its curated facade instead. Hosts name',
+      '`openhuman-rpc` only (`openhuman_rpc::embed`, `openhuman_rpc::tinyhumans`);',
+      'a test-only need belongs in [dev-dependencies].'
     );
   }
   if (sourceViolations.length > 0) {
-    lines.push("", "Host source reaching core internals by path:");
-    for (const v of sourceViolations)
-      lines.push(`  - ${v.file}:${v.line}: ${v.pattern}`);
+    lines.push('', 'Host source reaching core internals by path:');
+    for (const v of sourceViolations) lines.push(`  - ${v.file}:${v.line}: ${v.pattern}`);
     lines.push(
-      "",
-      "Hosts use the curated facade (`openhuman_rpc::embed::…`). `__host` /",
-      "`core_host` are internal to the library layers; add what the host needs to",
-      "embed's public facade instead.",
+      '',
+      'Hosts use the curated facade (`openhuman_rpc::embed::…`). `__host` /',
+      '`core_host` are internal to the library layers; add what the host needs to',
+      "embed's public facade instead."
     );
   }
   if (facadeViolations.length > 0) {
+    lines.push('', 'Facades that re-export a lower layer wholesale or leak `__host`:');
+    for (const v of facadeViolations) lines.push(`  - ${v.file}:${v.line}: ${v.pattern}`);
     lines.push(
-      "",
-      "Facades that re-export a lower layer wholesale or leak `__host`:",
-    );
-    for (const v of facadeViolations)
-      lines.push(`  - ${v.file}:${v.line}: ${v.pattern}`);
-    lines.push(
-      "",
-      "Each layer re-exports a curated `pub use` list of the items the layers above",
-      "use, never the crate below it. `__host` stays out of every public path in rpc.",
+      '',
+      'Each layer re-exports a curated `pub use` list of the items the layers above',
+      'use, never the crate below it. `__host` stays out of every public path in rpc.'
     );
   }
   if (
@@ -438,15 +382,14 @@ export function formatReport({
     sourceViolations.length === 0 &&
     facadeViolations.length === 0
   ) {
-    lines.push("OK: every crate depends only on the layer below it.");
+    lines.push('OK: every crate depends only on the layer below it.');
   }
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 function main() {
   const root = resolve(
-    process.argv[2] ??
-      resolve(dirname(fileURLToPath(import.meta.url)), "../.."),
+    process.argv[2] ?? resolve(dirname(fileURLToPath(import.meta.url)), '../..')
   );
   let result;
   try {
@@ -464,9 +407,6 @@ function main() {
   process.exit(ok ? 0 : 1);
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   main();
 }
