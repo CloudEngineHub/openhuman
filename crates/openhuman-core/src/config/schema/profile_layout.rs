@@ -18,7 +18,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::load_user_state_paths::user_openhuman_dir;
+use super::user_openhuman_dir;
 
 /// The profile metadata file, beside `config.toml`.
 pub const PROFILE_META_FILE: &str = "profile.toml";
@@ -64,13 +64,13 @@ impl ProfileLayout {
     }
 }
 
-/// `<root>/users`: the parent of every profile directory.
+/// The directory under a root that holds every profile.
+pub const USERS_DIR: &str = "users";
+
+/// `<root>/users`: the parent of every profile directory. The desktop's
+/// [`user_openhuman_dir`] is built on it.
 pub fn users_dir(root: &Path) -> PathBuf {
-    // Derived from `user_openhuman_dir` so the two never disagree.
-    user_openhuman_dir(root, "")
-        .parent()
-        .map(Path::to_path_buf)
-        .unwrap_or_else(|| root.join("users"))
+    root.join(USERS_DIR)
 }
 
 #[cfg(test)]
