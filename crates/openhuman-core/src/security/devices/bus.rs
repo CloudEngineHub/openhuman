@@ -412,6 +412,7 @@ async fn handle_tunnel_frame(channel_id: &str, payload_b64: &str) {
                     "[devices/bus] failed to persist device channel_id={}: {e}",
                     channel_id
                 );
+                abandon_unpersisted_pairing(channel_id);
             }
         }
     } else {
@@ -419,7 +420,18 @@ async fn handle_tunnel_frame(channel_id: &str, payload_b64: &str) {
             "[devices/bus] could not load config to persist device channel_id={}",
             channel_id
         );
+        abandon_unpersisted_pairing(channel_id);
     }
+}
+
+/// Drops the pairing session and session cipher of a handshake whose device
+/// could not be persisted: with no row in the store, later frames would
+/// otherwise keep being accepted for a device nothing records
+/// (`super::owner` treats a missing row as the handshake persistence window).
+fn abandon_unpersisted_pairing(channel_id: &str) {
+    PENDING_SESSIONS.lock().unwrap().remove(channel_id);
+    ACTIVE_CIPHERS.lock().unwrap().remove(channel_id);
+    log::warn!("[devices/bus] pairing abandoned channel_id={channel_id}: device not persisted");
 }
 
 fn parse_handshake_payload(raw: &str) -> HandshakePayload {
