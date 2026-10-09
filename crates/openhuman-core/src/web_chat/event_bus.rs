@@ -29,11 +29,26 @@ pub fn publish_web_channel_event(mut event: WebChannelEvent) {
     if event.ts.is_none() {
         event.ts = Some(crate::web_chat::progress_bridge::unix_epoch_ms());
     }
-    if event.agent.is_none() {
-        event.agent = crate::core::runtime::CoreContext::current()
-            .and_then(|context| context.session_agent().map(str::to_owned));
-    }
+    stamp_tenant(&mut event, crate::core::runtime::current_tenant().ok());
     let _ = EVENT_BUS.send(event);
+}
+
+/// Stamp `event` with the tenant whose work produced it, where the publisher
+/// left it unset. A SaaS task with no scope (`None`) stamps nothing, so the
+/// event reaches no user's stream.
+pub(crate) fn stamp_tenant(
+    event: &mut WebChannelEvent,
+    tenant: Option<crate::core::runtime::Tenant>,
+) {
+    let Some(tenant) = tenant else {
+        return;
+    };
+    if event.agent.is_none() {
+        event.agent = tenant.agent;
+    }
+    if event.profile.is_none() {
+        event.profile = tenant.profile;
+    }
 }
 
 static APPROVAL_SURFACE_HANDLE: OnceLock<SubscriptionHandle> = OnceLock::new();
