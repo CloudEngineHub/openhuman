@@ -16,6 +16,14 @@
 
 use std::fmt::Display;
 
+#[path = "observability_availability.rs"]
+mod availability;
+use availability::log_module_unavailable;
+pub use availability::{
+    is_api_key_rejected_message, is_backend_unavailable_message, is_module_unavailable_message,
+    API_KEY_REJECTED_PREFIX, BACKEND_UNAVAILABLE_PREFIX,
+};
+
 /// A `(key, value)` pair attached as a Sentry tag. Tags are short, indexed,
 /// and filterable in the Sentry UI — prefer them over free-form fields for
 /// anything you'd want to facet on (`error_kind`, `tool_name`, `method`).
@@ -202,18 +210,8 @@ pub enum ExpectedErrorKind {
     /// backend-touching surface degrades to this typed error. Messages carry
     /// the [`BACKEND_UNAVAILABLE_PREFIX`] sentinel.
     BackendUnavailable,
-    /// A native module failed to load, and the failure is being handed back
-    /// again. tinybus never unloads a library, so `modules::ops` caches a load
-    /// failure for the life of the process and returns it instantly to every
-    /// later caller; only a restart can change the outcome. The failure itself
-    /// is reported **once**, at resolution time
-    /// (`modules::ops::report_resolution_failure`, tagged with the module id).
-    /// Every per-call re-report after that — composio ops, the `/rpc`
-    /// boundary, memory calls — carries no new signal, and was a few hundred
-    /// broken installs producing ~1M events (TAURI-RUST-117K / -118J / -117Y /
-    /// -113J / -113T / -113D / -113N / -113Q / -113X). Matched on the shared
-    /// [`crate::tools::status::MODULE_FAULT_MARKER`] and the module-load
-    /// wordings; see [`is_module_unavailable_message`].
+    /// A cached native-module load failure handed back to another caller;
+    /// reported once at resolution. See [`is_module_unavailable_message`].
     ModuleUnavailable,
     /// Channel supervisor (`channels::runtime::supervision::spawn_supervised_listener`)
     /// caught a transient error from a channel listener and restarted it. The
@@ -372,25 +370,6 @@ pub enum ExpectedErrorKind {
     WalletNotConfigured,
 }
 
-/// A native module failed to load and the cached failure is being returned.
-///
-/// Anchors, all produced by module loading and nothing else:
-///
-/// - [`crate::tools::status::MODULE_FAULT_MARKER`] — every terminal load
-///   failure from `modules::ops` and tinybus' `load_first_admitted` carries it;
-/// - `module '<id>' could not be loaded` — the load wording itself, for a
-///   caller that rewrapped the reason without the marker;
-/// - `the memory module failed to load` — the memory facade's rendering of the
-///   same cached failure.
-///
-/// A bare `could not be loaded` is deliberately not enough: config, update
-/// policy and workflows use it for failures that must keep paging.
-fn is_module_unavailable_message(message: &str, lower: &str) -> bool {
-    message.contains(crate::tools::status::MODULE_FAULT_MARKER)
-        || (lower.contains("module '") && lower.contains("could not be loaded"))
-        || lower.contains("the memory module failed to load")
-}
-
 pub fn expected_error_kind(message: &str) -> Option<ExpectedErrorKind> {
     let lower = message.to_ascii_lowercase();
     // F2/F4: a managed-backend `errorCode` (#870) means the backend owns this
@@ -460,10 +439,8 @@ pub fn expected_error_kind(message: &str) -> Option<ExpectedErrorKind> {
     if is_wallet_not_configured_message(&lower) {
         return Some(ExpectedErrorKind::WalletNotConfigured);
     }
-    // A cached native-module load failure handed back to another caller. The
-    // failure was reported once at resolution; every re-report is the flood
-    // (TAURI-RUST-117K et al.). See `ExpectedErrorKind::ModuleUnavailable`.
-    if is_module_unavailable_message(message, &lower) {
+    // TAURI-RUST-117K et al. — see `ExpectedErrorKind::ModuleUnavailable`.
+    if is_module_unavailable_message(message) {
         return Some(ExpectedErrorKind::ModuleUnavailable);
     }
     if lower.contains("local ai is disabled") {
@@ -2106,21 +2083,7 @@ fn report_expected_message(kind: ExpectedErrorKind, message: &str, domain: &str,
                 "[observability] {domain}.{operation} skipped expected budget-exhausted error: {message}"
             );
         }
-        ExpectedErrorKind::ModuleUnavailable => {
-            // A cached module-load failure handed back to another caller. The
-            // load failure was already reported once when the module resolved
-            // (`modules::ops::report_resolution_failure`); re-reporting it per
-            // call is the flood this kind exists to stop. Warn so the
-            // breadcrumb survives and a sustained spike still shows in logs.
-            tracing::warn!(
-                domain = domain,
-                operation = operation,
-                kind = "module_unavailable",
-                error = %message,
-                "[observability] {domain}.{operation} skipped expected module-unavailable error \
-                 (reported once at resolution): {message}"
-            );
-        }
+        ExpectedErrorKind::ModuleUnavailable => log_module_unavailable(domain, operation, message),
         ExpectedErrorKind::BackendUnavailable => {
             // Build-state condition: no backend transport is installed, so
             // the hosted backend is unreachable by construction. Nothing to
@@ -3031,31 +2994,6 @@ pub fn is_transient_message_failure(msg: &str) -> bool {
 /// builds its sentinel from this constant, and [`is_suppressed_usage_probe_backoff`]
 /// matches it — coupled by a unit test so the two cannot drift.
 pub const USAGE_PROBE_BACKOFF_PREFIX: &str = "USAGE_PROBE_BACKOFF:";
-
-/// Sentinel prefix on the error string a backend-touching call returns when
-/// the core has no [`BackendTransport`](crate::backend::transport::BackendTransport)
-/// installed. `backend::client::flatten_authed_error` and the integrations client
-/// build their message from this constant; [`is_backend_unavailable_message`]
-/// classifies it as [`ExpectedErrorKind::BackendUnavailable`].
-pub const BACKEND_UNAVAILABLE_PREFIX: &str = "BACKEND_UNAVAILABLE:";
-
-/// Sentinel prefix on the error string a backend call returns when the backend
-/// rejects the stored TinyHumans API key (`backend::client::flatten_authed_error`).
-/// [`expected_error_kind`] demotes it: the fix is a new key, not a code change.
-pub const API_KEY_REJECTED_PREFIX: &str = "API_KEY_REJECTED:";
-
-/// Whether `msg` carries the [`API_KEY_REJECTED_PREFIX`] sentinel anywhere in
-/// its chain.
-pub fn is_api_key_rejected_message(msg: &str) -> bool {
-    msg.contains(API_KEY_REJECTED_PREFIX)
-}
-
-/// Whether `msg` is the backend-unavailable sentinel (see
-/// [`BACKEND_UNAVAILABLE_PREFIX`]). Matched anywhere in the chain because
-/// callers wrap it with `anyhow` context before it reaches the reporter.
-pub fn is_backend_unavailable_message(msg: &str) -> bool {
-    msg.contains(BACKEND_UNAVAILABLE_PREFIX)
-}
 
 /// Returns true when a message is the usage-probe failure-backoff sentinel
 /// (see [`USAGE_PROBE_BACKOFF_PREFIX`]). Anchored on the exact prefix so a real
