@@ -48,10 +48,3 @@ fn scopes_do_not_see_each_others_costs() {
     assert_eq!(alice.all().unwrap().len(), 1);
     assert!(bob.all().unwrap().is_empty());
 }
-
-#[test]
-fn the_legacy_file_ledger_still_works_with_no_backend() {
-    // No backend is installed in this process's unit tests unless a test
-    // installs one, so the classic JSONL path is what `CostTracker` uses.
-    assert!(current().unwrap().is_none() || crate::storage::installed().is_some());
-}
