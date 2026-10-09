@@ -135,6 +135,11 @@ async fn run_server_inner(
 ) -> anyhow::Result<()> {
     let mut services = ServiceSet::desktop();
     services.socketio = socketio_enabled;
+    // An embedded core is the desktop shell's, which updates through the
+    // Tauri updater (see `host::desktop_builder`).
+    if embedded_core {
+        services.update_scheduler = false;
+    }
     run_server_with_services(
         host,
         port,

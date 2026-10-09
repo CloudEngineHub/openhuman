@@ -70,7 +70,12 @@ fn only_the_standalone_cli_runs_the_core_update_poller() {
     let desktop = desktop_builder(&DesktopOptions::default())
         .into_embed()
         .summary();
-    assert!(!desktop.services.expect("desktop sets services").update_scheduler);
+    assert!(
+        !desktop
+            .services
+            .expect("desktop sets services")
+            .update_scheduler
+    );
     let cli = cli_builder().into_embed().summary();
     assert!(cli.services.expect("cli sets services").update_scheduler);
 }
