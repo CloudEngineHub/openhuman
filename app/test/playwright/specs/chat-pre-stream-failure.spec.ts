@@ -149,39 +149,27 @@ test.describe('Chat — a turn that fails before streaming (#5729)', () => {
   });
 
   /**
-   * REPRODUCES #5729. Marked `test.fail()`.
+   * A terminal pre-stream failure (the provider answers 400 to the completion
+   * request) must tell the user, promptly.
    *
-   * The body asserts the behaviour the product SHOULD have: a transport-level
-   * failure of the completion request tells the user something. Today it does
-   * not, so Playwright records an expected failure — and the moment #5729 is
-   * fixed this starts passing, Playwright reports "expected to fail but
-   * passed", and whoever fixed it has to come here and drop the marker.
+   * # What was wrong with this test (openhuman#5729, #6388)
    *
-   * # Why `test.fail()` does not hide setup regressions here
+   * It used to be `test.skip`ped on the premise that no `chat_error` exists for
+   * a pre-stream failure. That premise is false: `run_chat_task` returns `Err`,
+   * the core publishes a classified `chat_error`
+   * (`web_chat/ops/start_chat.rs`), and `ChatRuntimeProvider`'s `onError`
+   * renders it as an **assistant error bubble** within ~1s. The test looked for
+   * the composer send banner (`[data-chat-send-error-code]`), which only
+   * reflects client-side send refusals and never shows for this path. So the
+   * product was right and the assertion was aimed at the wrong element.
    *
-   * `test.fail()` marks the WHOLE test expected-to-fail, so a broken auth
-   * flow, a disconnected socket, or a harness fault would be recorded as
-   * "expected" exactly like the intended missing banner. That is a real hazard
-   * — thanks to @chatgpt-codex-connector for raising it — and an earlier
-   * version of this comment asserted the run "never fails on the poll" with
-   * nothing enforcing it.
-   *
-   * The fix is structural rather than a claim: **every gate that could fail
-   * for the wrong reason now lives in the GREEN sibling below**, which uses
-   * byte-identical setup — same `openChat`, same `sendMessage`, same fault
-   * rule — and asserts that a completion request actually reached the mock
-   * (`completionRequestCount > 0`). So a boot, socket or fault-injection
-   * regression turns that test red and this pair stops agreeing. This test
-   * keeps only the one assertion that is supposed to fail.
+   * Only terminal failures are asserted here. A connection reset is retryable
+   * by design: the harness retries with backoff for a while before giving up
+   * (see the characterisation test below).
    */
-  test('a pre-stream connection reset surfaces an error instead of hanging to the watchdog', async ({
+  test('a terminal pre-stream failure surfaces an error bubble instead of hanging to the watchdog', async ({
     page,
   }) => {
-    // Scoped to THIS test. A describe-level `test.fail()` marks every test in
-    // the block, which turned the two green companions below into
-    // "expected to fail, but passed".
-    test.skip(true, 'TODO(#6388): pre-stream transport failures still reach the watchdog');
-
     await openChat(page);
     await setMockBehavior(
       'httpFaultRules',
@@ -192,9 +180,16 @@ test.describe('Chat — a turn that fails before streaming (#5729)', () => {
     );
     await sendMessage(page, 'this turn dies before it streams');
 
-    // The single assertion this test exists for. Everything that could fail
-    // for an unrelated reason is asserted by the green sibling below.
-    await expect(errorBanner(page)).toBeVisible({ timeout: 30_000 });
+    // Gate on the request having left the client, so a send refused client-side
+    // cannot pass or fail this test for the wrong reason.
+    await expect.poll(completionRequestCount, { timeout: 30_000 }).toBeGreaterThan(0);
+
+    // The classified `chat_error` renders as an assistant error bubble, well
+    // inside the 120s watchdog (`SILENCE_TIMEOUT_MS`).
+    expect(30_000).toBeLessThan(SILENCE_TIMEOUT_MS);
+    await expect(
+      page.getByTestId('agent-message').filter({ hasText: 'The AI provider rejected the request' })
+    ).toBeVisible({ timeout: 30_000 });
   });
 
   /**
