@@ -80,6 +80,10 @@ export const WHOLESALE_REEXPORT_PATTERNS = [
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)(?:::embed)?::\*/,
   },
   {
+    name: 'pub use openhuman_embed / openhuman_tinyhumans (the bare crate)',
+    regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)\s*;/,
+  },
+  {
     name: 'pub use openhuman_tinyhumans::embed (the crate, not a list)',
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_tinyhumans::embed\s*(?:as\s+\w+\s*)?;/,
   },
@@ -95,17 +99,58 @@ export const RPC_INTERNAL_REEXPORT_PATTERNS = [
 
 /** Hosts, root tests and examples must not reach the internal list through rpc. */
 export const HOST_RPC_INTERNAL_PATTERNS = [
-  {
-    name: 'openhuman_rpc::…__host / core_host',
-    regex: /\bopenhuman_rpc\s*::[^;]*\b(?:__host|core_host)\b/,
-  },
+  { name: '__host / core_host (any path or alias)', regex: /\b(?:__host|core_host)\b/ },
 ];
 
-/** Blank out Rust comments, keeping line structure. */
+/**
+ * Blank out Rust comments and string literals (contents only), keeping line
+ * structure, so a banned path quoted in a doc, log message or fixture is not
+ * mistaken for code. Handles nested block comments, escapes and raw strings.
+ */
 export function stripRustComments(text) {
-  return text
-    .replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ' '))
-    .replace(/\/\/[^\n]*/g, '');
+  let out = '';
+  let i = 0;
+  const blank = chunk => chunk.replace(/[^\n]/g, ' ');
+  while (i < text.length) {
+    const rest = text.slice(i);
+    let m;
+    if (rest.startsWith('//')) {
+      const end = text.indexOf('\n', i);
+      const stop = end === -1 ? text.length : end;
+      out += blank(text.slice(i, stop));
+      i = stop;
+    } else if (rest.startsWith('/*')) {
+      let depth = 0;
+      let j = i;
+      while (j < text.length) {
+        if (text.startsWith('/*', j)) {
+          depth++;
+          j += 2;
+        } else if (text.startsWith('*/', j)) {
+          depth--;
+          j += 2;
+          if (depth === 0) break;
+        } else j++;
+      }
+      out += blank(text.slice(i, j));
+      i = j;
+    } else if ((m = /^b?r(#*)"/.exec(rest))) {
+      const close = '"' + m[1];
+      const end = text.indexOf(close, i + m[0].length);
+      const stop = end === -1 ? text.length : end + close.length;
+      out += blank(text.slice(i, stop));
+      i = stop;
+    } else if (rest.startsWith('"') || rest.startsWith('b"')) {
+      let j = i + (rest.startsWith('b') ? 2 : 1);
+      while (j < text.length && text[j] !== '"') j += text[j] === '\\' ? 2 : 1;
+      out += blank(text.slice(i, j + 1));
+      i = j + 1;
+    } else {
+      out += text[i];
+      i++;
+    }
+  }
+  return out;
 }
 
 /** `{ file, line, pattern }` for each multi-line pattern match in one source text. */
