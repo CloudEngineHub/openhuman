@@ -32,9 +32,12 @@ on `storage-mongodb`.
 - `driver_is_shared(driver)` / `installed_is_shared()`: whether other
   processes may write the same backend (MongoDB). Boot-time recovery, such
   as the orphaned-run sweep, is skipped on a shared backend.
-- `current_scope()` / `current_scoped()`: the acting agent's scope (`local`
-  on a single-user host; an error in SaaS mode with no acting agent) and the
-  installed backend under it.
+- `scope_for_profile(profile_id)`: the scope a SaaS profile's records live
+  under (`profile:<id>`, hashed when that is not a valid scope).
+- `current_scope()` / `current_scoped()`: the tenant's scope — its profile's
+  when it serves one, else the acting agent's, else `local` on a single-user
+  host; an error in SaaS mode without a profile — and the installed backend
+  under it.
 - `block_on(future)`: runs a storage future from synchronous store code on
   one shared runtime thread.
 - `documents::Repo` and `documents::compare_and_swap`: the base the domain
