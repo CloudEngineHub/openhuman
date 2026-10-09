@@ -7,7 +7,7 @@ fn host(tmp: &tempfile::TempDir, max_open: usize, idle_secs: u64) -> ProfileHost
     ProfileHost::new(saas, CoreContext::for_test(DomainSet::full(), None))
 }
 
-fn agent(name: &str) -> ProfileId {
+fn profile(name: &str) -> ProfileId {
     ProfileId::for_user(name, crate::profiles::ProfileIdMode::Raw).unwrap()
 }
 
@@ -26,7 +26,7 @@ fn provisioning_creates_the_layout_once() {
 }
 
 #[test]
-fn only_provisioned_agents_open() {
+fn only_provisioned_profiles_open() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     let err = host.open(&agent("nobody")).unwrap_err();
@@ -34,7 +34,7 @@ fn only_provisioned_agents_open() {
 }
 
 #[test]
-fn an_open_agent_runs_under_its_own_scope() {
+fn an_open_profile_runs_under_its_own_scope() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     let (a, b) = (agent("alice"), agent("bob"));
@@ -58,7 +58,7 @@ fn an_open_agent_runs_under_its_own_scope() {
 }
 
 #[test]
-fn a_full_host_evicts_the_least_recently_used_idle_agent() {
+fn a_full_host_evicts_the_least_recently_used_idle_profile() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 2, 3600);
     let ids: Vec<_> = ["a", "b", "c"].iter().map(|n| agent(n)).collect();
@@ -74,7 +74,7 @@ fn a_full_host_evicts_the_least_recently_used_idle_agent() {
 }
 
 #[test]
-fn an_agent_in_use_is_never_evicted() {
+fn an_profile_in_use_is_never_evicted() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 1, 0);
     let (a, b) = (agent("a"), agent("b"));
@@ -90,7 +90,7 @@ fn an_agent_in_use_is_never_evicted() {
 }
 
 #[test]
-fn idle_agents_are_swept() {
+fn idle_profiles_are_swept() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 0);
     let id = agent("a");
@@ -119,7 +119,7 @@ fn deprovisioning_archives_and_closes() {
 }
 
 #[test]
-fn list_reports_provisioned_agents_only() {
+fn list_reports_provisioned_profiles_only() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     assert!(host.list().unwrap().is_empty());
@@ -139,7 +139,7 @@ fn list_reports_provisioned_agents_only() {
 }
 
 #[test]
-fn a_reprovisioned_agent_does_not_inherit_the_old_credential() {
+fn a_reprovisioned_profile_does_not_inherit_the_old_credential() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     let id = agent(&format!("returning-{}", uuid::Uuid::new_v4()));
@@ -186,7 +186,7 @@ fn recovery_of_an_empty_workspace_is_a_no_op() {
 }
 
 #[test]
-fn an_agent_in_use_is_not_archived_from_under_it() {
+fn an_profile_in_use_is_not_archived_from_under_it() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     let id = agent("alice");
@@ -216,7 +216,7 @@ fn deprovisioning_twice_in_a_second_archives_twice() {
 }
 
 #[test]
-fn opening_an_open_agent_sweeps_the_idle_ones() {
+fn opening_an_open_profile_sweeps_the_idle_ones() {
     let tmp = tempfile::tempdir().unwrap();
     // Everything is idle the moment it is released.
     let host = host(&tmp, 4, 0);
@@ -233,7 +233,7 @@ fn opening_an_open_agent_sweeps_the_idle_ones() {
 }
 
 #[test]
-fn one_unreadable_agent_does_not_hide_the_rest() {
+fn one_unreadable_profile_does_not_hide_the_rest() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     let (a, b) = (agent("alice"), agent("bob"));
@@ -246,7 +246,7 @@ fn one_unreadable_agent_does_not_hide_the_rest() {
 }
 
 #[test]
-fn a_provisioned_config_needs_no_agent_slot() {
+fn a_provisioned_config_needs_no_profile_slot() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 1, 60);
     let (a, b) = (agent("alice"), agent("bob"));

@@ -9,7 +9,7 @@ fn host(tmp: &tempfile::TempDir) -> ProfileHost {
 }
 
 #[test]
-fn provision_derives_the_agent_and_never_echoes_the_user_id() {
+fn provision_derives_the_profile_and_never_echoes_the_user_id() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp);
     let out = provision_on(&host, "alice@example.com").unwrap();
@@ -25,7 +25,7 @@ fn provision_derives_the_agent_and_never_echoes_the_user_id() {
 }
 
 #[test]
-fn status_and_deprovision_take_agent_ids_only() {
+fn status_and_deprovision_take_profile_ids_only() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp);
     assert!(status_on(&host, "alice@example.com").is_err());
@@ -42,7 +42,7 @@ fn status_and_deprovision_take_agent_ids_only() {
 }
 
 #[test]
-fn credentials_are_set_and_cleared_per_agent_and_never_echoed() {
+fn credentials_are_set_and_cleared_per_profile_and_never_echoed() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp);
     // The keyring holding credential secrets is shared by every test here.

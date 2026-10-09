@@ -38,7 +38,7 @@ async fn nothing_to_do_does_nothing() {
 }
 
 #[tokio::test]
-async fn only_agents_with_queued_memory_jobs_are_run() {
+async fn only_profiles_with_queued_memory_jobs_are_run() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 3600);
     let busy = ProfileId::for_user(
@@ -69,7 +69,7 @@ async fn only_agents_with_queued_memory_jobs_are_run() {
 }
 
 #[tokio::test]
-async fn a_tick_sweeps_idle_agents() {
+async fn a_tick_sweeps_idle_profiles() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 0);
     let id = ProfileId::for_user(

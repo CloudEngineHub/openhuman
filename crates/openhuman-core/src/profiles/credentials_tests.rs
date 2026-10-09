@@ -7,7 +7,7 @@ use crate::security::credentials::session_support::{
 
 /// Credential secrets live in the process keyring keyed by agent id, which
 /// every test in this binary shares; each test therefore uses its own users.
-fn agent(tmp: &tempfile::TempDir, user: &str) -> Config {
+fn profile(tmp: &tempfile::TempDir, user: &str) -> Config {
     let id = ProfileId::for_user(
         &format!("{user}-{}", uuid::Uuid::new_v4()),
         crate::profiles::ProfileIdMode::Raw,
@@ -19,7 +19,7 @@ fn agent(tmp: &tempfile::TempDir, user: &str) -> Config {
 }
 
 #[test]
-fn each_agent_resolves_only_its_own_credential() {
+fn each_profile_resolves_only_its_own_credential() {
     let tmp = tempfile::tempdir().unwrap();
     let alice = agent(&tmp, "alice");
     let bob = agent(&tmp, "bob");
@@ -37,7 +37,7 @@ fn each_agent_resolves_only_its_own_credential() {
 }
 
 #[test]
-fn clearing_one_agent_leaves_the_other() {
+fn clearing_one_profile_leaves_the_other() {
     let tmp = tempfile::tempdir().unwrap();
     let alice = agent(&tmp, "alice");
     let bob = agent(&tmp, "bob");
