@@ -366,7 +366,7 @@ impl ShellTool {
         // agent's sandbox mode says, and never on the host.
         if crate::core::runtime::is_saas() {
             let action_dir = self.effective_action_dir_for_context(context);
-            return match crate::user_agents::tools::sandbox_policy(
+            return match crate::profiles::tools::sandbox_policy(
                 &action_dir,
                 &self.security.workspace_dir,
             ) {

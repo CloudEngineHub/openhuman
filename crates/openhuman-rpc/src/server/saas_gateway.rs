@@ -13,13 +13,13 @@
 //!    caller learns nothing about which users exist and cannot open agents —
 //!    then the signature, then runs the request under that user's agent.
 //!
-//! The decision itself lives in `crate::core_host::user_agents::gateway`.
+//! The decision itself lives in `crate::core_host::profiles::gateway`.
 
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::core_host::core::runtime::CoreContext;
-use crate::core_host::user_agents::gateway::{
+use crate::core_host::profiles::gateway::{
     resolve_scope, GatewayScope, USER_HEADER, USER_SIG_HEADER,
 };
 use axum::extract::Request;
