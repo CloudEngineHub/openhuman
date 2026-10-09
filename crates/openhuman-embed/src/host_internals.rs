@@ -36,11 +36,11 @@ pub mod core {
     /// RPC handler and classifier (rpc).
     pub mod observability {
         pub use openhuman_core::core::observability::{
-            contains_transient_transport_phrase, expected_error_kind,
-            is_api_key_rejected_message, is_session_expired_message,
-            is_suppressed_usage_probe_backoff, is_transient_http_status_code,
-            is_transient_message_failure, report_error_or_expected, report_warning_message,
-            API_KEY_REJECTED_PREFIX, BACKEND_UNAVAILABLE_PREFIX, REPORT_ERROR_TRACING_TARGET,
+            contains_transient_transport_phrase, expected_error_kind, is_api_key_rejected_message,
+            is_session_expired_message, is_suppressed_usage_probe_backoff,
+            is_transient_http_status_code, is_transient_message_failure, report_error_or_expected,
+            report_warning_message, API_KEY_REJECTED_PREFIX, BACKEND_UNAVAILABLE_PREFIX,
+            REPORT_ERROR_TRACING_TARGET,
         };
     }
 
@@ -206,7 +206,9 @@ pub mod security {
             AuthService, APP_SESSION_PROVIDER, DEFAULT_AUTH_PROFILE_NAME,
         };
         pub mod ops {
-            pub use openhuman_core::security::credentials::ops::{list_provider_credentials, store_provider_credentials};
+            pub use openhuman_core::security::credentials::ops::{
+                list_provider_credentials, store_provider_credentials,
+            };
         }
         pub mod session_support {
             pub use openhuman_core::security::credentials::session_support::{
@@ -282,8 +284,7 @@ pub mod storage {
 pub mod user_agents {
     pub mod gateway {
         pub use openhuman_core::user_agents::gateway::{
-            resolve_scope, sign, verify, GatewayRefusal, GatewayScope, USER_HEADER,
-            USER_SIG_HEADER,
+            resolve_scope, sign, verify, GatewayRefusal, GatewayScope, USER_HEADER, USER_SIG_HEADER,
         };
     }
 }

@@ -52,20 +52,20 @@
 pub mod embed {
     // Runtime, builder and the knobs the hosts configure it with.
     pub use openhuman_embed::{
-        Access, Agent, AgentSpec, ApiKey, ConfigSource, CoreError, CoreRuntime, DomainSet,
-        Harness, HarnessBuilder, HostKind, Provider, Runtime, RuntimeBuilder, RuntimeError,
-        ServiceSet, TokenSource, Workspace,
+        Access, Agent, AgentSpec, ApiKey, ConfigSource, CoreError, CoreRuntime, DomainSet, Harness,
+        HarnessBuilder, HostKind, Provider, Runtime, RuntimeBuilder, RuntimeError, ServiceSet,
+        TokenSource, Workspace,
     };
     // Process-level facts a host reads.
     pub use openhuman_embed::{
         schema_for_rpc_method, PickListenPortError, HTTP_SERVER_COMPILED_IN, VOICE_COMPILED_IN,
     };
     // The curated facades (each is an explicit list inside embed).
+    #[cfg(feature = "modules")]
+    pub use openhuman_embed::modules;
     pub use openhuman_embed::{
         artifacts, chat_surface, config, identity, memory, process, seams, session_store,
     };
-    #[cfg(feature = "modules")]
-    pub use openhuman_embed::modules;
 }
 
 /// Core internals for `openhuman-rpc` only, forwarded from embed's
