@@ -45,7 +45,11 @@ use tinyagents_session::transcript::FileTranscriptLocator;
 use tinyagents_session::turn_state::TurnStateStore;
 
 /// Resolves the workspace the stores live in, at the moment they are needed.
-type WorkspaceResolver = dyn Fn() -> PathBuf + Send + Sync;
+type WorkspaceResolver = dyn Fn() -> Result<PathBuf, String> + Send + Sync;
+
+/// Where a refused workspace resolves: a path under a file, which nothing can
+/// create or open.
+pub const REFUSED_WORKSPACE: &str = "/dev/null/openhuman-refused-workspace";
 
 /// OpenHuman's on-disk session layout as a session store provider.
 #[derive(Clone)]
@@ -56,7 +60,7 @@ pub struct SqliteSessionStores {
 impl std::fmt::Debug for SqliteSessionStores {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SqliteSessionStores")
-            .field("workspace", &(self.workspace)())
+            .field("workspace", &(self.workspace)().ok())
             .finish()
     }
 }
@@ -68,16 +72,29 @@ impl SqliteSessionStores {
         Self::resolving(move || workspace.clone())
     }
 
-    /// Stores under whichever workspace `resolve` names when asked — for a
-    /// host whose workspace can change while it runs.
-    pub fn resolving(resolve: impl Fn() -> PathBuf + Send + Sync + 'static) -> Self {
+    /// Like [`resolving`](Self::resolving), for a resolver that can refuse
+    /// (a SaaS call with no workspace). A refused call is logged and served
+    /// from [`REFUSED_WORKSPACE`], which no store can open, so it fails
+    /// instead of reaching another tenant's files.
+    pub fn try_resolving(
+        resolve: impl Fn() -> Result<PathBuf, String> + Send + Sync + 'static,
+    ) -> Self {
         Self {
             workspace: Arc::new(resolve),
         }
     }
 
+    /// Stores under whichever workspace `resolve` names when asked — for a
+    /// host whose workspace can change while it runs.
+    pub fn resolving(resolve: impl Fn() -> PathBuf + Send + Sync + 'static) -> Self {
+        Self::try_resolving(move || Ok(resolve()))
+    }
+
     fn current(&self) -> PathBuf {
-        (self.workspace)()
+        (self.workspace)().unwrap_or_else(|error| {
+            log::error!("[rpc:session_store] workspace refused: {error}");
+            PathBuf::from(REFUSED_WORKSPACE)
+        })
     }
 }
 
@@ -143,7 +160,7 @@ pub fn install() {
 /// [`crate::host::tui`] wires). [`install`] installs the same provider
 /// process-wide instead.
 pub fn provider() -> Arc<dyn SessionStoreProvider> {
-    Arc::new(SqliteSessionStores::resolving(
+    Arc::new(SqliteSessionStores::try_resolving(
         crate::core_host::agent::session_store::context_workspace_dir,
     ))
 }

@@ -104,7 +104,7 @@ async fn resolve_workspace() -> anyhow::Result<PathBuf> {
 
 /// The journal and key-value stores a turn's events and status go to: the
 /// current agent's host session store when one is installed
-/// ([`crate::agent::session_store::current`]), else the workspace's
+/// ([`crate::agent::session_store::try_current`]), else the workspace's
 /// `tinyagents_store/`.
 async fn journal_stores() -> anyhow::Result<(Arc<dyn AppendStore>, Arc<dyn Store>)> {
     if let Some(stores) = crate::agent::session_store::try_current().map_err(|e| anyhow::anyhow!(e))? {
