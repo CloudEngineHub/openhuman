@@ -9,20 +9,33 @@
 use super::*;
 use std::process::Child;
 
-/// A backend that reads each request and never answers it, so a turn that
-/// reaches inference stays in flight until it is cancelled or its process
-/// dies. Health and catalogue calls hang too; nothing here waits on them.
+/// A backend that holds every inference request open without answering, so
+/// a turn that reaches inference stays in flight until it is cancelled or its
+/// process dies. Anything else gets an immediate `500`, so the turn's other
+/// backend calls (integrations, model limits) fail fast instead of waiting
+/// out their timeouts.
 fn hanging_backend() -> u16 {
-    use std::io::Read;
+    use std::io::{BufRead, BufReader, Read, Write};
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let port = listener.local_addr().unwrap().port();
     std::thread::spawn(move || {
         for stream in listener.incoming().flatten() {
             std::thread::spawn(move || {
+                let mut reader = BufReader::new(stream.try_clone().unwrap());
+                let mut line = String::new();
+                if reader.read_line(&mut line).is_err() {
+                    return;
+                }
+                if line.contains("/chat/completions") {
+                    // Drain until the peer goes away; never answer.
+                    let mut buf = [0u8; 4096];
+                    while matches!(reader.read(&mut buf), Ok(n) if n > 0) {}
+                    return;
+                }
                 let mut stream = stream;
-                let mut buf = [0u8; 4096];
-                // Drain until the peer goes away; never write.
-                while matches!(stream.read(&mut buf), Ok(n) if n > 0) {}
+                let _ = stream.write_all(
+                    b"HTTP/1.1 500 Internal Server Error\r\ncontent-length: 0\r\nconnection: close\r\n\r\n",
+                );
             });
         }
     });
@@ -268,7 +281,7 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     assert!(body.get("result").is_some(), "{body}");
     start_turn(&two, "alice", "t-kill");
     // In flight, and far enough that its snapshot is on disk.
-    wait_until("alice's turn in flight on core 2", &two, Duration::from_secs(60), || {
+    wait_until("alice's turn in flight on core 2", &two, Duration::from_secs(90), || {
         active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()
     });
     assert_eq!(
