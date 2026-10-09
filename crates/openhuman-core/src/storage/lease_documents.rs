@@ -172,7 +172,8 @@ impl DocumentLeases {
         {
             Ok(version) => Ok(version),
             Err(error) if error.kind() == ErrorKind::Conflict => {
-                self.set_held(&grant.key, None);
+                // The held entry stays: it names an epoch the record has
+                // moved past, so it can never make a later acquire re-entrant.
                 tracing::info!(
                     target: "openhuman::storage::lease",
                     key = %grant.key,
