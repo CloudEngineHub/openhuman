@@ -1,0 +1,281 @@
+//! [`LocalLeases`]: leases as OS file locks, for hosts without a backend.
+//!
+//! The holder keeps an exclusive `flock` (`fs2`) on `<root>/<key>/.lease`
+//! open for as long as it holds the key; the OS drops it when the process
+//! dies, so liveness needs no clock and these leases never expire
+//! (`expires_at_ms == u64::MAX`). The record itself sits beside the lock in
+//! `.lease.json`, written only by the lock holder (temp file + rename), so
+//! others can name the owner.
+//!
+//! A free lock over a record that is not released means the previous holder
+//! died holding it: the next grant is `previous_unclean`.
+//!
+//! Locks are per open file, so two instances in one process exclude each
+//! other just like two processes do. Only processes on one machine (or one
+//! filesystem with working `flock`) are covered; a cluster uses
+//! [`super::DocumentLeases`].
+
+use std::collections::HashMap;
+use std::fs::{self, File, OpenOptions};
+use std::io;
+use std::path::{Path, PathBuf};
+use std::sync::Mutex;
+
+use async_trait::async_trait;
+use fs2::FileExt;
+use tinystoragedrivers::Version;
+
+use super::lease::{local_dir, validate_key, LeaseError, LeaseGrant, LeaseRecord, LeaseStore};
+use super::StorageError;
+
+const LOCK_FILE: &str = ".lease";
+const RECORD_FILE: &str = ".lease.json";
+const RECORD_TMP: &str = ".lease.json.tmp";
+
+struct Holding {
+    /// Kept open: closing it drops the lock.
+    file: File,
+    record: LeaseRecord,
+    version: Version,
+}
+
+/// Leases kept as file locks under one root. See the module docs.
+pub struct LocalLeases {
+    root: PathBuf,
+    node: String,
+    held: Mutex<HashMap<String, Holding>>,
+}
+
+impl std::fmt::Debug for LocalLeases {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LocalLeases")
+            .field("root", &self.root)
+            .field("node", &self.node)
+            .finish_non_exhaustive()
+    }
+}
+
+fn io_error(what: &str, path: &Path, error: &io::Error) -> StorageError {
+    StorageError::backend(format!("lease {what} {}: {error}", path.display()))
+}
+
+fn is_contended(error: &io::Error) -> bool {
+    error.kind() == io::ErrorKind::WouldBlock
+        || error.raw_os_error() == fs2::lock_contended_error().raw_os_error()
+}
+
+impl LocalLeases {
+    /// Leases under `root` for `node`.
+    pub fn new(root: impl Into<PathBuf>, node: impl Into<String>) -> Self {
+        Self {
+            root: root.into(),
+            node: node.into(),
+            held: Mutex::new(HashMap::new()),
+        }
+    }
+
+    fn held(&self) -> std::sync::MutexGuard<'_, HashMap<String, Holding>> {
+        self.held
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    fn open_lock(&self, key: &str) -> Result<File, StorageError> {
+        let dir = local_dir(&self.root, key);
+        fs::create_dir_all(&dir).map_err(|error| io_error("create", &dir, &error))?;
+        let path = dir.join(LOCK_FILE);
+        OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(&path)
+            .map_err(|error| io_error("open", &path, &error))
+    }
+
+    /// The record on disk; an unreadable one reads as an unknown owner, so a
+    /// torn read can never let a caller through.
+    fn read_record(&self, key: &str) -> Option<LeaseRecord> {
+        let path = local_dir(&self.root, key).join(RECORD_FILE);
+        let bytes = fs::read(&path).ok()?;
+        Some(
+            serde_json::from_slice(&bytes).unwrap_or_else(|_| LeaseRecord {
+                owner: "unknown".to_string(),
+                endpoint: None,
+                epoch: 0,
+                expires_at_ms: u64::MAX,
+                released: false,
+            }),
+        )
+    }
+
+    fn write_record(&self, key: &str, record: &LeaseRecord) -> Result<(), StorageError> {
+        let dir = local_dir(&self.root, key);
+        let tmp = dir.join(RECORD_TMP);
+        let bytes = serde_json::to_vec(record)
+            .map_err(|error| StorageError::serialization(error.to_string()))?;
+        fs::write(&tmp, bytes).map_err(|error| io_error("write", &tmp, &error))?;
+        let path = dir.join(RECORD_FILE);
+        fs::rename(&tmp, &path).map_err(|error| io_error("rename", &path, &error))
+    }
+
+    /// Checks that `grant` is the one this instance holds and applies
+    /// `change` to it.
+    fn with_current<T>(
+        &self,
+        grant: &LeaseGrant,
+        change: impl FnOnce(&mut HashMap<String, Holding>) -> Result<T, LeaseError>,
+    ) -> Result<T, LeaseError> {
+        validate_key(&grant.key)?;
+        let mut held = self.held();
+        let current = held
+            .get(&grant.key)
+            .is_some_and(|h| h.record.epoch == grant.epoch && h.version == grant.version);
+        if !current {
+            tracing::info!(
+                target: "openhuman::storage::lease",
+                key = %grant.key,
+                node = %self.node,
+                epoch = grant.epoch,
+                "[lease] local grant lost: not the one this instance holds"
+            );
+            return Err(LeaseError::Lost);
+        }
+        change(&mut held)
+    }
+}
+
+#[async_trait]
+impl LeaseStore for LocalLeases {
+    async fn acquire(&self, key: &str, _now_ms: u64) -> Result<LeaseGrant, LeaseError> {
+        validate_key(key)?;
+        let mut held = self.held();
+        if let Some(holding) = held.get(key) {
+            return Ok(LeaseGrant {
+                key: key.to_string(),
+                epoch: holding.record.epoch,
+                version: holding.version,
+                expires_at_ms: holding.record.expires_at_ms,
+                previous_unclean: false,
+            });
+        }
+        let file = self.open_lock(key)?;
+        if let Err(error) = file.try_lock_exclusive() {
+            if !is_contended(&error) {
+                let path = local_dir(&self.root, key).join(LOCK_FILE);
+                return Err(io_error("lock", &path, &error).into());
+            }
+            let record = self.read_record(key).unwrap_or_else(|| LeaseRecord {
+                owner: "unknown".to_string(),
+                endpoint: None,
+                epoch: 0,
+                expires_at_ms: u64::MAX,
+                released: false,
+            });
+            tracing::debug!(
+                target: "openhuman::storage::lease",
+                key,
+                node = %self.node,
+                owner = %record.owner,
+                "[lease] local acquire refused: locked elsewhere"
+            );
+            return Err(LeaseError::Held(record));
+        }
+        let previous = self.read_record(key);
+        let unclean = previous.as_ref().is_some_and(|record| !record.released);
+        let epoch = previous.map_or(1, |record| record.epoch.saturating_add(1));
+        let record = LeaseRecord {
+            owner: self.node.clone(),
+            endpoint: None,
+            epoch,
+            expires_at_ms: u64::MAX,
+            released: false,
+        };
+        if let Err(error) = self.write_record(key, &record) {
+            let _ = FileExt::unlock(&file);
+            return Err(error.into());
+        }
+        tracing::debug!(
+            target: "openhuman::storage::lease",
+            key,
+            node = %self.node,
+            epoch,
+            previous_unclean = unclean,
+            "[lease] local acquired"
+        );
+        held.insert(
+            key.to_string(),
+            Holding {
+                file,
+                record,
+                version: Version::FIRST,
+            },
+        );
+        Ok(LeaseGrant {
+            key: key.to_string(),
+            epoch,
+            version: Version::FIRST,
+            expires_at_ms: u64::MAX,
+            previous_unclean: unclean,
+        })
+    }
+
+    async fn renew(&self, grant: &LeaseGrant, _now_ms: u64) -> Result<LeaseGrant, LeaseError> {
+        self.with_current(grant, |held| {
+            let holding = held.get_mut(&grant.key).ok_or(LeaseError::Lost)?;
+            holding.version = holding
+                .version
+                .next()
+                .ok_or_else(|| StorageError::backend("lease version space exhausted"))?;
+            Ok(LeaseGrant {
+                version: holding.version,
+                ..grant.clone()
+            })
+        })
+    }
+
+    async fn release(&self, grant: LeaseGrant) -> Result<(), LeaseError> {
+        self.with_current(&grant, |held| {
+            let holding = held.remove(&grant.key).ok_or(LeaseError::Lost)?;
+            let record = LeaseRecord {
+                released: true,
+                ..holding.record
+            };
+            let written = self.write_record(&grant.key, &record);
+            let _ = FileExt::unlock(&holding.file);
+            written?;
+            tracing::debug!(
+                target: "openhuman::storage::lease",
+                key = %grant.key,
+                node = %self.node,
+                epoch = grant.epoch,
+                "[lease] local released"
+            );
+            Ok(())
+        })
+    }
+
+    async fn holder(&self, key: &str) -> Result<Option<LeaseRecord>, LeaseError> {
+        validate_key(key)?;
+        if let Some(holding) = self.held().get(key) {
+            return Ok(Some(holding.record.clone()));
+        }
+        let Some(mut record) = self.read_record(key) else {
+            return Ok(None);
+        };
+        if !record.released {
+            // A free lock under an unreleased record: its holder died, so
+            // the record no longer excludes anyone.
+            let file = self.open_lock(key)?;
+            if file.try_lock_exclusive().is_ok() {
+                let _ = FileExt::unlock(&file);
+                record.expires_at_ms = 0;
+            }
+        }
+        Ok(Some(record))
+    }
+}
+
+#[cfg(test)]
+#[path = "lease_local_tests.rs"]
+mod tests;

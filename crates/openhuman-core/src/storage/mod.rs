@@ -20,6 +20,9 @@
 
 pub mod agents;
 pub mod documents;
+pub mod lease;
+mod lease_documents;
+mod lease_local;
 pub mod secrets;
 
 use std::future::Future;
@@ -220,6 +223,16 @@ where
 /// is only sound on a backend no other process can be writing to.
 pub fn driver_is_shared(driver: &str) -> bool {
     driver == "mongodb"
+}
+
+/// Whether a backend with this driver name makes a compare-and-swap
+/// (`Precondition::Version` / `Absent`) atomic across processes, which a
+/// [`lease::DocumentLeases`] needs to exclude other nodes. MongoDB and SQLite
+/// do (a database-side conditional write; SQLite's immediate transaction
+/// under the file lock); the memory driver lives in one process, and the
+/// file driver checks versions in-process only.
+pub fn driver_has_cross_process_cas(driver: &str) -> bool {
+    matches!(driver, "mongodb" | "sqlite")
 }
 
 /// Whether the installed backend may be shared with other processes; `false`

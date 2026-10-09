@@ -32,6 +32,10 @@ on `storage-mongodb`.
 - `driver_is_shared(driver)` / `installed_is_shared()`: whether other
   processes may write the same backend (MongoDB). Boot-time recovery, such
   as the orphaned-run sweep, is skipped on a shared backend.
+- `driver_has_cross_process_cas(driver)`: whether a compare-and-swap on
+  that driver is atomic across processes (MongoDB, SQLite), which a
+  clustered node's leases need. Memory and file drivers coordinate only
+  within one process.
 - `scope_for_profile(profile_id)`: the scope a SaaS profile's records live
   under (`profile:<id>`, hashed when that is not a valid scope).
 - `current_scope()` / `current_scoped()`: the tenant's scope — its profile's
@@ -44,6 +48,49 @@ on `storage-mongodb`.
   stores build on. A `Repo` holds one domain's scoped document handle,
   declares its collections and runs each call; `compare_and_swap` is the
   guarded-`UPDATE` loop.
+
+## Leases
+
+`storage::lease` gives one node exclusive, expiring ownership of a key; the
+SaaS profile host uses it so exactly one core process serves a profile.
+`LeaseStore` has four operations, each taking the caller's clock (`now_ms`)
+so the rules never read the wall clock:
+
+- `acquire(key, now_ms)` takes the key when it has no record, or its record
+  is released, expired (`now_ms >= expires_at_ms`) or already this node's;
+  otherwise `LeaseError::Held(record)` names the owner, its endpoint and
+  (`retry_after_ms`) when to retry. Epochs start at 1 and every acquisition
+  except a re-entrant one (the same store instance re-acquiring the epoch it
+  holds) writes `epoch + 1`.
+- `renew(grant, now_ms)` extends the grant by CAS on its record version; any
+  write since (a takeover, a release) makes it `LeaseError::Lost`.
+- `release(grant)` writes `released = true` under the same CAS and keeps the
+  record.
+- `holder(key)` returns the stored record, live or not (`is_live(now_ms)`).
+
+A grant's `previous_unclean` is set exactly when the acquisition replaced a
+record that was not released and that this store instance did not hold: a
+foreign holder that expired, or this node's own id left by a crashed earlier
+process. The profile host runs workspace recovery on it. Node ids must be
+unique among live processes.
+
+| Store | Where | Use |
+| --- | --- | --- |
+| `DocumentLeases` | one document per key, scope `cluster`, collection `leases`; every write carries `Precondition::Absent` or `Version` | clustered nodes on a driver with cross-process CAS |
+| `LocalLeases` | an exclusive `fs2` flock on `<root>/<key>/.lease`, record in `.lease.json` beside it; no expiry, the OS drops the lock when the process dies | hosts without a backend |
+
+Keys are 1 to 200 bytes of ASCII letters, digits and `- _ . @`, not starting
+with `.`, so they are safe as directory names and document ids. The scope
+`cluster` is shared by every node; an agent whose id is literally `cluster`
+would map to the same scope (`scope_for_agent`).
+
+Tests: `lease_tests.rs` (the acquire rule), `lease_documents_tests.rs`
+(contention, expiry, takeover, stale renew, clean release, and an
+eight-thread race on a SQLite file with `--features storage-sqlite`),
+`lease_local_tests.rs` (two instances on one root, crashed holder), and
+`lease_model_tests.rs`, a proptest state machine of random acquire, renew,
+release, clock and crash steps across 2 to 4 nodes checked against a
+reference model.
 
 ## Consumers
 
