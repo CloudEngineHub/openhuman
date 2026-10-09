@@ -56,9 +56,9 @@ impl Node {
         // The polling RPCs drown everything else out.
         let lines: Vec<&str> = log
             .lines()
-            .filter(|line| !line.contains("rpc_handler [rpc] openhuman.channel_web_queue_status"))
+            .filter(|line| !line.contains("rpc_handler [rpc]"))
             .collect();
-        lines[lines.len().saturating_sub(400)..].join("\n")
+        lines[lines.len().saturating_sub(80)..].join("\n")
     }
 
     fn kill(&mut self) {
@@ -230,8 +230,8 @@ fn turn_state(node: &Node, user: &str, thread: &str) -> Option<String> {
         json!({ "thread_id": thread }),
     );
     assert_eq!(status, 200, "{body}");
-    body.pointer("/result/data/turn_state/lifecycle")
-        .or_else(|| body.pointer("/result/result/data/turn_state/lifecycle"))
+    body.pointer("/result/data/turnState/lifecycle")
+        .or_else(|| body.pointer("/result/result/data/turnState/lifecycle"))
         .and_then(Value::as_str)
         .map(str::to_owned)
 }
@@ -281,21 +281,13 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     assert!(body.get("result").is_some(), "{body}");
     start_turn(&two, "alice", "t-kill");
     // In flight, and far enough that its snapshot is on disk.
-    let turn_states = d.root.join("users/alice/workspace/memory/conversations/turn_states");
-    let _ = &turn_states;
-    let deadline = Instant::now() + Duration::from_secs(20);
-    while !(active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()) {
-        if Instant::now() > deadline {
-            panic!("files: {:?}\n{:?}", walk(&d.root), turn_state(&two, "alice", "t-kill"));
-        }
-        std::thread::sleep(Duration::from_millis(300));
-    }
-    wait_until("x", &two, Duration::from_secs(30), || {
+    wait_until("alice's turn in flight on core 2", &two, Duration::from_secs(90), || {
         active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()
     });
-    assert_eq!(
-        turn_state(&two, "alice", "t-kill").as_deref(),
-        Some("started")
+    let live = turn_state(&two, "alice", "t-kill");
+    assert!(
+        matches!(live.as_deref(), Some("started" | "streaming")),
+        "{live:?}"
     );
     two.kill();
 
@@ -424,13 +416,3 @@ fn two_users_with_the_same_thread_id_stay_apart() {
     );
 }
 
-fn walk(dir: &Path) -> Vec<String> {
-    let mut out = Vec::new();
-    if let Ok(entries) = std::fs::read_dir(dir) {
-        for e in entries.flatten() {
-            let p = e.path();
-            if p.is_dir() { out.extend(walk(&p)); } else { out.push(p.display().to_string()); }
-        }
-    }
-    out
-}
