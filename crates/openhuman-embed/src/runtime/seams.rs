@@ -111,10 +111,11 @@ impl HostSeams {
         let Some(StorageSource::Url(url)) = self.storage.take() else {
             return Ok(());
         };
-        let backend = openhuman_core::storage::block_on(async move {
-            openhuman_core::storage::open(&url).await
-        })
-        .map_err(|error| format!("opening the storage backend: {error}"))?;
+        let backend =
+            openhuman_core::storage::block_on(
+                async move { openhuman_core::storage::open(&url).await },
+            )
+            .map_err(|error| format!("opening the storage backend: {error}"))?;
         self.storage = Some(StorageSource::Backend(backend));
         Ok(())
     }
@@ -284,8 +285,8 @@ impl Drop for InstalledSeams {
             return;
         }
         if let Some((ours, previous)) = self.storage.take() {
-            let still_ours = openhuman_core::storage::installed()
-                .is_some_and(|now| Arc::ptr_eq(&now, &ours));
+            let still_ours =
+                openhuman_core::storage::installed().is_some_and(|now| Arc::ptr_eq(&now, &ours));
             if still_ours {
                 match previous {
                     Some(previous) => {

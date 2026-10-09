@@ -110,9 +110,7 @@ fn cli_command_uses_storage(args: &[String]) -> bool {
     }
     !matches!(
         command,
-        None | Some(
-            "run" | "serve" | "help" | "-h" | "--help" | "tui" | "chat" | "sentry-test"
-        )
+        None | Some("run" | "serve" | "help" | "-h" | "--help" | "tui" | "chat" | "sentry-test")
     )
 }
 

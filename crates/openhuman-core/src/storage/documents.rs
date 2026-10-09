@@ -37,7 +37,11 @@ fn backend_addr(backend: &Arc<dyn StorageBackend>) -> usize {
 
 /// Whether `collection` was already declared on `backend` under `scope`.
 fn is_declared(backend: &Arc<dyn StorageBackend>, scope: &str, collection: &str) -> bool {
-    let key = (backend_addr(backend), scope.to_string(), collection.to_string());
+    let key = (
+        backend_addr(backend),
+        scope.to_string(),
+        collection.to_string(),
+    );
     DECLARED
         .lock()
         .unwrap_or_else(PoisonError::into_inner)
@@ -49,7 +53,11 @@ fn is_declared(backend: &Arc<dyn StorageBackend>, scope: &str, collection: &str)
 /// Records that `collection` is declared on `backend` under `scope`, and
 /// forgets entries whose backend is gone.
 fn mark_declared(backend: &Arc<dyn StorageBackend>, scope: &str, collection: &str) {
-    let key = (backend_addr(backend), scope.to_string(), collection.to_string());
+    let key = (
+        backend_addr(backend),
+        scope.to_string(),
+        collection.to_string(),
+    );
     let mut declared = DECLARED.lock().unwrap_or_else(PoisonError::into_inner);
     declared.retain(|_, weak| weak.strong_count() > 0);
     declared.insert(key, Arc::downgrade(backend));
@@ -131,9 +139,9 @@ impl Repo {
         let specs: Vec<CollectionSpec> = (self.collections)()
             .into_iter()
             .filter(|spec| {
-                origin.as_ref().is_none_or(|origin| {
-                    !is_declared(&origin.backend, &origin.scope, &spec.name)
-                })
+                origin
+                    .as_ref()
+                    .is_none_or(|origin| !is_declared(&origin.backend, &origin.scope, &spec.name))
             })
             .collect();
         let future = op(Arc::clone(&docs));

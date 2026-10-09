@@ -139,8 +139,14 @@ fn a_collection_is_declared_once_per_backend_scope_and_name() {
     mark_declared(&backend, "local", THINGS);
     assert!(is_declared(&backend, "local", THINGS));
     assert!(!is_declared(&backend, "agent-b", THINGS), "another scope");
-    assert!(!is_declared(&backend, "local", "other"), "another collection");
-    assert!(!is_declared(&self::backend(), "local", THINGS), "another backend");
+    assert!(
+        !is_declared(&backend, "local", "other"),
+        "another collection"
+    );
+    assert!(
+        !is_declared(&self::backend(), "local", THINGS),
+        "another backend"
+    );
 }
 
 #[test]
