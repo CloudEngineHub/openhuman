@@ -81,10 +81,6 @@ fn server_shim_refuses_public_bind_without_operator_token() {
                         Some("0.0.0.0"),
                         Some(0),
                         services,
-                        true,
-                        None,
-                        None,
-                        None,
                     )
                     .await
                     .expect_err("public bind must require an operator-supplied token");
