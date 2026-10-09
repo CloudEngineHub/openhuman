@@ -23,8 +23,8 @@ use tinyagents_session::transcript::import::ops::open_session_stores;
 /// With a host session store installed, the current agent's key-value store
 /// instead.
 pub fn session_todos_store(workspace_dir: &Path) -> Arc<dyn Store> {
-    if let Some(kv) = crate::agent::session_store::current_kv() {
-        return kv;
+    if let Some(stores) = crate::agent::session_store::current() {
+        return stores.kv;
     }
     Arc::new(open_session_stores(workspace_dir).kv)
 }

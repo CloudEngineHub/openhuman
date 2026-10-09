@@ -24,8 +24,8 @@ use tinyagents_session::transcript::import::ops::open_session_stores;
 /// The store thread goals live in: the current agent's host session store
 /// when one is installed, else the workspace's `tinyagents_store/kv`.
 pub(crate) fn goals_store(workspace_dir: &Path) -> Arc<dyn Store> {
-    if let Some(kv) = crate::agent::session_store::current_kv() {
-        return kv;
+    if let Some(stores) = crate::agent::session_store::current() {
+        return stores.kv;
     }
     Arc::new(open_session_stores(workspace_dir).kv)
 }

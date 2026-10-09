@@ -171,127 +171,29 @@ pub fn transcript_root(workspace_dir: &std::path::Path) -> std::path::PathBuf {
 /// todos, the turn journal): under an embedded agent's context it lands in
 /// that agent's stores.
 ///
-/// # Errors
-///
-/// In SaaS mode, when the context names no agent: the shared
-/// [`DEFAULT_AGENT`] bucket would mix every user's records, so the call is
-/// refused instead.
-///
 /// [`CoreContext`]: crate::core::runtime::CoreContext
 /// [`CoreContext::session_agent`]: crate::core::runtime::CoreContext::session_agent
-pub fn try_current() -> Result<Option<AgentStores>, String> {
-    let Some(provider) = installed() else {
-        return Ok(None);
-    };
-    let agent = crate::core::runtime::CoreContext::current()
-        .and_then(|context| context.session_agent().map(str::to_owned));
-    let agent = current_agent_from(agent, crate::core::runtime::mode::is_saas())?;
-    Ok(Some(provider.for_agent(&agent)))
-}
-
-/// [`try_current`]'s agent rule with its inputs made explicit: the acting
-/// agent, else [`DEFAULT_AGENT`] — except in SaaS mode, which has no shared
-/// bucket and refuses.
-///
-/// # Errors
-///
-/// When `saas` and there is no `agent`.
-pub fn current_agent_from(agent: Option<String>, saas: bool) -> Result<String, String> {
-    match agent {
-        Some(agent) => Ok(agent),
-        None if saas => Err(
-            "no acting agent in SaaS mode; refusing the shared default session store".to_string(),
-        ),
-        None => Ok(DEFAULT_AGENT.to_string()),
-    }
-}
-
-/// [`try_current`]'s key-value store for callers that have no error channel
-/// (goals, todos): the store itself, or a store that refuses every operation
-/// with the SaaS error, or `None` for the on-disk layout.
 #[must_use]
-pub fn current_kv() -> Option<Arc<dyn tinyagents_harness::store::Store>> {
-    match try_current() {
-        Ok(stores) => stores.map(|stores| stores.kv),
-        Err(error) => {
-            tracing::warn!("[session_store] {error}");
-            Some(Arc::new(RefusedStore(error)))
-        }
-    }
-}
-
-/// A key-value store that fails every call, standing in for the shared bucket
-/// a SaaS call with no acting agent must not reach.
-struct RefusedStore(String);
-
-impl RefusedStore {
-    fn refuse<T>(&self) -> tinyagents_harness::error::Result<T> {
-        Err(tinyagents_harness::error::TinyAgentsError::Storage(
-            self.0.clone(),
-        ))
-    }
-}
-
-#[async_trait::async_trait]
-impl tinyagents_harness::store::Store for RefusedStore {
-    async fn get(
-        &self,
-        _namespace: &str,
-        _key: &str,
-    ) -> tinyagents_harness::error::Result<Option<serde_json::Value>> {
-        self.refuse()
-    }
-    async fn put(
-        &self,
-        _namespace: &str,
-        _key: &str,
-        _value: serde_json::Value,
-    ) -> tinyagents_harness::error::Result<()> {
-        self.refuse()
-    }
-    async fn delete(&self, _namespace: &str, _key: &str) -> tinyagents_harness::error::Result<()> {
-        self.refuse()
-    }
-    async fn list(&self, _namespace: &str) -> tinyagents_harness::error::Result<Vec<String>> {
-        self.refuse()
-    }
+pub fn current() -> Option<AgentStores> {
+    let provider = installed()?;
+    let agent = crate::core::runtime::CoreContext::current()
+        .and_then(|context| context.session_agent().map(str::to_owned))
+        .unwrap_or_else(|| DEFAULT_AGENT.to_string());
+    Some(provider.for_agent(&agent))
 }
 
 /// The workspace the current [`CoreContext`](crate::core::runtime::CoreContext)
 /// is bound to, for a file-backed store that must follow it (the desktop
 /// rebinds it when a different user signs in). Before the core has booted —
 /// when no store is asked for anything — the default config's workspace.
-///
-/// # Errors
-///
-/// In SaaS mode, when the context has no workspace: the default workspace
-/// would be the operator's, shared by every user.
-pub fn context_workspace_dir() -> Result<std::path::PathBuf, String> {
-    let workspace = crate::core::runtime::CoreContext::current()
-        .and_then(|context| context.workspace_dir().ok());
-    context_workspace_from(workspace, crate::core::runtime::mode::is_saas())
-}
-
-/// [`context_workspace_dir`]'s rule with its inputs made explicit.
-///
-/// # Errors
-///
-/// When `saas` and there is no `workspace`.
-pub fn context_workspace_from(
-    workspace: Option<std::path::PathBuf>,
-    saas: bool,
-) -> Result<std::path::PathBuf, String> {
-    match workspace {
-        Some(workspace) => Ok(workspace),
-        None if saas => Err(
-            "no context workspace in SaaS mode; refusing the operator's default workspace"
-                .to_string(),
-        ),
-        None => {
-            tracing::warn!("[session_store] no booted context; using the default workspace");
-            Ok(crate::config::Config::default().workspace_dir)
-        }
-    }
+#[must_use]
+pub fn context_workspace_dir() -> std::path::PathBuf {
+    crate::core::runtime::CoreContext::current()
+        .and_then(|context| context.workspace_dir().ok())
+        .unwrap_or_else(|| {
+            log::warn!("[session_store] no booted context; using the default workspace");
+            crate::config::Config::default().workspace_dir
+        })
 }
 
 /// The agent whose stores a turn without a definition id uses. Root turns of

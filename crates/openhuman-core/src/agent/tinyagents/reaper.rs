@@ -40,16 +40,9 @@ async fn reap_unless_shared(workspace: &Path, shared: bool) -> usize {
     );
     // With a host session store the status records live in its stores: sweep
     // the ones this process's own (default-agent) work wrote there.
-    match crate::agent::session_store::try_current() {
-        Ok(Some(stores)) => {
-            let store = FileStatusStore::over(stores.kv);
-            return tinyagents_harness::observability::reap_orphaned_runs(&store).await;
-        }
-        Ok(None) => {}
-        Err(error) => {
-            log::warn!("[agent] startup run sweep skipped: {error}");
-            return 0;
-        }
+    if let Some(stores) = crate::agent::session_store::current() {
+        let store = FileStatusStore::over(stores.kv);
+        return tinyagents_harness::observability::reap_orphaned_runs(&store).await;
     }
     let store = FileStatusStore::new(open_session_stores(workspace).kv);
     tinyagents_harness::observability::reap_orphaned_runs(&store).await

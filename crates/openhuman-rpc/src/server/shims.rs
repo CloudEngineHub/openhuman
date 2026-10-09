@@ -61,21 +61,16 @@ pub async fn run_server_headless(host: Option<&str>, port: Option<u16>) -> anyho
 /// Runs a SaaS core: many users behind a trusted gateway, booted from the
 /// operator's config file and refused unless its boot guard passes.
 ///
-/// The session store is installed before boot through the same host path the
-/// other servers use ([`crate::session_store::install_for_host`]). With a
-/// storage URL (`OPENHUMAN_STORAGE_URL` / `[storage] url`) every user agent's
-/// records live in that backend under the agent's own scope; without one the
-/// on-disk store resolves the workspace of the context each call runs under, so
-/// every user agent keeps its sessions, transcripts and turn states in its own
-/// workspace. A call with no acting agent (the operator plane) is refused by
-/// the storage domains instead of reaching a shared scope.
+/// The on-disk session store is installed before boot. It resolves the
+/// workspace of the context each call runs under, so every user agent keeps
+/// its sessions, transcripts and turn states in its own workspace.
 pub async fn run_server_saas(
     host: Option<&str>,
     port: Option<u16>,
     saas_config: &std::path::Path,
 ) -> anyhow::Result<()> {
     let config = crate::core_host::core::runtime::SaasConfig::load(saas_config)?;
-    crate::session_store::install_for_host().await?;
+    crate::session_store::install();
     let runtime =
         crate::core_host::core::runtime::saas::build(config, host.map(str::to_owned), port).await?;
     super::serve::serve(&runtime, None, None).await

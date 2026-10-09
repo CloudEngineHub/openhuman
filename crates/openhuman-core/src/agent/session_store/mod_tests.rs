@@ -19,9 +19,7 @@ async fn a_scoped_provider_serves_only_its_own_task() {
 async fn work_outside_an_agent_context_uses_the_default_agent() {
     let provider: Arc<dyn SessionStoreProvider> = Arc::new(InMemorySessionStores::new());
     let key = scope(provider.clone(), async {
-        try_current()
-            .unwrap()
-            .map(|stores| stores.transcripts.destination_key())
+        current().map(|stores| stores.transcripts.destination_key())
     })
     .await;
     // No agent context in a unit test: the shared default bucket.
@@ -34,7 +32,7 @@ async fn work_outside_an_agent_context_uses_the_default_agent() {
                 .destination_key()
         )
     );
-    assert!(try_current().unwrap().is_none() || is_installed());
+    assert!(current().is_none() || is_installed());
 }
 
 #[tokio::test]
@@ -72,38 +70,4 @@ async fn without_a_store_transcripts_are_workspace_files() {
     })
     .await;
     assert_eq!(found, expected);
-}
-
-#[test]
-fn saas_refuses_the_shared_default_agent_and_single_user_keeps_it() {
-    assert_eq!(
-        current_agent_from(Some("u1".into()), true).as_deref(),
-        Ok("u1")
-    );
-    assert!(current_agent_from(None, true).is_err());
-    assert_eq!(
-        current_agent_from(None, false).as_deref(),
-        Ok(DEFAULT_AGENT)
-    );
-}
-
-#[test]
-fn saas_refuses_the_operators_default_workspace() {
-    let dir = std::path::PathBuf::from("/tmp/ws");
-    assert_eq!(
-        context_workspace_from(Some(dir.clone()), true),
-        Ok(dir.clone())
-    );
-    assert!(context_workspace_from(None, true).is_err());
-    assert!(context_workspace_from(None, false).is_ok());
-}
-
-#[tokio::test]
-async fn a_refused_kv_fails_every_operation() {
-    use tinyagents_harness::store::Store;
-    let store = RefusedStore("nope".into());
-    assert!(store.get("ns", "k").await.is_err());
-    assert!(store.put("ns", "k", serde_json::json!(1)).await.is_err());
-    assert!(store.delete("ns", "k").await.is_err());
-    assert!(store.list("ns").await.is_err());
 }
