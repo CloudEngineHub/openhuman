@@ -28,7 +28,12 @@ fn the_thread_id_is_a_reserved_channel_id() {
     assert_eq!(id, "channel:telegram/42/-100123");
     assert_eq!(
         id,
-        crate::channels::bus::derive_inbound_thread_id("telegram", Some("42"), Some("-100123"), None),
+        crate::channels::bus::derive_inbound_thread_id(
+            "telegram",
+            Some("42"),
+            Some("-100123"),
+            None
+        ),
         "the backend-relayed inbound path's derivation"
     );
     assert!(
@@ -78,7 +83,12 @@ fn ids_cannot_forge_another_chats_thread() {
         assert!(validate_id("chat_id", bad).is_err(), "{bad:?}");
     }
     assert!(validate_id("chat_id", &"9".repeat(MAX_ID_LEN + 1)).is_err());
-    for ok in ["-100123", "+15551234567", "ada@example.com", "iMessage;+;chat1"] {
+    for ok in [
+        "-100123",
+        "+15551234567",
+        "ada@example.com",
+        "iMessage;+;chat1",
+    ] {
         validate_id("chat_id", ok).unwrap_or_else(|e| panic!("{ok}: {e}"));
     }
 }
@@ -95,9 +105,15 @@ fn every_field_is_checked() {
             "sender_name",
             Box::new(|p| p.sender_name = Some("a".repeat(MAX_SENDER_NAME_CHARS + 1))),
         ),
-        ("sender_name", Box::new(|p| p.sender_name = Some("a\nb".into()))),
+        (
+            "sender_name",
+            Box::new(|p| p.sender_name = Some("a\nb".into())),
+        ),
         ("text", Box::new(|p| p.text = "   ".into())),
-        ("text", Box::new(|p| p.text = "x".repeat(MAX_TEXT_BYTES + 1))),
+        (
+            "text",
+            Box::new(|p| p.text = "x".repeat(MAX_TEXT_BYTES + 1)),
+        ),
         (
             "attachments",
             Box::new(|p| p.attachments = Some(vec![json!({"url": "https://x"})])),

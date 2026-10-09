@@ -104,7 +104,8 @@ pub(crate) async fn run_relay_turn(
                 %error,
                 "[channels::relay] could not build the turn"
             );
-            let reply = "⚠️ This chat's assistant is not available right now. Please try again later.";
+            let reply =
+                "⚠️ This chat's assistant is not available right now. Please try again later.";
             let _ = crate::channels::traits::Channel::send(
                 channel.as_ref(),
                 &crate::channels::SendMessage::new(reply, &params.chat_id),

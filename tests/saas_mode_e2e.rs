@@ -987,7 +987,9 @@ fn a_profile_holds_web_and_relayed_channel_threads() {
     assert_eq!(event["structured"]["channel"], "telegram", "{event}");
     assert_eq!(event["structured"]["chat_id"], "777", "{event}");
     assert!(
-        event["full_response"].as_str().is_some_and(|t| !t.is_empty()),
+        event["full_response"]
+            .as_str()
+            .is_some_and(|t| !t.is_empty()),
         "{event}"
     );
     assert!(event.get("agent").is_none(), "no routing stamp on the wire");
@@ -1034,7 +1036,10 @@ fn a_profile_holds_web_and_relayed_channel_threads() {
     // Bob's stream carried none of alice's events.
     std::thread::sleep(Duration::from_secs(1));
     let leaked: Vec<String> = bob_events.try_iter().collect();
-    assert!(leaked.is_empty(), "bob must see none of alice's events: {leaked:?}");
+    assert!(
+        leaked.is_empty(),
+        "bob must see none of alice's events: {leaked:?}"
+    );
 
     // No relayed turn lands in the operator workspace.
     let operator_index = d

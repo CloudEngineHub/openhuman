@@ -28,24 +28,25 @@ fn the_outbound_event_names_the_chat_and_carries_the_text() {
 
     let wire = serde_json::to_value(sink().outbound_event(&SendMessage::new("x", "-100")))
         .expect("serialize");
-    assert!(wire.get("agent").is_none(), "the routing stamp is not on the wire");
+    assert!(
+        wire.get("agent").is_none(),
+        "the routing stamp is not on the wire"
+    );
 }
 
 #[tokio::test]
 async fn send_publishes_under_the_callers_stamp_and_records_the_text() {
     let mut events = crate::web_chat::subscribe_web_channel_events();
-    let context = crate::core::runtime::CoreContext::for_test(
-        crate::core::runtime::DomainSet::full(),
-        None,
-    )
-    .derive_with(
-        crate::core::runtime::ContextOverlay::new(
-            crate::config::Config::default(),
-            crate::core::runtime::DomainSet::full(),
-            Default::default(),
-        )
-        .session_agent("u-relay-test"),
-    );
+    let context =
+        crate::core::runtime::CoreContext::for_test(crate::core::runtime::DomainSet::full(), None)
+            .derive_with(
+                crate::core::runtime::ContextOverlay::new(
+                    crate::config::Config::default(),
+                    crate::core::runtime::DomainSet::full(),
+                    Default::default(),
+                )
+                .session_agent("u-relay-test"),
+            );
     let channel = Arc::new(RelayChannel::new(
         "telegram",
         "gw-stamp",

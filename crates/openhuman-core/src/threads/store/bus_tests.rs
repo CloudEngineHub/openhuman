@@ -525,7 +525,10 @@ async fn claimed_channel_turns_are_left_to_their_caller() {
     }
 
     let threads = crate::threads::store::list_threads(temp.path().to_path_buf()).expect("threads");
-    assert!(threads.is_empty(), "a claimed turn is not mirrored: {threads:?}");
+    assert!(
+        threads.is_empty(),
+        "a claimed turn is not mirrored: {threads:?}"
+    );
 }
 
 #[test]
@@ -540,5 +543,9 @@ fn the_claim_list_is_bounded() {
     assert!(claimed.contains("telegram", "m2"));
     assert!(claimed.contains("telegram", "m4"));
     assert!(!claimed.contains("discord", "m4"), "keyed by channel too");
-    assert_eq!(claimed.keys.len(), 3, "a repeated claim is not stored twice");
+    assert_eq!(
+        claimed.keys.len(),
+        3,
+        "a repeated claim is not stored twice"
+    );
 }

@@ -1,7 +1,7 @@
+use super::super::channel::CHANNEL_OUTBOUND_EVENT;
 use super::*;
 use crate::agent::bus::{mock_agent_run_turn, AgentTurnRequest, AgentTurnResponse};
 use crate::agent::turn_origin::AgentTurnOrigin;
-use super::super::channel::CHANNEL_OUTBOUND_EVENT;
 use crate::core::runtime::{ContextOverlay, CoreContext, DomainSet};
 use std::sync::Mutex;
 
@@ -98,7 +98,9 @@ async fn a_relayed_turn_runs_as_an_external_channel_and_keeps_its_thread() {
     );
     assert!(contents.contains(&"answer 1"), "{contents:?}");
     assert!(
-        contents.last().is_some_and(|c| c.contains("second question")),
+        contents
+            .last()
+            .is_some_and(|c| c.contains("second question")),
         "{contents:?}"
     );
 
@@ -142,8 +144,12 @@ async fn invalid_or_repeated_messages_start_no_turn() {
 
         let p = params("m1", "hello");
         let thread = p.thread_id();
-        store::record_inbound(&workspace, &p, &thread).await.unwrap();
-        let outcome = channel_relay_inbound(p).await.expect("duplicate is not an error");
+        store::record_inbound(&workspace, &p, &thread)
+            .await
+            .unwrap();
+        let outcome = channel_relay_inbound(p)
+            .await
+            .expect("duplicate is not an error");
         let value = outcome.into_cli_compatible_json().unwrap();
         let text = value.to_string();
         assert!(text.contains("\"duplicate\":true"), "{text}");

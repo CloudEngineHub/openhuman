@@ -95,16 +95,13 @@ fn handle_relay_inbound(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let params: RelayInboundParams = serde_json::from_value(Value::Object(params))
             .map_err(|e| format!("invalid params: {e}"))?;
-        channel_relay_inbound(params).await?.into_cli_compatible_json()
+        channel_relay_inbound(params)
+            .await?
+            .into_cli_compatible_json()
     })
 }
 
-fn field(
-    name: &'static str,
-    ty: TypeSchema,
-    comment: &'static str,
-    required: bool,
-) -> FieldSchema {
+fn field(name: &'static str, ty: TypeSchema, comment: &'static str, required: bool) -> FieldSchema {
     FieldSchema {
         name,
         ty,

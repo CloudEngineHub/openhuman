@@ -17,7 +17,10 @@ async fn an_inbound_message_is_recorded_once() {
     let tmp = tempfile::tempdir().unwrap();
     let p = params("m1", "hello");
     let thread = p.thread_id();
-    assert_eq!(record_inbound(tmp.path(), &p, &thread).await, Ok(Recorded::New));
+    assert_eq!(
+        record_inbound(tmp.path(), &p, &thread).await,
+        Ok(Recorded::New)
+    );
     assert_eq!(
         record_inbound(tmp.path(), &p, &thread).await,
         Ok(Recorded::Duplicate),

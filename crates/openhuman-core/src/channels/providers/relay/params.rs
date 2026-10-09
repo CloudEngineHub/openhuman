@@ -73,7 +73,11 @@ impl RelayInboundParams {
         if self.text.len() > MAX_TEXT_BYTES {
             return Err(format!("text must be at most {MAX_TEXT_BYTES} bytes"));
         }
-        if self.attachments.as_ref().is_some_and(|list| !list.is_empty()) {
+        if self
+            .attachments
+            .as_ref()
+            .is_some_and(|list| !list.is_empty())
+        {
             return Err("attachments are not supported by the relay yet".to_string());
         }
         Ok(())
@@ -94,9 +98,7 @@ impl RelayInboundParams {
 
     /// The `/events` client id replies go to.
     pub fn client_id(&self) -> &str {
-        self.client_id
-            .as_deref()
-            .unwrap_or(DEFAULT_RELAY_CLIENT_ID)
+        self.client_id.as_deref().unwrap_or(DEFAULT_RELAY_CLIENT_ID)
     }
 
     /// A display title for a new thread.
