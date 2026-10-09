@@ -104,3 +104,13 @@ fn only_mongodb_is_shared_between_processes() {
         assert!(!driver_is_shared(driver), "{driver}");
     }
 }
+
+#[test]
+fn only_mongodb_and_sqlite_have_cross_process_cas() {
+    for driver in ["mongodb", "sqlite"] {
+        assert!(driver_has_cross_process_cas(driver), "{driver}");
+    }
+    for driver in ["memory", "file", "", "postgres"] {
+        assert!(!driver_has_cross_process_cas(driver), "{driver}");
+    }
+}
