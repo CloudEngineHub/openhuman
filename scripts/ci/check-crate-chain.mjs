@@ -87,7 +87,10 @@ export const WHOLESALE_REEXPORT_PATTERNS = [
 
 /** `pub use` of the internal list from rpc (it may only be `pub(crate)`). */
 export const RPC_INTERNAL_REEXPORT_PATTERNS = [
-  { name: 'pub use … __host / core_host', regex: /\bpub\s+use\b[^;]*\b(?:__host|core_host)\b/ },
+  {
+    name: 'pub use of the __host / core_host list itself',
+    regex: /\bpub\s+use\b[^;]*\b(?:__host|core_host)\b\s*(?:as\s+\w+\s*)?(?:[;,}]|::\*)/,
+  },
 ];
 
 /** Hosts, root tests and examples must not reach the internal list through rpc. */
