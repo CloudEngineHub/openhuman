@@ -34,6 +34,10 @@ import { isTauri as coreIsTauri } from './tauriCommands/common';
 
 const SESSION_TOKEN_UPDATED_EVENT = 'core-state:session-token-updated';
 
+/** Thrown when the session owner reports success but the core holds no token. */
+const CORE_NO_SESSION_TOKEN_ERROR =
+  'CORE: session owner reported success but the core holds no session token';
+
 /**
  * CSRF / session-fixation protection for `openhuman://auth` deep links (finding
  * C3). Because `openhuman://` is an OS-registered scheme, ANY web page the
@@ -341,10 +345,6 @@ const handleAuthDeepLink = async (parsed: URL, requireStateNonce = true) => {
     }
   }
 };
-
-/** Thrown when the session owner reports success but the core holds no token. */
-const CORE_NO_SESSION_TOKEN_ERROR =
-  'CORE: session owner reported success but the core holds no session token';
 
 const isDecryptionFailure = (message: string): boolean => {
   const lowered = message.toLowerCase();
