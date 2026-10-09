@@ -169,10 +169,11 @@ async fn a_clean_reopen_does_not_recover_but_a_takeover_does() {
     host.provision(&id).await.unwrap();
     let workspace = host.layout_of(&id).workspace_dir;
     let in_flight = |thread: &str| {
-        let state = tinyagents_session::turn_state::TurnState::new(
-            thread.to_string(),
-            "req".to_string(),
-            "2026-10-09T00:00:00Z".to_string(),
+        let state = tinyagents_session::turn_state::TurnState::started(
+            thread,
+            "req",
+            4,
+            "2026-10-09T00:00:00Z",
         );
         tinyagents_session::turn_state::TurnStateStore::new(workspace.clone())
             .put(&state)
@@ -195,7 +196,7 @@ async fn a_clean_reopen_does_not_recover_but_a_takeover_does() {
     drop(host.open(&id).await.unwrap());
     assert_eq!(
         lifecycle("t1"),
-        tinyagents_session::turn_state::TurnLifecycle::Running
+        tinyagents_session::turn_state::TurnLifecycle::Started
     );
 
     // A second host on the same root (a restarted process) finds the lease
