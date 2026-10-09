@@ -265,12 +265,8 @@ impl EventHandler<DomainEvent> for FlowTriggerSubscriber {
         match event {
             // The flow runs as the agent it belongs to (`super::owner`).
             DomainEvent::FlowScheduleTick { flow_id } => {
-                let owner = super::owner::flow_owner(&self.config, flow_id).await;
-                crate::storage::agents::within_agent(
-                    owner.as_deref(),
-                    self.handle_schedule_tick(flow_id),
-                )
-                .await
+                super::owner::as_owner(&self.config, flow_id, self.handle_schedule_tick(flow_id))
+                    .await
             }
             // Every scope's flows may listen for this trigger: match them in
             // each, so each run starts as its flow's owner.

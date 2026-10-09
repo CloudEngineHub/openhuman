@@ -326,9 +326,9 @@ impl EventHandler<DomainEvent> for DedupCommitSubscriber {
         } = event
         {
             // Settle the run as the agent its flow belongs to (`super::owner`).
-            let owner = super::owner::flow_owner(&self.config, flow_id).await;
-            crate::storage::agents::within_agent(
-                owner.as_deref(),
+            super::owner::as_owner(
+                &self.config,
+                flow_id,
                 self.handle_finished(flow_id, run_id, status),
             )
             .await;
