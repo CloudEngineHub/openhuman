@@ -62,11 +62,11 @@ fn a_second_process_reads_what_a_one_shot_wrote_to_the_backend() {
     // (url, whether this build carries the driver for it)
     let candidates = [
         (
-            format!("sqlite://{}", data.path().join("shared.db").display()),
+            format!("sqlite:{}", data.path().join("shared.db").display()),
             cfg!(feature = "storage-sqlite"),
         ),
         (
-            format!("file://{}", data.path().join("shared-files").display()),
+            format!("file:{}", data.path().join("shared-files").display()),
             cfg!(feature = "storage-file"),
         ),
     ];
@@ -107,6 +107,11 @@ fn a_second_process_reads_what_a_one_shot_wrote_to_the_backend() {
         // And without the URL the same fresh workspace has nothing.
         let workspace = tempfile::tempdir().unwrap();
         let classic = core(workspace.path(), None, &["cron", "list"]);
+        assert!(
+            classic.status.success(),
+            "{}",
+            String::from_utf8_lossy(&classic.stderr)
+        );
         assert!(
             !String::from_utf8_lossy(&classic.stdout).contains("storage-probe"),
             "the job lives in the backend, not in files"

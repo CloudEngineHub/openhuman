@@ -123,7 +123,14 @@ fn cli_storage_is_opened_for_one_shot_commands_only() {
     assert!(!uses(&["call", "--help"]));
     assert!(!uses(&["mcp", "-h"]));
     assert!(uses(&["agent", "chat"]));
-    assert!(!uses(&["cron", "list", "--format", "json", "--help"]));
+    // Later `--help` tokens are option values to the namespace parser.
+    assert!(uses(&["cron", "list", "--format", "json", "--help"]));
+    assert!(uses(&["cron", "add", "--name", "--help"]));
+    assert!(uses(&["mcp"]));
+    assert!(uses(&["mcp-server"]));
+    assert!(!uses(&["mcp", "--help"]));
+    assert!(!uses(&["--model", "--help", "cron", "list"]));
+    assert!(!uses(&["--model"]));
     // `help` as an option value is not a help request.
     assert!(uses(&["cron", "add", "--name", "help"]));
     assert!(uses(&["--model", "help", "cron", "list"]));

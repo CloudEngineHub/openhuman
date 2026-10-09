@@ -140,8 +140,6 @@ fn cli_command_uses_storage(args: &[String], has_cli_handler: impl Fn(&str) -> b
         return false;
     }
     let tail: Vec<&str> = rest.collect();
-    #[allow(unused)]
-    let _t: Vec<&str> = rest.collect();
     match command {
         "run" | "serve" | "tui" | "chat" | "sentry-test" => false,
         // The MCP server speaks stdio when given no function and runs agent
