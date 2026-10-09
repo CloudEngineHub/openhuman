@@ -254,7 +254,14 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     let (status, owner, _) = call(&one, "alice", "core.ping", json!({}));
     assert_eq!((status, owner.as_deref()), (409, Some("core-2")));
 
-    // Core 2 dies mid-turn, holding the lease.
+    // Core 2 dies mid-turn, holding the lease. (The credential is installed
+    // through the core that runs the turn: each node keeps its own keyring.)
+    let body = operator(
+        &two,
+        "openhuman.profiles_set_credential",
+        json!({ "profile_id": "alice", "kind": "session", "token": "alice-jwt" }),
+    );
+    assert!(body.get("result").is_some(), "{body}");
     start_turn(&two, "alice", "t-kill");
     wait_until("alice's turn in flight on core 2", &two, Duration::from_secs(60), || {
         active(&two, "alice", "t-kill")
