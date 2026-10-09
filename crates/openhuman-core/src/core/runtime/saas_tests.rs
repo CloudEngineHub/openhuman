@@ -25,7 +25,8 @@ root = "/srv/oh"
 service_token_file = "/run/secrets/gateway"
 tool_allowlist = ["host_shell"]
 rpc_allowlist_extra = ["threads.list"]
-max_agents_open = 8
+max_profiles_open = 8
+profile_ids = "hashed"
 idle_evict_secs = 60
 shared_backend_api_key = true
 custom_definitions = true
@@ -50,7 +51,8 @@ cpu_limit = 0.5
     assert_eq!(config.sandbox.memory_limit_mb, 256);
     assert_eq!(config.sandbox.cpu_limit, 0.5);
     assert_eq!(config.rpc_allowlist_extra, vec!["threads.list".to_string()]);
-    assert_eq!(config.max_agents_open, 8);
+    assert_eq!(config.max_profiles_open, 8);
+    assert_eq!(config.profile_ids, crate::profiles::ProfileIdMode::Hashed);
     assert_eq!(config.idle_evict_secs, 60);
     assert!(config.shared_backend_api_key && config.custom_definitions);
     assert!(!config.require_user_signature);
