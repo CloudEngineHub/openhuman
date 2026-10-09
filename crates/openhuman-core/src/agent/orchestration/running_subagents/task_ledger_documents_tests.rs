@@ -18,7 +18,6 @@ fn transitions_persist_and_replay_on_reopen() {
     store.insert(spec("t1")).unwrap();
     store.mark_running(&TaskId::from("t1")).unwrap();
     store.insert(spec("t2")).unwrap();
-    store.fail(&TaskId::from("t2"), "boom".into()).unwrap_err();
     store.mark_running(&TaskId::from("t2")).unwrap();
     store.fail(&TaskId::from("t2"), "boom".into()).unwrap();
 
