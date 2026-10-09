@@ -198,7 +198,8 @@ proptest! {
                 prop_assert!(!folded.starts_with(prefix), "{:?}", id);
             }
             prop_assert!(id.is_ascii());
-            prop_assert!(!id.contains([':', '\u{FF1A}', '\u{A789}', '\u{2236}']));
+            let colons = [':', '\u{FF1A}', '\u{A789}', '\u{2236}'];
+            prop_assert!(!id.contains(colons), "{:?}", id);
         }
     }
 
