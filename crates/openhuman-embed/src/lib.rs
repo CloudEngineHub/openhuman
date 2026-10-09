@@ -173,6 +173,9 @@ pub mod seams {
     pub use openhuman_core::core::all::{ControllerExtension, DomainGroup};
     pub use openhuman_core::core::server_launcher::{ServeRequest, ServerLauncher};
     pub use openhuman_core::security::SecurityPolicy;
+    pub use openhuman_core::storage::StorageBackend;
+
+    pub use crate::runtime::StorageSource;
 }
 
 /// The session store port: what a host implements to keep every agent's

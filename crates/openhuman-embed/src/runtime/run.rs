@@ -52,7 +52,11 @@ impl RuntimeBuilder {
                  each subcommand installs the policy its config describes"
             );
         }
-        let seams = std::mem::take(&mut self.seams)
+        let mut host_seams = std::mem::take(&mut self.seams);
+        host_seams
+            .open_storage_blocking()
+            .map_err(|error| anyhow::Error::new(RuntimeError::Invalid(error)))?;
+        let seams = host_seams
             .install()
             .map_err(|error| anyhow::Error::new(RuntimeError::Invalid(error)))?;
         seams.persist();
