@@ -54,7 +54,9 @@ impl Docs {
     /// The value stored for the file `path` names, or `T::default()`.
     pub(super) fn load<T: DeserializeOwned + Default>(&self, path: &Path) -> Result<T> {
         let id = id_of(path)?;
-        let stored = self.0.run(|docs| async move { docs.get(STATE, &id).await })?;
+        let stored = self
+            .0
+            .run(|docs| async move { docs.get(STATE, &id).await })?;
         match stored.and_then(|stored| stored.doc.get("value").cloned()) {
             Some(value) => Ok(serde_json::from_value(value)?),
             None => Ok(T::default()),

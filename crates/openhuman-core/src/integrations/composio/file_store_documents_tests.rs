@@ -13,8 +13,9 @@ fn path() -> PathBuf {
 
 #[test]
 fn a_missing_file_loads_the_default() {
-    let loaded: BTreeMap<String, u32> =
-        docs_in(&MemoryStorage::new(), "local").load(&path()).unwrap();
+    let loaded: BTreeMap<String, u32> = docs_in(&MemoryStorage::new(), "local")
+        .load(&path())
+        .unwrap();
     assert!(loaded.is_empty());
 }
 

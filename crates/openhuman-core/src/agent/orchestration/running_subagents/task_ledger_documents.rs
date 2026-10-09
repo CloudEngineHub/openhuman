@@ -85,7 +85,10 @@ impl DocumentTaskStore {
             history.insert(record.spec.task_id.clone(), timeline);
             latest.push(record);
         }
-        log::debug!("[running_subagents] opened document task ledger tasks={}", latest.len());
+        log::debug!(
+            "[running_subagents] opened document task ledger tasks={}",
+            latest.len()
+        );
         Ok(Self {
             inner: InMemoryTaskStore::from_records(latest),
             repo,
@@ -111,7 +114,9 @@ impl DocumentTaskStore {
         let id = task_id.as_str().to_string();
         self.repo
             .run(|docs| async move {
-                docs.put(TASKS, &id, doc, Precondition::None).await.map(|_| ())
+                docs.put(TASKS, &id, doc, Precondition::None)
+                    .await
+                    .map(|_| ())
             })
             .map_err(|error| graph_error("write task ledger", error))
     }

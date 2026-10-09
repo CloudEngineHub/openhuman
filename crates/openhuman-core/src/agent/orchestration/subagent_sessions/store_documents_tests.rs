@@ -1,6 +1,6 @@
 use super::*;
-use crate::agent::orchestration::subagent_sessions::types::SubagentSessionStore;
 use crate::agent::orchestration::subagent_sessions::types::DurableSubagentStatus;
+use crate::agent::orchestration::subagent_sessions::types::SubagentSessionStore;
 use crate::storage::{MemoryStorage, Scope, StorageBackend};
 
 fn docs_in(storage: &MemoryStorage, scope: &str) -> Docs {
@@ -34,7 +34,10 @@ fn session(id: &str) -> DurableSubagentSession {
 
 #[test]
 fn a_missing_list_loads_empty() {
-    assert!(docs_in(&MemoryStorage::new(), "local").load().unwrap().is_empty());
+    assert!(docs_in(&MemoryStorage::new(), "local")
+        .load()
+        .unwrap()
+        .is_empty());
 }
 
 #[test]
@@ -65,6 +68,9 @@ fn the_file_store_still_works_with_no_backend() {
     let store = SubagentSessionStore::new(dir.path().to_path_buf());
     assert!(store.load().unwrap().is_empty());
     store.save(&[session("a")]).unwrap();
-    assert!(dir.path().join(".openhuman/subagent_sessions.json").exists());
+    assert!(dir
+        .path()
+        .join(".openhuman/subagent_sessions.json")
+        .exists());
     assert_eq!(store.load().unwrap().len(), 1);
 }
