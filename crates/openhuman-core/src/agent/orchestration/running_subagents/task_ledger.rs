@@ -39,16 +39,47 @@ fn default_task_store_workspace() -> PathBuf {
         .unwrap_or_else(|_| PathBuf::from(".openhuman").join("workspace"))
 }
 
-/// Process-wide typed lifecycle ledger for detached sub-agents (issue #4249),
-/// one durable store per workspace.
-static TASK_STORES: OnceLock<TaskStoreRegistry<PathBuf>> = OnceLock::new();
+/// One cached ledger: a workspace, and under a storage backend the storage
+/// scope it was opened for (`None` for the workspace's JSONL file).
+type LedgerKey = (PathBuf, Option<String>);
 
-fn task_stores() -> &'static TaskStoreRegistry<PathBuf> {
+/// Process-wide typed lifecycle ledger for detached sub-agents (issue #4249),
+/// one durable store per workspace (and per storage scope when the host
+/// configured a storage backend, where it is a document collection instead of
+/// the JSONL file).
+static TASK_STORES: OnceLock<TaskStoreRegistry<LedgerKey>> = OnceLock::new();
+
+fn task_stores() -> &'static TaskStoreRegistry<LedgerKey> {
     TASK_STORES.get_or_init(|| {
-        TaskStoreRegistry::new(|workspace_dir: &PathBuf| {
+        TaskStoreRegistry::new(|(workspace_dir, scope): &LedgerKey| {
+            if scope.is_some() {
+                match super::task_ledger_documents::current() {
+                    Ok(Some(repo)) => return super::task_ledger_documents::open_or_memory(repo),
+                    Ok(None) => {}
+                    Err(error) => {
+                        log::warn!("[running_subagents] task ledger scope unavailable; using memory: {error:#}");
+                        return Arc::new(InMemoryTaskStore::new());
+                    }
+                }
+            }
             open_jsonl_task_store_or_memory(&task_store_path(workspace_dir))
         })
     })
+}
+
+/// The cache key for this call: the storage scope joins it when a backend is
+/// installed, so two agents on one workspace never share a ledger.
+fn ledger_key(workspace_dir: &Path) -> Option<LedgerKey> {
+    if crate::storage::installed().is_none() {
+        return Some((workspace_dir.to_path_buf(), None));
+    }
+    match crate::storage::current_scope() {
+        Ok(scope) => Some((workspace_dir.to_path_buf(), Some(scope.to_string()))),
+        Err(error) => {
+            log::warn!("[running_subagents] task ledger has no storage scope: {error}");
+            None
+        }
+    }
 }
 
 /// The ledger for `workspace_dir`, opening it on first use.
@@ -58,7 +89,9 @@ fn task_stores() -> &'static TaskStoreRegistry<PathBuf> {
 /// panic in an unrelated task must not turn sub-agent spawning into a second
 /// panic.
 pub(crate) fn task_store_for_workspace(workspace_dir: &Path) -> Arc<dyn TaskStore> {
-    let key = workspace_dir.to_path_buf();
+    let Some(key) = ledger_key(workspace_dir) else {
+        return Arc::new(InMemoryTaskStore::new());
+    };
     match task_stores().get_or_open(&key) {
         Ok(store) => store,
         Err(err) => {

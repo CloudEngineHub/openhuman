@@ -29,7 +29,7 @@ use tinyagents_tasks::{
     InMemoryTaskStore, OrchestrationControlOutcome, OrchestrationTaskFilter,
     OrchestrationTaskRecord, OrchestrationTaskResult, OrchestrationTaskSpec, TaskStore,
 };
-use tinystoragedrivers::{CollectionSpec, IndexSpec, Precondition, Query};
+use tinystoragedrivers::{CollectionSpec, Precondition, Query};
 
 use crate::storage::documents::Repo;
 use crate::storage::DocumentStoreExt;
@@ -38,7 +38,7 @@ const TASKS: &str = "orchestration_tasks";
 const DOMAIN: &str = "running_subagents::task_ledger";
 
 fn collections() -> Vec<CollectionSpec> {
-    vec![CollectionSpec::new(TASKS).index(IndexSpec::new("by_kind", ["kind"]))]
+    vec![CollectionSpec::new(TASKS)]
 }
 
 /// The repo for this call, when the host configured a backend.
@@ -105,7 +105,6 @@ impl DocumentTaskStore {
             timeline.clone()
         };
         let doc: Value = json!({
-            "kind": record.spec.kind,
             "record": record,
             "history": timeline,
         });
