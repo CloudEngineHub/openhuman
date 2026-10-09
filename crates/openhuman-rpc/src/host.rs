@@ -131,18 +131,26 @@ fn cli_command_uses_storage(args: &[String], has_cli_handler: impl Fn(&str) -> b
     if is_help(command) {
         return false;
     }
+    let tail: Vec<&str> = rest.collect();
+    // A `-h` / `--help` flag anywhere in the tail asks for help; the word
+    // `help` only does in the function slot (or as the command), never as an
+    // option value.
+    if tail.iter().any(|arg| matches!(*arg, "-h" | "--help")) {
+        return false;
+    }
     match command {
         "run" | "serve" | "tui" | "chat" | "sentry-test" => false,
-        "mcp" | "mcp-server" | "call" | "agent" => true,
-        namespace => {
-            let tail: Vec<&str> = rest.collect();
-            match tail.as_slice() {
-                [] => has_cli_handler(namespace),
-                [function, ..] if is_help(function) => false,
-                [_, flag, ..] if is_help(flag) => false,
-                _ => true,
-            }
-        }
+        // Built-in commands print help when given none.
+        "mcp" | "mcp-server" | "call" | "agent" => match tail.first() {
+            None => false,
+            Some(function) => !is_help(function),
+        },
+        namespace => match tail.as_slice() {
+            [] => has_cli_handler(namespace),
+            [function, ..] if is_help(function) => false,
+            [_, slot, ..] if is_help(slot) => false,
+            _ => true,
+        },
     }
 }
 

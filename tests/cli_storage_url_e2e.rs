@@ -70,6 +70,7 @@ fn a_second_process_reads_what_a_one_shot_wrote_to_the_backend() {
             cfg!(feature = "storage-file"),
         ),
     ];
+    let mut tested = 0;
     for (url, driver_built) in &candidates {
         if !driver_built {
             continue;
@@ -110,7 +111,9 @@ fn a_second_process_reads_what_a_one_shot_wrote_to_the_backend() {
             !String::from_utf8_lossy(&classic.stdout).contains("storage-probe"),
             "the job lives in the backend, not in files"
         );
-        return;
+        tested += 1;
     }
-    eprintln!("skipped: no storage driver compiled in (enable storage-sqlite or storage-file)");
+    if tested == 0 {
+        eprintln!("skipped: no storage driver compiled in (enable storage-sqlite or storage-file)");
+    }
 }

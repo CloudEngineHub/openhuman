@@ -117,6 +117,13 @@ fn cli_storage_is_opened_for_one_shot_commands_only() {
     assert!(!uses(&["cron", "help"]));
     assert!(!uses(&["cron", "list", "-h"]));
     assert!(!uses(&["cron", "list", "--help"]));
+    assert!(!uses(&["agent"]));
+    assert!(!uses(&["agent", "--help"]));
+    assert!(!uses(&["agent", "help"]));
+    assert!(!uses(&["call", "--help"]));
+    assert!(!uses(&["mcp", "-h"]));
+    assert!(uses(&["agent", "chat"]));
+    assert!(!uses(&["cron", "list", "--format", "json", "--help"]));
     // `help` as an option value is not a help request.
     assert!(uses(&["cron", "add", "--name", "help"]));
     assert!(uses(&["--model", "help", "cron", "list"]));
