@@ -114,7 +114,8 @@ impl std::fmt::Debug for DesktopOptions {
 }
 
 /// The desktop host's builder: the `desktop` preset with every background
-/// service (Socket.IO per `options`), the in-memory bearer and listener, this
+/// service except the core update poller (Socket.IO per `options`), the
+/// in-memory bearer and listener, this
 /// crate's server launcher and the `http_host.*` controllers.
 #[cfg(feature = "server")]
 pub fn desktop_builder(options: &DesktopOptions) -> RuntimeBuilder {
