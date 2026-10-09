@@ -270,17 +270,10 @@ pub async fn sweep_expired_parked_runs(config: &Config) -> usize {
 /// resumable — only `pending_approval` is). Best-effort by construction: a store
 /// error is logged and the sweep returns what it managed.
 pub async fn sweep_orphaned_running_runs_on_boot(config: &Config) -> usize {
-    match boot_sweep_plan(
-        crate::storage::installed_is_shared(),
-        crate::core::runtime::mode::is_saas(),
-    ) {
+    match boot_sweep_plan(crate::storage::installed_is_shared()) {
         BootSweepPlan::Nothing => {
             tracing::info!(target: "flows", "[flows] boot sweep: skipped, the storage backend is shared");
             0
-        }
-        BootSweepPlan::LocalOnly => {
-            tracing::info!(target: "flows", "[flows] boot sweep: agent scopes skipped, the storage backend is shared");
-            sweep_orphaned_running_runs_in_scope(config).await
         }
         BootSweepPlan::EveryScope => {
             crate::storage::agents::for_each_scope("flows boot sweep", || {
@@ -299,8 +292,6 @@ pub async fn sweep_orphaned_running_runs_on_boot(config: &Config) -> usize {
 pub(crate) enum BootSweepPlan {
     /// `local`, then every agent scope (`crate::storage::agents`).
     EveryScope,
-    /// `local` only.
-    LocalOnly,
     /// No scope.
     Nothing,
 }
@@ -309,10 +300,7 @@ pub(crate) enum BootSweepPlan {
 /// `running` row below the boot floor — `local` or an agent's — can belong to
 /// a run another replica is still driving, and sweeping it would drop that
 /// run's checkpoint, so nothing is swept there, as the agent run reaper does.
-pub(crate) fn boot_sweep_plan(shared: bool, saas: bool) -> BootSweepPlan {
-    // `saas` is kept for the call site's sake: a shared backend is skipped
-    // in either mode, since another replica can own even a `local` run.
-    let _ = saas;
+pub(crate) fn boot_sweep_plan(shared: bool) -> BootSweepPlan {
     if shared {
         BootSweepPlan::Nothing
     } else {
