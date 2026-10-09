@@ -204,7 +204,8 @@ fn wait_until(what: &str, node: &Node, timeout: Duration, mut done: impl FnMut()
     }
 }
 
-fn lifecycle(node: &Node, user: &str, thread: &str) -> String {
+/// The lifecycle of `user`'s latest turn snapshot on `thread`, if any.
+fn turn_state(node: &Node, user: &str, thread: &str) -> Option<String> {
     let (status, _, body) = call(
         node,
         user,
@@ -215,8 +216,7 @@ fn lifecycle(node: &Node, user: &str, thread: &str) -> String {
     body.pointer("/result/data/turn_state/lifecycle")
         .or_else(|| body.pointer("/result/result/data/turn_state/lifecycle"))
         .and_then(Value::as_str)
-        .unwrap_or_else(|| panic!("no turn state for {thread}: {body}"))
-        .to_string()
+        .map(str::to_owned)
 }
 
 /// The lease scenario on one storage configuration: `storage_url` shared by
@@ -263,9 +263,14 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     );
     assert!(body.get("result").is_some(), "{body}");
     start_turn(&two, "alice", "t-kill");
+    // In flight, and far enough that its snapshot is on disk.
     wait_until("alice's turn in flight on core 2", &two, Duration::from_secs(60), || {
-        active(&two, "alice", "t-kill")
+        active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()
     });
+    assert_eq!(
+        turn_state(&two, "alice", "t-kill").as_deref(),
+        Some("started")
+    );
     two.kill();
 
     // Core 1 takes alice over once the lease lapses (at once for a file
@@ -273,7 +278,12 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     wait_until("core 1 to take alice over", &one, Duration::from_secs(30), || {
         call(&one, "alice", "core.ping", json!({})).0 == 200
     });
-    assert_eq!(lifecycle(&one, "alice", "t-kill"), "interrupted");
+    assert_eq!(
+        turn_state(&one, "alice", "t-kill").as_deref(),
+        Some("interrupted"),
+        "core 1 log:\n{}",
+        one.log_tail()
+    );
 }
 
 #[test]
