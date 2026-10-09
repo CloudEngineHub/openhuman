@@ -355,7 +355,7 @@ fn user_rpc_with(
 }
 
 #[test]
-fn gateway_requests_run_under_the_named_users_agent() {
+fn gateway_requests_run_under_the_named_users_profile() {
     let d = deployment(true);
     let (server, base, client) = start(&d);
 
