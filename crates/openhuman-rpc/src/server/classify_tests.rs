@@ -117,9 +117,9 @@ fn classify_failure_does_not_page_on_a_cached_module_load_failure() {
         "store_stats: backend failed: memory is unavailable: the memory module failed to load. \
          Restart the app to retry; the reason is in the log.",
     ] {
-        assert_ne!(
+        assert_eq!(
             classify_failure(message, false),
-            FailureDisposition::Unexpected,
+            FailureDisposition::ModuleUnavailable,
             "{message}"
         );
     }
