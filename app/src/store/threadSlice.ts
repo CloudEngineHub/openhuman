@@ -722,6 +722,7 @@ export const {
   resetThreadCachesPreservingSelection,
   setWelcomeThreadId,
   truncateMessagesFrom,
+  removeMessagesById,
 } = threadSlice.actions;
 
 export default threadSlice.reducer;
