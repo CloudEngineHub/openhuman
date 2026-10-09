@@ -145,14 +145,14 @@ pub async fn renew_once(host: &ProfileHost) -> HeartbeatReport {
             }
             Err(LeaseError::Lost) => {
                 log::warn!("[profiles][lease] lease of profile={id} was lost; fencing it");
-                host.fence(&id, "lease lost").await;
+                host.fence(&id, &grant, "lease lost").await;
                 report.fenced.push(id);
             }
             Err(error) if now >= grant.expires_at_ms => {
                 log::warn!(
                     "[profiles][lease] could not renew profile={id} before it expired ({error}); fencing it"
                 );
-                host.fence(&id, "lease expired").await;
+                host.fence(&id, &grant, "lease expired").await;
                 report.fenced.push(id);
             }
             Err(error) => {
