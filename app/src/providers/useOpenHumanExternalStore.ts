@@ -564,23 +564,57 @@ export function useOpenHumanExternalStore(
   );
 
   /**
-   * Re-run the turn after `parentId` (the assistant message being reloaded,
-   * or the message immediately before the point to regenerate from), via the
-   * `threads.regenerate` RPC. Same capability-gating rule as `onEdit`:
-   * supplying `onReload` is what turns `capabilities.reload` on, which
-   * un-gates the Reload button in `AssistantActionBar` (`useAuiReloadCapability`).
+   * Regenerate an assistant reply via the `threads.regenerate` RPC. Same
+   * capability-gating rule as `onEdit`: supplying `onReload` is what turns
+   * `capabilities.reload` on, which un-gates the Reload button in
+   * `AssistantActionBar` (`useAuiReloadCapability`).
+   *
+   * assistant-ui's `MessageRuntime.reload()` calls this with `parentId` = the
+   * USER prompt that preceded the reply and `config.sourceId` = the reply
+   * itself. The core only regenerates an assistant reply id
+   * (`agent:<request_id>`) or, with no id, the thread's last turn — a user
+   * prompt's `msg_<uuid>` is rejected as "not a regenerable assistant reply".
+   * See {@link resolveRegenerateTarget} for how the reply id is resolved.
+   *
+   * The local cache is trimmed only once the core has accepted the
+   * regenerate, and a failure is reported to the user rather than rethrown —
+   * the runtime has no error channel for a reload, so a rethrow surfaced as an
+   * unhandled rejection.
    */
   const onReload = useCallback(
-    async (parentId: string | null) => {
+    async (parentId: string | null, config?: { sourceId?: string | null }) => {
       if (!threadId) {
-        throw new Error('No thread selected for reload');
+        log('reload skipped: no thread selected');
+        return;
       }
+      const sourceId = config?.sourceId ?? null;
+      const target = resolveRegenerateTarget(runtimeMessages, sourceId);
+      if (!target) {
+        log('reload refused: reply has no regenerable id thread=%s', threadId);
+        toast.add({ type: 'error', title: t('chat.regenerate.unavailable') });
+        return;
+      }
+      try {
+        await regenerateMessage({ threadId, messageId: target.messageId });
+      } catch (err) {
+        log(
+          'reload failed thread=%s error=%s',
+          threadId,
+          err instanceof Error ? err.name : typeof err
+        );
+        toast.add({ type: 'error', title: t('chat.regenerate.failed') });
+        return;
+      }
+      // The regenerate RPC returns no message list, and the socket events
+      // that follow only carry the new turn, so drop the discarded reply (and
+      // anything after it) from the cache now that the core has forked.
       if (parentId) {
         dispatch(truncateMessagesFrom({ threadId, messageId: parentId, inclusive: false }));
+      } else if (sourceId) {
+        dispatch(truncateMessagesFrom({ threadId, messageId: sourceId, inclusive: true }));
       }
-      await regenerateMessage({ threadId, messageId: parentId ?? undefined });
     },
-    [dispatch, threadId]
+    [dispatch, runtimeMessages, t, threadId]
   );
 
   /**
