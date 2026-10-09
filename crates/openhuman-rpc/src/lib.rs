@@ -60,8 +60,9 @@ pub mod embed {
 }
 
 /// Core internals for this crate's own modules, through embed's doc-hidden
-/// `__host` list. Crate-private: never re-exported on a public path.
-pub(crate) use openhuman_tinyhumans::__host as core_host;
+/// `__host` list. A private binding: child modules reach it as
+/// `crate::core_host`, and it is not part of this crate's API.
+use openhuman_tinyhumans::__host as core_host;
 
 #[cfg(feature = "http-client")]
 mod client;
