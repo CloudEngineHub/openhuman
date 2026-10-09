@@ -61,6 +61,36 @@ where
     }
 }
 
+/// What [`CoreContext::propagate`] wraps a future in: the caller's context
+/// captured now and re-entered wherever the future is polled.
+///
+/// Single-user processes carry [`CoreContext::current`] and nothing else, as
+/// before. In SaaS only the caller's own task scope is carried (an unscoped
+/// caller's future runs with no context and so fails closed), together with
+/// the memory identity, exactly as [`scoped`] does — but without requiring
+/// the future to be `Send`.
+pub(crate) fn carry<F: Future>(fut: F) -> impl Future<Output = F::Output> {
+    let saas = super::is_saas();
+    let ctx = captured();
+    let identity = if saas {
+        crate::memory::scope::current()
+    } else {
+        None
+    };
+    async move {
+        let fut = async move {
+            match ctx {
+                Some(ctx) => CoreContext::scope(ctx, fut).await,
+                None => fut.await,
+            }
+        };
+        match identity {
+            Some(identity) => crate::memory::scope::within(identity, fut).await,
+            None => fut.await,
+        }
+    }
+}
+
 /// Like `tokio::task::spawn_blocking`, but the closure runs under the caller's
 /// [`CoreContext`] and memory identity.
 pub fn spawn_blocking_scoped<F, R>(f: F) -> JoinHandle<R>
