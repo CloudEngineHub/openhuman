@@ -202,6 +202,19 @@ pub enum ExpectedErrorKind {
     /// backend-touching surface degrades to this typed error. Messages carry
     /// the [`BACKEND_UNAVAILABLE_PREFIX`] sentinel.
     BackendUnavailable,
+    /// A native module failed to load, and the failure is being handed back
+    /// again. tinybus never unloads a library, so `modules::ops` caches a load
+    /// failure for the life of the process and returns it instantly to every
+    /// later caller; only a restart can change the outcome. The failure itself
+    /// is reported **once**, at resolution time
+    /// (`modules::ops::report_resolution_failure`, tagged with the module id).
+    /// Every per-call re-report after that — composio ops, the `/rpc`
+    /// boundary, memory calls — carries no new signal, and was a few hundred
+    /// broken installs producing ~1M events (TAURI-RUST-117K / -118J / -117Y /
+    /// -113J / -113T / -113D / -113N / -113Q / -113X). Matched on the shared
+    /// [`crate::tools::status::MODULE_FAULT_MARKER`] and the module-load
+    /// wordings; see [`is_module_unavailable_message`].
+    ModuleUnavailable,
     /// Channel supervisor (`channels::runtime::supervision::spawn_supervised_listener`)
     /// caught a transient error from a channel listener and restarted it. The
     /// wrapper shape `"Channel <name> error: <inner>; restarting"` is the
@@ -2066,6 +2079,21 @@ fn report_expected_message(kind: ExpectedErrorKind, message: &str, domain: &str,
                 kind = "budget",
                 error = %message,
                 "[observability] {domain}.{operation} skipped expected budget-exhausted error: {message}"
+            );
+        }
+        ExpectedErrorKind::ModuleUnavailable => {
+            // A cached module-load failure handed back to another caller. The
+            // load failure was already reported once when the module resolved
+            // (`modules::ops::report_resolution_failure`); re-reporting it per
+            // call is the flood this kind exists to stop. Warn so the
+            // breadcrumb survives and a sustained spike still shows in logs.
+            tracing::warn!(
+                domain = domain,
+                operation = operation,
+                kind = "module_unavailable",
+                error = %message,
+                "[observability] {domain}.{operation} skipped expected module-unavailable error \
+                 (reported once at resolution): {message}"
             );
         }
         ExpectedErrorKind::BackendUnavailable => {
