@@ -19,7 +19,7 @@ pub(super) use budget_correlation::{
 };
 
 pub use channel_ops::{
-    cancel_chat, cancel_chat_scoped, channel_web_cancel, channel_web_chat, channel_web_queue_clear,
+    cancel_all_turns, cancel_chat, cancel_chat_scoped, channel_web_cancel, channel_web_chat, channel_web_queue_clear,
     channel_web_queue_remove, channel_web_queue_status,
 };
 
@@ -34,6 +34,8 @@ pub(crate) use state::in_flight;
 pub use state::parallel_in_flight_entries_for_test;
 #[cfg(test)]
 pub(crate) use state::scoped_key;
+#[cfg(test)]
+pub(crate) use state::track_parallel_turn_for_test;
 pub(super) use state::thread_sessions;
 pub use state::{cancel_should_target, in_flight_entries_for_test, invalidate_thread_sessions};
 pub(crate) use state::{event_session_id_for, key_for};

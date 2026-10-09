@@ -156,6 +156,47 @@ pub async fn invalidate_thread_sessions(thread_id: &str) {
     }
 }
 
+/// The thread ids (as the caller chose them) with a primary or parallel turn
+/// in the calling context's tables.
+pub(crate) async fn live_thread_ids() -> Vec<String> {
+    let mut threads: Vec<String> = in_flight()
+        .lock_owned()
+        .await
+        .keys()
+        .map(|key| unscope(key))
+        .collect();
+    threads.extend(
+        parallel_in_flight()
+            .lock_owned()
+            .await
+            .values()
+            .map(|entry| entry.thread_id.clone()),
+    );
+    threads.sort();
+    threads.dedup();
+    threads
+}
+
+/// Test seam: track `cancel` as a parallel turn on `thread_id` in the
+/// calling context's tables, so callers can watch a teardown reach it.
+#[cfg(test)]
+pub(crate) async fn track_parallel_turn_for_test(
+    thread_id: &str,
+    request_id: &str,
+    cancel: tokio_util::sync::CancellationToken,
+) {
+    let watched = cancel.clone();
+    let handle = tokio::spawn(async move { watched.cancelled().await });
+    parallel_in_flight().lock_owned().await.insert(
+        request_id.to_string(),
+        ParallelEntry {
+            thread_id: thread_id.to_string(),
+            handle,
+            cancel_token: cancel,
+        },
+    );
+}
+
 pub async fn in_flight_entries_for_test() -> Vec<(String, String)> {
     let guard = in_flight().lock_owned().await;
     guard
