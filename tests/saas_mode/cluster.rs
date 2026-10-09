@@ -376,23 +376,21 @@ fn two_users_with_the_same_thread_id_stay_apart() {
         active(&node, "alice", "t1") && active(&node, "bob", "t1")
     });
     let request_id = |body: &Value| {
-        body.pointer("/result/request_id")
-            .or_else(|| body.pointer("/result/result/request_id"))
+        find_key(body, "request_id")
             .and_then(Value::as_str)
             .map(str::to_owned)
+            .unwrap_or_else(|| panic!("no request_id in {body}"))
     };
     let alice_request = request_id(&alice_turn);
 
     // Bob naming alice's request on the shared thread id cancels nothing.
-    if let Some(alice_request) = &alice_request {
-        let (_, _, body) = call(
-            &node,
-            "bob",
-            "openhuman.channel_web_cancel",
-            json!({ "client_id": "c1", "thread_id": "t1", "request_id": alice_request }),
-        );
-        assert!(body.to_string().contains("\"cancelled\":false"), "{body}");
-    }
+    let (_, _, body) = call(
+        &node,
+        "bob",
+        "openhuman.channel_web_cancel",
+        json!({ "client_id": "c1", "thread_id": "t1", "request_id": alice_request }),
+    );
+    assert!(body.to_string().contains("\"cancelled\":false"), "{body}");
     assert!(active(&node, "alice", "t1") && active(&node, "bob", "t1"));
 
     // Bob's unscoped stop takes down his own turn only.
@@ -403,10 +401,8 @@ fn two_users_with_the_same_thread_id_stay_apart() {
         json!({ "client_id": "c1", "thread_id": "t1" }),
     );
     assert!(body.to_string().contains("\"cancelled\":true"), "{body}");
-    if let (Some(alice_request), Some(bob_request)) = (&alice_request, request_id(&bob_turn)) {
-        assert!(!body.to_string().contains(alice_request.as_str()), "{body}");
-        assert!(body.to_string().contains(&bob_request), "{body}");
-    }
+    assert!(!body.to_string().contains(alice_request.as_str()), "{body}");
+    assert!(body.to_string().contains(&request_id(&bob_turn)), "{body}");
     wait_until("bob's turn to stop", &node, Duration::from_secs(15), || {
         !active(&node, "bob", "t1")
     });
@@ -416,3 +412,14 @@ fn two_users_with_the_same_thread_id_stay_apart() {
     );
 }
 
+
+/// The first value under `key` anywhere in `value`.
+fn find_key<'a>(value: &'a Value, key: &str) -> Option<&'a Value> {
+    match value {
+        Value::Object(map) => map
+            .get(key)
+            .or_else(|| map.values().find_map(|v| find_key(v, key))),
+        Value::Array(items) => items.iter().find_map(|v| find_key(v, key)),
+        _ => None,
+    }
+}
