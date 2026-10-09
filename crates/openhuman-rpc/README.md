@@ -90,9 +90,8 @@ for the hosts that still call them:
  host::tui()            tinyhumans tui preset, connected + session store
                         -> embed Runtime (no server)
 
- legacy: install_cli_server() + run_core_from_args, and
-         run_server_embedded_with_ready(...) (embed desktop/cli preset,
-         not connected; the host installs the transport itself)
+ bare:   run_server / run_server_headless / run_server_saas (embed cli
+         preset, not connected; the caller installs the transport itself)
 
  servers end in: session_store::install(); RuntimeBuilder::build(); serve(..)
 ```
@@ -124,13 +123,10 @@ for the hosts that still call them:
   value through its `result` / `data` envelopes. The TUI decodes with it.
 - `post_json_rpc(url, token, body)` (`client.rs`): POSTs a body with an
   optional bearer and returns status and body verbatim.
-- `server::install_cli_server()` (`server/cli.rs`): call once before
-  `run_core_from_args` so the core CLI's `run` and `serve` start this server.
 - `server::serve(&CoreRuntime, ready_tx, shutdown)` (`server/serve.rs`):
   bind and serve an already-built runtime.
-- `server::run_server`, `run_server_headless`, `run_server_embedded`,
-  `run_server_embedded_with_ready` (`server/shims.rs`): build a runtime from
-  the embed `desktop` / `cli` preset and serve it. They do not connect the
+- `server::run_server`, `run_server_headless`, `run_server_saas`
+  (`server/shims.rs`): build a runtime and serve it: `run_server` and `run_server_headless` from the embed `cli` preset, `run_server_saas` from the SaaS config through `core::runtime::saas::build`. They do not connect the
   TinyHumans backend; `host::desktop` does.
 - `server::build_core_http_router(socketio_enabled)` (`server/http/mod.rs`):
   the router on its own; root `tests/*.rs` suites use it to make real HTTP
