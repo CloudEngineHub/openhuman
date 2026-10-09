@@ -637,6 +637,18 @@ export function useOpenHumanExternalStore(
         toast.add({ type: 'error', title: t('chat.regenerate.unavailable') });
         return;
       }
+      // Snapshot the rows this regenerate discards — the reply (and anything
+      // after it) — BEFORE the RPC. The new turn can stream in over the socket
+      // before the RPC resolves, and trimming by position afterwards would drop
+      // it too.
+      const discardFrom = parentId
+        ? messages.findIndex(m => m.id === parentId) + 1
+        : sourceId
+          ? messages.findIndex(m => m.id === sourceId)
+          : -1;
+      const discardedIds = discardFrom > 0 || (discardFrom === 0 && !parentId)
+        ? messages.slice(discardFrom).map(m => m.id)
+        : [];
       try {
         await regenerateMessage({ threadId, messageId: target.messageId });
       } catch (err) {
