@@ -59,6 +59,17 @@ fn user_value() -> impl Strategy<Value = Vec<u8>> {
     ]
 }
 
+/// [`user_value`] restricted to values that are one readable header, so the
+/// probe gets past the header checks to the bearer.
+fn readable_user_value() -> impl Strategy<Value = Vec<u8>> {
+    prop_oneof![
+        3 => prop::sample::select(vec!["bob", "mallory", "ALICE", " alice", "alice ", "alice,bob", ""])
+            .prop_map(|s| s.as_bytes().to_vec()),
+        1 => "[\t -~]{0,40}".prop_map(String::into_bytes),
+        1 => (0usize..9000).prop_map(|n| vec![b'a'; n]),
+    ]
+}
+
 fn sig_value() -> impl Strategy<Value = Vec<u8>> {
     let user = prop::sample::select(vec!["alice", "bob", "mallory"]);
     prop_oneof![
@@ -132,10 +143,10 @@ proptest! {
     #[test]
     fn unauthenticated_probes_cannot_tell_users_apart(
         auth in authorization(),
-        unknown in user_value(),
+        unknown in readable_user_value(),
         sigs in prop::collection::vec(sig_value(), 0..3),
     ) {
-        prop_assume!(readable_single(std::slice::from_ref(&unknown)).is_some());
+        prop_assert!(readable_single(std::slice::from_ref(&unknown)).is_some());
         let probe = |user: &[u8]| {
             let seen = Seen::default();
             let req = request(auth.as_deref(), &[user.to_vec()], &sigs);
