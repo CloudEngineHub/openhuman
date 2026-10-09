@@ -197,7 +197,7 @@ pub(crate) enum CallerWorkspace {
 }
 
 impl CallerWorkspace {
-    pub(crate) fn admits(&self, metadata: &SubagentMetadata) -> bool {
+    pub(crate) fn admits(&self, metadata: &super::registry::RunningSubagentMetadata) -> bool {
         match self {
             Self::All => true,
             Self::Only(dir) => metadata.workspace_dir == *dir,
