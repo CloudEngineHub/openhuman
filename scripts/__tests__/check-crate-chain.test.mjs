@@ -181,6 +181,8 @@ test('rpc may not re-export the internal list on a public path', () => {
     ['2']
   );
   assert.deepEqual(flagged('pub(crate) use openhuman_tinyhumans::__host as core_host;\n'), []);
+  // Re-exporting one item reached through the list is an item, not the list.
+  assert.deepEqual(flagged('pub use crate::core_host::core::unwrap_rpc;\n'), []);
 });
 
 test('a host reaching the internal list through openhuman_rpc is flagged', () => {
