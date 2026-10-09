@@ -56,7 +56,7 @@ impl Node {
         // The polling RPCs drown everything else out.
         let lines: Vec<&str> = log
             .lines()
-            .filter(|line| !line.contains("rpc_handler [rpc]"))
+            .filter(|line| !line.contains("rpc_handler [rpc] openhuman.channel_web_queue_status"))
             .collect();
         lines[lines.len().saturating_sub(400)..].join("\n")
     }
