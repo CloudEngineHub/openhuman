@@ -171,8 +171,17 @@ fn rpc_with(
 
 /// Start a SaaS core on deployment `d` and wait until it is healthy.
 fn start(d: &Deployment) -> (Server, String, reqwest::blocking::Client) {
+    start_with_env(d, &[])
+}
+
+/// [`start`] with extra environment for the child.
+fn start_with_env(
+    d: &Deployment,
+    env: &[(&str, &str)],
+) -> (Server, String, reqwest::blocking::Client) {
     let port = free_port();
     let child = core_command(d, &["--port", &port.to_string()])
+        .envs(env.iter().copied())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
@@ -891,5 +900,46 @@ fn a_duplicate_or_unreadable_user_header_is_refused() {
         .status()
         .as_u16();
     assert_eq!(status, 400);
+    drop(server);
+}
+
+#[test]
+fn a_configured_storage_url_that_cannot_be_opened_refuses_the_saas_boot() {
+    let d = deployment(true);
+    let output = core_command(&d, &["--port", &free_port().to_string()])
+        .env("OPENHUMAN_STORAGE_URL", "nonsense://nowhere")
+        .output()
+        .expect("run openhuman-core");
+    assert!(
+        !output.status.success(),
+        "a SaaS core must not ignore a storage url it cannot open"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(stderr.contains("storage"), "{stderr}");
+}
+
+#[test]
+fn a_saas_core_boots_on_a_storage_backend_and_users_reach_it_by_agent() {
+    let d = deployment(true);
+    let (server, base, client) = start_with_env(&d, &[("OPENHUMAN_STORAGE_URL", "memory")]);
+    let call = |user: &str, method: &str, params: Value| {
+        user_rpc_with(&client, &base, BEARER, user, None, method, params)
+    };
+    provision(&client, &base, "alice");
+    provision(&client, &base, "bob");
+
+    // The operator plane keeps working beside the backend.
+    let (status, body) = rpc(&client, &base, Some(BEARER), "core.ping");
+    assert_eq!(status, 200, "{body}");
+
+    // Each user's goal and todos read from their own agent scope of the
+    // backend (the operator has no agent, so it would be refused instead).
+    for user in ["alice", "bob"] {
+        for method in ["openhuman.threads_goal_get", "openhuman.threads_todos_get"] {
+            let (status, body) = call(user, method, json!({ "thread_id": "t1" }));
+            assert_eq!(status, 200, "{user} {method}: {body}");
+            assert!(body.get("error").is_none(), "{user} {method}: {body}");
+        }
+    }
     drop(server);
 }
