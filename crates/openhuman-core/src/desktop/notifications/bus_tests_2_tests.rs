@@ -533,18 +533,16 @@ fn the_announcement_rule_fails_closed_on_an_unknown_workspace() {
 /// scheduler's note names it even when the job is already gone.
 #[tokio::test]
 async fn a_noted_cron_completion_names_its_agent() {
-    let context = crate::core::runtime::CoreContext::for_test(
-        crate::core::runtime::DomainSet::full(),
-        None,
-    )
-    .derive_with(
-        crate::core::runtime::ContextOverlay::new(
-            crate::config::Config::default(),
-            crate::core::runtime::DomainSet::full(),
-            Default::default(),
-        )
-        .session_agent("notif-owner-agent"),
-    );
+    let context =
+        crate::core::runtime::CoreContext::for_test(crate::core::runtime::DomainSet::full(), None)
+            .derive_with(
+                crate::core::runtime::ContextOverlay::new(
+                    crate::config::Config::default(),
+                    crate::core::runtime::DomainSet::full(),
+                    Default::default(),
+                )
+                .session_agent("notif-owner-agent"),
+            );
     crate::core::runtime::CoreContext::scope(context, async {
         crate::cron::completion_owner::note("notif-owner-job");
     })

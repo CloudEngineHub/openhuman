@@ -79,7 +79,9 @@ async fn a_connection_event_is_handled_per_scope() {
         .await;
     // A task-source toolkit: the local scope loads its configuration and
     // fires (or skips) its sources.
-    TaskSourcesConnectionSubscriber.handle(&event("github")).await;
+    TaskSourcesConnectionSubscriber
+        .handle(&event("github"))
+        .await;
     // An event of another kind is ignored.
     TaskSourcesConnectionSubscriber
         .handle(&DomainEvent::ComposioConnectionDeleted {
