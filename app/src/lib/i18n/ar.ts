@@ -1199,7 +1199,15 @@ const messages: TranslationMap = {
   'mcp.tab.aria.openServerPage': 'فتح صفحة {name}',
   'mcp.installed.emptyAddInJson': 'أضِف واحدًا في mcp.json',
   'mcp.registry.intro':
-    'دليل لخوادم MCP. فتح خادم ينقلك إلى صفحته الخاصة حيث توجد تعليمات التثبيت؛ أضفه من تبويب mcp.json.',
+    'دليل لخوادم MCP. تُضاف الخوادم المستضافة التي لا تحتاج إلى إعداد بنقرة واحدة؛ أما غيرها فافتح صفحته لقراءة تعليمات التثبيت ثم أضفه من تبويب mcp.json.',
+  'mcp.registry.action.add': 'إضافة',
+  'mcp.registry.action.added': 'تمت الإضافة',
+  'mcp.registry.action.adding': 'جارٍ الإضافة…',
+  'mcp.registry.aria.add': 'إضافة {name}',
+  'mcp.registry.needsSetup':
+    'يحتاج هذا الخادم إلى إعداد قبل إضافته. افتح صفحته لقراءة تعليمات التثبيت.',
+  'mcp.registry.addFailed': 'تعذّرت إضافة هذا الخادم.',
+  'mcp.registry.connectFailed': 'تمت الإضافة، لكن الخادم لم يتصل.',
   'mcp.json.loadFailedTitle': 'تعذّر قراءة mcp.json',
   'mcp.json.loadFailedBody':
     'لم يستجب النواة، لذا لا يُعرض المستند. محرر فارغ قد يدفع إلى حفظ يمسح خوادمك.',
@@ -1733,6 +1741,10 @@ const messages: TranslationMap = {
   'about.update.status.error': 'فشل التحقق من التحديثات',
   'about.update.status.default': 'التحقق من التحديثات',
   'welcome.continueLocallyExperimental': 'المتابعة محليًا (تجريبي)',
+  'auth.profileSwitch.title': 'هل تريد تسجيل الدخول بملف شخصي منفصل؟',
+  'auth.profileSwitch.body':
+    'سيؤدي تسجيل الدخول السحابي إلى نقل OpenHuman إلى ملف حساب منفصل. ستظل محادثاتك وذاكرتك وإعدادات المزوّد المحلية على هذا الجهاز في users/{profileId}. للعودة إليها، سجّل الخروج واختر الجلسة المحلية من شاشة الترحيب.',
+  'auth.profileSwitch.continue': 'متابعة تسجيل الدخول',
   'welcome.localSessionStarting': 'بدء الجلسة المحلية...',
   'welcome.coreConfigUnreadable':
     'تعذّر على بيئة التشغيل قراءة ملف الإعدادات الخاص بها. قد يكون الملف config.toml مملوكًا لحساب مستخدم آخر، أو غير متاح لعملية التشغيل لسبب آخر. أعد تشغيل بيئة التشغيل، وإن لم يُجدِ ذلك فأصلح ملكية مجلد العمل أو أعد إنشاء وحدة التخزين الخاصة به.',
