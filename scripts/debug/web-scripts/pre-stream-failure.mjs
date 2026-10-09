@@ -8,7 +8,7 @@ export default async function preStreamFailure({ page, mock, screenshot, log }) 
     const s = window.__OPENHUMAN_STORE__?.getState?.().socket?.byUser ?? {};
     return Object.values(s).some((e) => e?.status === "connected");
   }, null, { timeout: 30_000 });
-  mock.set("httpFaultRules", [{ contains: "/chat/completions", mode: "status", status: 400 }]);
+  mock.set("httpFaultRules", [{ contains: "/chat/completions", mode: (process.env.FAULT_MODE || "status"), status: 400 }]);
   const composer = page.getByRole("textbox", { name: "Message input" });
   await composer.click();
   await composer.pressSequentially("this turn dies before it streams");
