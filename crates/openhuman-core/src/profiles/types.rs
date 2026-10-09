@@ -1,4 +1,4 @@
-//! Serde types for user agents: one agent per SaaS user.
+//! Serde types for profiles: one profile per SaaS user.
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -6,22 +6,69 @@ use sha2::{Digest, Sha256};
 /// Longest gateway user id accepted, in bytes.
 pub const MAX_USER_ID_LEN: usize = 256;
 
-/// The agent that serves one SaaS user.
+/// Longest raw profile id, in bytes (the agent-id charset's limit).
+pub const MAX_RAW_ID_LEN: usize = 64;
+
+/// Raw ids a user can never take: the desktop's local profile, the operator
+/// plane, and the hashed namespace.
+pub const RESERVED_IDS: &[&str] = &["local", "operator"];
+
+/// How a gateway user id becomes a [`ProfileId`] (`[saas] profile_ids`).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProfileIdMode {
+    /// A user id that already fits the profile charset is used as is (so the
+    /// desktop's backend ids pass unchanged); anything else is hashed.
+    #[default]
+    Raw,
+    /// Every user id is hashed, so no user identifier reaches paths, logs or
+    /// memory namespaces.
+    Hashed,
+}
+
+/// The profile that serves one SaaS user: the tenant.
 ///
-/// Derived from the gateway's user id by hashing, never stored alongside it:
-/// the id is stable for a user, fits the agent-id charset
-/// (`[a-z0-9_-]{1,64}`), and puts no user identifier into paths, logs or
-/// memory namespaces.
+/// Either the user id itself (raw mode, when it fits
+/// `^[a-z0-9][a-z0-9_-]{0,63}$` and is not reserved) or `h-` followed by 32
+/// hex characters of its SHA-256. Both forms fit the agent-id charset and
+/// can never contain a path separator.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct ProfileId(String);
 
-const PREFIX: &str = "u-";
+const HASHED_PREFIX: &str = "h-";
 const HASH_HEX_LEN: usize = 32;
 
+/// Whether `raw` fits the raw charset `^[a-z0-9][a-z0-9_-]{0,63}$`.
+fn fits_raw_charset(raw: &str) -> bool {
+    let bytes = raw.as_bytes();
+    !bytes.is_empty()
+        && bytes.len() <= MAX_RAW_ID_LEN
+        && (bytes[0].is_ascii_lowercase() || bytes[0].is_ascii_digit())
+        && bytes
+            .iter()
+            .all(|&b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || b == b'_')
+}
+
+/// Whether `raw` is a well-formed hashed id.
+fn is_hashed_form(raw: &str) -> bool {
+    raw.strip_prefix(HASHED_PREFIX).is_some_and(|hash| {
+        hash.len() == HASH_HEX_LEN
+            && hash
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    })
+}
+
+/// Whether `raw` is usable as a raw id: the charset, not reserved, and not in
+/// the hashed namespace.
+fn is_raw_form(raw: &str) -> bool {
+    fits_raw_charset(raw) && !RESERVED_IDS.contains(&raw) && !raw.starts_with(HASHED_PREFIX)
+}
+
 impl ProfileId {
-    /// The agent for gateway user `user_id`.
-    pub fn for_user(user_id: &str) -> Result<Self, String> {
+    /// The profile for gateway user `user_id` under `mode`.
+    pub fn for_user(user_id: &str, mode: ProfileIdMode) -> Result<Self, String> {
         if user_id.is_empty() {
             return Err("user id is empty".to_string());
         }
@@ -31,24 +78,26 @@ impl ProfileId {
         if user_id.chars().any(char::is_control) {
             return Err("user id contains control characters".to_string());
         }
+        if mode == ProfileIdMode::Raw && is_raw_form(user_id) {
+            return Ok(Self(user_id.to_string()));
+        }
         let digest = Sha256::digest(user_id.as_bytes());
         let hex = hex::encode(digest);
-        Ok(Self(format!("{PREFIX}{}", &hex[..HASH_HEX_LEN])))
+        Ok(Self(format!("{HASHED_PREFIX}{}", &hex[..HASH_HEX_LEN])))
     }
 
-    /// Parse an agent id as [`Self::for_user`] produces it.
+    /// Parse a profile id as [`Self::for_user`] produces it, in either mode.
     pub fn parse(raw: &str) -> Result<Self, String> {
-        let hash = raw
-            .strip_prefix(PREFIX)
-            .ok_or_else(|| format!("`{raw}` is not a user agent id"))?;
-        if hash.len() != HASH_HEX_LEN
-            || !hash
-                .bytes()
-                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
-        {
-            return Err(format!("`{raw}` is not a user agent id"));
+        if is_hashed_form(raw) || is_raw_form(raw) {
+            Ok(Self(raw.to_string()))
+        } else {
+            Err(format!("`{raw}` is not a profile id"))
         }
-        Ok(Self(raw.to_string()))
+    }
+
+    /// Whether this id is the hashed form (`h-<hex>`).
+    pub fn is_hashed(&self) -> bool {
+        self.0.starts_with(HASHED_PREFIX)
     }
 
     pub fn as_str(&self) -> &str {
@@ -76,8 +125,8 @@ impl From<ProfileId> for String {
     }
 }
 
-/// Written beside a provisioned agent's state, so the operator plane can list
-/// agents without opening them.
+/// Written beside a provisioned profile's state (`profile.toml`), so the operator
+/// plane can list profiles without opening them.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProfileMeta {
     pub profile_id: ProfileId,
@@ -94,7 +143,7 @@ pub const LAYOUT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProvisionResult {
     pub profile_id: ProfileId,
-    /// `false` when the agent already existed.
+    /// `false` when the profile already existed.
     pub created: bool,
 }
 
@@ -102,11 +151,11 @@ pub struct ProvisionResult {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DeprovisionResult {
     pub profile_id: ProfileId,
-    /// `false` when there was no such agent.
+    /// `false` when there was no such profile.
     pub removed: bool,
 }
 
-/// One provisioned agent, as the operator plane sees it.
+/// One provisioned profile, as the operator plane sees it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProfileSummary {
     pub profile_id: ProfileId,
