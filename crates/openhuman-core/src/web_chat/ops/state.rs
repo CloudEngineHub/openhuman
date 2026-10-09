@@ -170,7 +170,7 @@ pub(crate) async fn live_thread_ids() -> Vec<String> {
             .lock_owned()
             .await
             .values()
-            .map(|entry| entry.thread_id.clone()),
+            .map(|entry| unscope(&entry.thread_id)),
     );
     threads.sort();
     threads.dedup();
@@ -188,9 +188,9 @@ pub(crate) async fn track_parallel_turn_for_test(
     let watched = cancel.clone();
     let handle = crate::core::runtime::spawn_scoped(async move { watched.cancelled().await });
     parallel_in_flight().lock_owned().await.insert(
-        request_id.to_string(),
+        key_for(request_id),
         ParallelEntry {
-            thread_id: thread_id.to_string(),
+            thread_id: key_for(thread_id),
             handle,
             cancel_token: cancel,
         },
