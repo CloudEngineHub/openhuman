@@ -333,3 +333,7 @@ pub mod web_chat {
         ChatRequestMetadata, GuardrailPayload, StartChatError, WebChannelEvent,
     };
 }
+
+#[cfg(test)]
+#[path = "host_internals_tests.rs"]
+mod tests;
