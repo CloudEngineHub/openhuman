@@ -501,6 +501,14 @@ fn build_registered_controllers() -> Vec<GroupedController> {
         DomainGroup::Channels,
         crate::channels::controllers::all_channels_registered_controllers(),
     );
+    // Messages a gateway relays in from a hosted chat platform
+    // (`channel.relay_inbound`), run on the caller's own channel threads.
+    #[cfg(feature = "channels")]
+    push(
+        &mut controllers,
+        DomainGroup::Channels,
+        crate::channels::providers::relay::all_relay_registered_controllers(),
+    );
     // Persistent configuration management
     push(
         &mut controllers,
