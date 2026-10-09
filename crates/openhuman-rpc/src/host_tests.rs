@@ -127,6 +127,9 @@ fn cli_storage_is_opened_for_one_shot_commands_only() {
     assert!(uses(&["cron", "list", "--format", "json", "--help"]));
     assert!(uses(&["cron", "add", "--name", "--help"]));
     assert!(uses(&["mcp"]));
+    assert!(!uses(&["mcp", "--verbose", "--help"]));
+    assert!(!uses(&["agent", "foo", "help"]));
+    assert!(!uses(&["call", "foo", "help"]));
     assert!(uses(&["mcp-server"]));
     assert!(!uses(&["mcp", "--help"]));
     assert!(!uses(&["--model", "--help", "cron", "list"]));

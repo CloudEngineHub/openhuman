@@ -144,14 +144,12 @@ fn cli_command_uses_storage(args: &[String], has_cli_handler: impl Fn(&str) -> b
         "run" | "serve" | "tui" | "chat" | "sentry-test" => false,
         // The MCP server speaks stdio when given no function and runs agent
         // sessions, so it needs the backend.
-        "mcp" | "mcp-server" => !tail.first().is_some_and(|f| is_help(f)),
+        "mcp" | "mcp-server" => !tail.iter().any(|a| matches!(*a, "-h" | "--help")),
         // `call` and `agent` print help when given none, or on a help token
         // or flag anywhere in their own tails.
         "call" | "agent" => match tail.first() {
             None => false,
-            Some(function) => {
-                !is_help(function) && !tail.iter().any(|a| matches!(*a, "-h" | "--help"))
-            }
+            Some(_) => !tail.iter().any(|a| is_help(a)),
         },
         // A namespace reads help only in the function slot and the slot
         // after it; later `--help` tokens are option values to its parser.
