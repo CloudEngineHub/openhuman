@@ -641,14 +641,14 @@ export function useOpenHumanExternalStore(
       // after it) — BEFORE the RPC. The new turn can stream in over the socket
       // before the RPC resolves, and trimming by position afterwards would drop
       // it too.
-      const discardFrom = parentId
-        ? messages.findIndex(m => m.id === parentId) + 1
-        : sourceId
-          ? messages.findIndex(m => m.id === sourceId)
-          : -1;
-      const discardedIds = discardFrom > 0 || (discardFrom === 0 && !parentId)
-        ? messages.slice(discardFrom).map(m => m.id)
-        : [];
+      let discardFrom = -1;
+      if (parentId) {
+        const parentIndex = messages.findIndex(m => m.id === parentId);
+        if (parentIndex >= 0) discardFrom = parentIndex + 1;
+      } else if (sourceId) {
+        discardFrom = messages.findIndex(m => m.id === sourceId);
+      }
+      const discardedIds = discardFrom >= 0 ? messages.slice(discardFrom).map(m => m.id) : [];
       try {
         await regenerateMessage({ threadId, messageId: target.messageId });
       } catch (err) {
