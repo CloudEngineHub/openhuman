@@ -123,7 +123,8 @@ async fn keys_are_independent() {
 
 /// Real threads, each its own runtime and node, race for one key on one
 /// backend opened by URL: exactly one wins and the rest see it.
-async fn race_on(url: String, contenders: usize) {
+#[cfg(feature = "storage-sqlite")]
+fn race_on(url: String, contenders: usize) {
     let barrier = std::sync::Arc::new(std::sync::Barrier::new(contenders));
     let handles: Vec<_> = (0..contenders)
         .map(|i| {
@@ -159,11 +160,11 @@ async fn race_on(url: String, contenders: usize) {
 }
 
 #[cfg(feature = "storage-sqlite")]
-#[tokio::test]
-async fn sqlite_threads_racing_for_a_key_have_one_winner() {
+#[test]
+fn sqlite_threads_racing_for_a_key_have_one_winner() {
     for round in 0..5 {
         let dir = tempfile::tempdir().unwrap();
         let url = format!("sqlite:{}", dir.path().join(format!("leases-{round}.db")).display());
-        race_on(url, 8).await;
+        race_on(url, 8);
     }
 }
