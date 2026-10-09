@@ -22,6 +22,7 @@ import {
 import {
   clearCoreRpcTokenCache,
   clearCoreRpcUrlCache,
+  probeCoreRealtime,
   testCoreRpcConnection,
 } from '../../services/coreRpcClient';
 import { type CoreMode, resetCoreMode, setCoreMode } from '../../store/coreModeSlice';
@@ -199,6 +200,12 @@ function ModePicker({ onConfirm }: PickerProps) {
       } catch {
         // Non-JSON body is unusual but doesn't disprove reachability.
       }
+      const realtime = await probeCoreRealtime(validated.url);
+      if (realtime === 'disabled') {
+        log('[boot-check] picker — RPC ok but realtime (Socket.IO) is disabled on the core');
+        setTestStatus({ kind: 'socketDisabled' });
+        return;
+      }
       log('[boot-check] picker — test succeeded');
       setTestStatus({ kind: 'ok' });
     } catch (err) {
@@ -355,6 +362,11 @@ function ModePicker({ onConfirm }: PickerProps) {
               {testStatus.kind === 'ok' && (
                 <span className="text-xs text-emerald-600" data-testid="test-status-ok">
                   {t('bootCheck.connectedOk')}
+                </span>
+              )}
+              {testStatus.kind === 'socketDisabled' && (
+                <span className="text-xs text-red-600" data-testid="test-status-socket-disabled">
+                  {t('bootCheck.socketDisabled')}
                 </span>
               )}
               {testStatus.kind === 'auth' && (
