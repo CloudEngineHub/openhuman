@@ -523,7 +523,8 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.dailySummaryFlow':
     'Crea un flujo que me envíe un resumen diario por correo.',
   'chat.typeMessage': 'Envía un mensaje...',
-  'chat.regenerate.unavailable': 'Esta respuesta no se puede regenerar. Intenta regenerar la respuesta más reciente.',
+  'chat.regenerate.unavailable':
+    'Esta respuesta no se puede regenerar. Intenta regenerar la respuesta más reciente.',
   'chat.regenerate.failed': 'No se pudo regenerar la respuesta. Inténtalo de nuevo.',
   'chat.send': 'Enviar mensaje',
   'chat.stopGeneration': 'Detener generación',

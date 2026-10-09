@@ -391,7 +391,8 @@ const en: TranslationMap = {
   'chat.welcomeSuggestion.connectIntegration': 'Connect a new integration.',
   'chat.welcomeSuggestion.dailySummaryFlow': 'Build a flow that emails me a daily summary.',
   'chat.typeMessage': 'Send a message...',
-  'chat.regenerate.unavailable': "This reply can't be regenerated. Try regenerating the latest reply instead.",
+  'chat.regenerate.unavailable':
+    "This reply can't be regenerated. Try regenerating the latest reply instead.",
   'chat.regenerate.failed': "Couldn't regenerate the reply. Please try again.",
   'chat.send': 'Send message',
   'chat.stopGeneration': 'Stop generating',

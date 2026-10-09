@@ -65,7 +65,11 @@ async function renderMarkdown(text: string) {
 
 describe('MarkdownText — no regex lookbehind for WebKit < 16.4', () => {
   it('ships mdast-util-gfm-autolink-literal without a lookbehind', () => {
-    const dir = resolvePackageDir(['remark-gfm', 'mdast-util-gfm', 'mdast-util-gfm-autolink-literal']);
+    const dir = resolvePackageDir([
+      'remark-gfm',
+      'mdast-util-gfm',
+      'mdast-util-gfm-autolink-literal',
+    ]);
     const sources = jsSources(dir);
     expect(sources.length).toBeGreaterThan(0);
 

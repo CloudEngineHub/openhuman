@@ -516,7 +516,8 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.dailySummaryFlow':
     'Buat alur yang mengirimi saya ringkasan harian lewat email.',
   'chat.typeMessage': 'Kirim pesan...',
-  'chat.regenerate.unavailable': 'Balasan ini tidak dapat dibuat ulang. Coba buat ulang balasan terbaru.',
+  'chat.regenerate.unavailable':
+    'Balasan ini tidak dapat dibuat ulang. Coba buat ulang balasan terbaru.',
   'chat.regenerate.failed': 'Gagal membuat ulang balasan. Silakan coba lagi.',
   'chat.send': 'Kirim pesan',
   'chat.stopGeneration': 'Hentikan pembuatan',

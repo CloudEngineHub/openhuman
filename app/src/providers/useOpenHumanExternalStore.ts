@@ -371,7 +371,9 @@ export function resolveRegenerateTarget(
   if (typeof requestId === 'string' && requestId.length > 0) {
     return { messageId: `${AGENT_REPLY_ID_PREFIX}${requestId}` };
   }
-  const lastAssistant = [...runtimeMessages].reverse().find(message => message.role === 'assistant');
+  const lastAssistant = [...runtimeMessages]
+    .reverse()
+    .find(message => message.role === 'assistant');
   if (source && lastAssistant?.id === sourceId) return { messageId: undefined };
   return null;
 }
