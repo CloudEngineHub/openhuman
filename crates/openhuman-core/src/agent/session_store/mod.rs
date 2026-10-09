@@ -226,7 +226,7 @@ struct RefusedStore(String);
 
 impl RefusedStore {
     fn refuse<T>(&self) -> tinyagents_harness::error::Result<T> {
-        Err(tinyagents_harness::error::TinyAgentsError::store(
+        Err(tinyagents_harness::error::TinyAgentsError::Storage(
             self.0.clone(),
         ))
     }

@@ -95,9 +95,9 @@ pub fn dual_write_enabled(config_enabled: bool) -> bool {
 /// agent's key-value store, whatever the dual-write flag says: there are no
 /// files to mirror.
 pub async fn session_kv_store() -> Option<Arc<dyn Store>> {
-    if let Some(stores) = crate::agent::session_store::current() {
+    if let Some(kv) = crate::agent::session_store::current_kv() {
         log::debug!("[session-store] registering the host session store's kv on RunContext.stores");
-        return Some(stores.kv);
+        return Some(kv);
     }
     let cfg = match crate::config::ops::load_current_or_init().await {
         Ok(cfg) => cfg,

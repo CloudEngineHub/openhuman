@@ -107,7 +107,7 @@ async fn resolve_workspace() -> anyhow::Result<PathBuf> {
 /// ([`crate::agent::session_store::current`]), else the workspace's
 /// `tinyagents_store/`.
 async fn journal_stores() -> anyhow::Result<(Arc<dyn AppendStore>, Arc<dyn Store>)> {
-    if let Some(stores) = crate::agent::session_store::current() {
+    if let Some(stores) = crate::agent::session_store::try_current().map_err(|e| anyhow::anyhow!(e))? {
         log::debug!("[journal] using the host session store");
         return Ok((stores.journal, stores.kv));
     }
