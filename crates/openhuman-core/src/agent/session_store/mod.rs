@@ -189,6 +189,19 @@ pub fn current() -> Option<AgentStores> {
     Some(provider.for_agent(&crate::core::runtime::session_key(&tenant)))
 }
 
+/// The agent id a session host resolves transcripts under for the current
+/// tenant: the [`session_key`](crate::core::runtime::session_key) when it
+/// serves a SaaS profile, else the context's agent, else `fallback` (the
+/// session's own definition id), as before profiles existed.
+#[must_use]
+pub fn current_agent_key_or(fallback: &str) -> String {
+    let tenant = crate::core::runtime::tenant::current_tenant_or_isolated("session_locator");
+    if tenant.profile.is_some() {
+        return crate::core::runtime::session_key(&tenant);
+    }
+    tenant.agent.unwrap_or_else(|| fallback.to_string())
+}
+
 /// The workspace the current [`CoreContext`](crate::core::runtime::CoreContext)
 /// is bound to, for a file-backed store that must follow it (the desktop
 /// rebinds it when a different user signs in). Before the core has booted —

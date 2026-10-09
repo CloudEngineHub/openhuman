@@ -1414,18 +1414,8 @@ impl OpenHumanSessionHost {
         }
         self.session_history_locator_memo
             .get_or_init(|| {
-                // A profile's conversations key on the tenant; elsewhere the
-                // context's agent, else this session's definition, as before.
-                let tenant = crate::core::runtime::tenant::current_tenant_or_isolated(
-                    "session_locator",
-                );
-                let session_agent_id = if tenant.profile.is_some() {
-                    crate::core::runtime::session_key(&tenant)
-                } else {
-                    tenant
-                        .agent
-                        .unwrap_or_else(|| self.agent_definition_id.clone())
-                };
+                let session_agent_id =
+                    crate::agent::session_store::current_agent_key_or(&self.agent_definition_id);
                 transcripts_or_files(&session_agent_id, &self.workspace_dir)
             })
             .clone()
