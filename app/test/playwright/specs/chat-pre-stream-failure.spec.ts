@@ -1,31 +1,22 @@
 /**
  * A turn that fails BEFORE any stream event — openhuman#5729.
  *
- * # Why this is not `chat-tool-error-recovery`
+ * # Terminal vs retryable pre-stream failures
  *
- * That spec fails the turn *mid-stream*: the LLM route has already answered
- * 200 and started emitting, and the backend publishes a `chat_error` socket
- * event the UI renders. The path here is the one #5729 reports and nothing
- * covers: the completion request never produces a stream at all, so there is
- * no `chat_error` to render and the only feedback the user can get is
+ * A terminal failure (provider 400) makes `run_chat_task` return `Err`; the
+ * core publishes a classified `chat_error` and the UI renders it as an
+ * assistant error bubble (not the composer banner). A retryable transport
+ * failure (connection reset) is retried with backoff first, and until it gives
+ * up the user sees an empty assistant shell; the only other feedback is
  * `armSilenceTimer`'s watchdog (`handleSilence` in `Conversations.tsx`), which
- * after 2 minutes shows the non-destructive `chat.stallWarning.*` notice (it
- * no longer tears the turn down; Stop does).
+ * after 2 minutes shows the non-destructive `chat.stallWarning.*` notice.
  *
- * # What is asserted, and what is deliberately only characterised
+ * # What is asserted
  *
- * The existing unit tests around this timer
- * (`Conversations.render.test.tsx:1310`, `:1538`) assert only that the
- * *pending-send lock* is released — that Send becomes clickable again. **None
- * of them asserts the user is told anything.** That is precisely #5729's
- * complaint, so the assertions below are on the visible banner
- * (`data-chat-send-error-code`, `Conversations.tsx:2063`) rather than on
- * composer enablement.
- *
- * Test 1 asserts a behaviour that is already correct and must stay correct: a
- * *transport-level* failure surfaces an error promptly, without waiting out the
- * watchdog. Test 2 characterises the actual bug — the accepted-then-silent turn
- * — and is written so it will need conscious revision when #5729 is fixed.
+ * Test 1 asserts the terminal failure shows the assistant error bubble
+ * promptly. Test 2 only characterises the retryable (reset) case: nothing is
+ * shown while the harness retries, and the dropped answer never renders. Test 3
+ * asserts the composer stays usable.
  *
  * Fault injection uses the mock backend's `httpFaultRules` engine
  * (`scripts/mock-api/server.mjs:158-205`) through the `/__admin/behavior`
