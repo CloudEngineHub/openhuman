@@ -661,15 +661,11 @@ export function useOpenHumanExternalStore(
         return;
       }
       // The regenerate RPC returns no message list, and the socket events
-      // that follow only carry the new turn, so drop the discarded reply (and
-      // anything after it) from the cache now that the core has forked.
-      if (parentId) {
-        dispatch(truncateMessagesFrom({ threadId, messageId: parentId, inclusive: false }));
-      } else if (sourceId) {
-        dispatch(truncateMessagesFrom({ threadId, messageId: sourceId, inclusive: true }));
-      }
+      // that follow only carry the new turn, so drop the discarded rows from
+      // the cache now that the core has forked.
+      dispatch(removeMessagesById({ threadId, messageIds: discardedIds }));
     },
-    [dispatch, runtimeMessages, t, threadId]
+    [dispatch, messages, runtimeMessages, t, threadId]
   );
 
   /**
