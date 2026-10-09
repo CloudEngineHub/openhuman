@@ -228,10 +228,10 @@ pub fn scope_for_agent(agent_id: &str) -> Scope {
 }
 
 /// The storage scope profile `profile_id`'s records live under:
-/// `profile:<id>`, or `sha256:<hex of profile:<id>>` when that is not a valid
-/// scope (too long, whitespace, control characters). Injective: a literal
-/// scope always starts with `profile:`, a hashed one never does, and two
-/// distinct profiles never share either form.
+/// `profile:<id>`, or `profile-sha256:<hex of the id>` when that is not a
+/// valid scope (too long, whitespace, control characters). Injective: a
+/// literal scope always starts with `profile:`, a hashed one never does, and
+/// two distinct profiles never share either form.
 pub fn scope_for_profile(profile_id: &str) -> Scope {
     const PREFIX: &str = "profile:";
     let literal = format!("{PREFIX}{profile_id}");
@@ -239,8 +239,8 @@ pub fn scope_for_profile(profile_id: &str) -> Scope {
         return scope;
     }
     use sha2::Digest;
-    let digest = sha2::Sha256::digest(literal.as_bytes());
-    Scope::new(format!("sha256:{}", hex::encode(digest)))
+    let digest = sha2::Sha256::digest(profile_id.as_bytes());
+    Scope::new(format!("profile-sha256:{}", hex::encode(digest)))
         .unwrap_or_else(|_| unreachable!("a sha256 hex scope is always valid"))
 }
 
