@@ -1719,6 +1719,7 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'Połączono. Możesz działać.',
   'bootCheck.authFailed': 'Ten token nie zadziałał. Sprawdź go i spróbuj ponownie.',
   'bootCheck.unreachablePrefix': 'Nie udało się połączyć:',
+  'bootCheck.socketDisabled': 'Połączono, ale czas rzeczywisty jest wyłączony w tym rdzeniu. Uruchomiono go z --jsonrpc-only; uruchom go ponownie bez tej flagi, aby czat i aktualizacje na żywo działały.',
   'bootCheck.checkingCore': 'Uruchamianie OpenHuman…',
   'bootCheck.cannotReach': 'Nie można się połączyć',
   'bootCheck.cannotReachDesc': 'Nie udało się połączyć. Chcesz spróbować gdzie indziej?',

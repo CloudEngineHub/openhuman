@@ -1714,6 +1714,7 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'Подключено. Всё готово.',
   'bootCheck.authFailed': 'Токен не подошёл. Проверь его и попробуй снова.',
   'bootCheck.unreachablePrefix': 'Не удалось достучаться:',
+  'bootCheck.socketDisabled': 'Подключено, но реальное время на этом ядре отключено. Оно запущено с --jsonrpc-only; перезапусти его без этого флага, чтобы работали чат и живые обновления.',
   'bootCheck.checkingCore': 'Запускаем OpenHuman…',
   'bootCheck.cannotReach': 'Не удаётся подключиться',
   'bootCheck.cannotReachDesc': 'Нам не удалось подключиться. Попробовать другой вариант?',

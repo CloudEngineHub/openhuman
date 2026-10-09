@@ -108,6 +108,7 @@ type TestStatus =
   | { kind: 'idle' }
   | { kind: 'testing' }
   | { kind: 'ok' }
+  | { kind: 'socketDisabled' }
   | { kind: 'auth' }
   | { kind: 'unreachable'; reason: string };
 
@@ -200,7 +201,7 @@ function ModePicker({ onConfirm }: PickerProps) {
       } catch {
         // Non-JSON body is unusual but doesn't disprove reachability.
       }
-      const realtime = await probeCoreRealtime(validated.url);
+      const realtime = await probeCoreRealtime(validated.url, { signal: AbortSignal.timeout(10_000) });
       if (realtime === 'disabled') {
         log('[boot-check] picker — RPC ok but realtime (Socket.IO) is disabled on the core');
         setTestStatus({ kind: 'socketDisabled' });

@@ -1733,6 +1733,7 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'Connesso. Tutto a posto.',
   'bootCheck.authFailed': 'Token non valido. Controllalo e riprova.',
   'bootCheck.unreachablePrefix': 'Impossibile raggiungerlo:',
+  'bootCheck.socketDisabled': 'Connesso, ma il tempo reale è disattivato su questo core. È stato avviato con --jsonrpc-only; riavvialo senza quel flag perché chat e aggiornamenti in tempo reale funzionino.',
   'bootCheck.checkingCore': 'Avvio di OpenHuman…',
   'bootCheck.cannotReach': 'Impossibile raggiungerlo',
   'bootCheck.cannotReachDesc': 'Non siamo riusciti a connetterci. Vuoi provare altrove?',

@@ -1581,6 +1581,7 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': '已连接 ✓',
   'bootCheck.authFailed': '认证失败：请检查令牌（收到 401/403）。',
   'bootCheck.unreachablePrefix': '无法连接：',
+  'bootCheck.socketDisabled': '已连接，但此核心已关闭实时功能。它是用 --jsonrpc-only 启动的；请去掉该参数重新启动，聊天和实时更新才能使用。',
   'bootCheck.checkingCore': '正在启动 OpenHuman…',
   'bootCheck.cannotReach': '无法连接',
   'bootCheck.cannotReachDesc': '我们无法连接。要换个地方试试吗？',
