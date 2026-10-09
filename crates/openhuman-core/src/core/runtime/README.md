@@ -172,14 +172,15 @@ through `runtime/saas.rs`:
   bearer is the RPC token.
 
 The SaaS presets are closed. `DomainSet::saas()` registers the operator plane
-(`DomainGroup::Operator`, the `user_agents.*` controllers) and the user
+(`DomainGroup::Operator`, the `profiles.*` controllers) and the user
 families whose per-user isolation has landed (threads, channels for web chat,
-memory). `user_agents::surface`
+memory). `profiles::surface`
 keeps the two planes apart: the operator scope reaches only the operator
 plane, and a user's scope only the reviewed `USER_METHODS`.
-`saas::build` installs the process's `user_agents::AgentHost`. Each open user
-agent runs under a context derived from the operator's, with its own forced
-config and `session_agent` (see `user_agents/README.md`).
+`saas::build` installs the process's `profiles::ProfileHost`. Each open
+profile (`<root>/users/<profile-id>/`, the desktop's user layout) runs under a
+context derived from the operator's, with its own forced config and
+`session_agent` (see `profiles/README.md`).
 
 Two guards keep SaaS work from falling back to process-wide state:
 
