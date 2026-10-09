@@ -202,7 +202,7 @@ impl DedupCommitSubscriber {
     /// a schema + call-site change bigger than this PR's scope; reported as a
     /// follow-up rather than attempted here.
     fn dedup_node_ids(&self, flow_id: &str) -> Vec<String> {
-        match store::get_flow(&self.config, flow_id) {
+        match store::get_flow(&super::owner::config_for_scope(&self.config), flow_id) {
             Ok(Some(flow)) => flow
                 .graph
                 .nodes

@@ -538,7 +538,9 @@ impl EventHandler<DomainEvent> for NotificationBridgeSubscriber {
                     Err(failed) => {
                         // Unknown owner: not stored rather than stored in the
                         // wrong scope. The live broadcast below still goes out.
-                        log::warn!("{LOG_PREFIX} notification owner unknown ({failed}); not persisted");
+                        log::warn!(
+                            "{LOG_PREFIX} notification owner unknown ({failed}); not persisted"
+                        );
                         None
                     }
                 };

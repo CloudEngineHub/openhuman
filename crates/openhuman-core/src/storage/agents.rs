@@ -234,7 +234,10 @@ impl std::fmt::Display for LookupFailed {
 ///
 /// [`LookupFailed`] when no scope reported the record and at least one
 /// scope's probe failed.
-pub async fn find_owner<F, Fut>(label: &str, probe: F) -> Result<Option<Option<String>>, LookupFailed>
+pub async fn find_owner<F, Fut>(
+    label: &str,
+    probe: F,
+) -> Result<Option<Option<String>>, LookupFailed>
 where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<bool, String>>,

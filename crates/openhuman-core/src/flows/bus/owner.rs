@@ -53,7 +53,12 @@ async fn resolve(config: &Config, flow_id: &str) -> Result<Option<String>, Looku
         // re-check the cached scope and resolve again when it lost the flow.
         match within_agent(owner.as_deref(), has_flow(config, flow_id)).await {
             Some(Ok(true)) => return Ok(owner),
-            Some(Err(error)) => return Err(LookupFailed { agent: owner, error }),
+            Some(Err(error)) => {
+                return Err(LookupFailed {
+                    agent: owner,
+                    error,
+                })
+            }
             Some(Ok(false)) | None => forget(flow_id),
         }
     }

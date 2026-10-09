@@ -101,8 +101,7 @@ impl FlowRunDigestSubscriber {
         // A machine-written run summary: searchable, but no facts or
         // beliefs about the user are derived from it.
         meta.derive = Some(false);
-        match crate::memory::ops::store_item(&config, StoreItem::document(digest, meta)).await
-        {
+        match crate::memory::ops::store_item(&config, StoreItem::document(digest, meta)).await {
             Ok(receipt) => {
                 tracing::debug!(target: "flows", %flow_id, %run_id, replayed = receipt.replayed, "[flows] digest: run digest stored");
             }
