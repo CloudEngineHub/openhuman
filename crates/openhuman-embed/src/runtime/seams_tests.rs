@@ -250,7 +250,8 @@ fn builder_options_collect_into_the_seams() {
     assert!(builder.seams.server_launcher.is_none());
 }
 
-static STORAGE_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::new(());
+static STORAGE_LOCK: std::sync::LazyLock<tokio::sync::Mutex<()>> =
+    std::sync::LazyLock::new(|| tokio::sync::Mutex::new(()));
 
 async fn memory_backend() -> Arc<dyn openhuman_core::storage::StorageBackend> {
     openhuman_core::storage::open("memory")
