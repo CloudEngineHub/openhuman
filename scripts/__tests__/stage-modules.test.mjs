@@ -224,7 +224,9 @@ function modesUnder(root) {
   return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
     const path = join(root, entry.name);
     const mode = lstatSync(path).mode & 0o7777;
-    return entry.isDirectory() ? [{ path, mode, dir: true }, ...modesUnder(path)] : [{ path, mode, dir: false }];
+    return entry.isDirectory()
+      ? [{ path, mode, dir: true }, ...modesUnder(path)]
+      : [{ path, mode, dir: false }];
   });
 }
 
@@ -266,7 +268,10 @@ test("staged modules carry no group or other write bits, whatever the umask and 
     process.umask(previousUmask);
   }
 
-  const entries = [{ path: output, mode: lstatSync(output).mode & 0o7777, dir: true }, ...modesUnder(output)];
+  const entries = [
+    { path: output, mode: lstatSync(output).mode & 0o7777, dir: true },
+    ...modesUnder(output),
+  ];
   assert.ok(entries.some((e) => e.path.endsWith("libdemo.so")), "the library was staged");
   for (const { path, mode, dir } of entries) {
     assert.equal(mode, dir ? 0o755 : 0o644, `${path} is ${mode.toString(8)}`);
