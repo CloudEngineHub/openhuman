@@ -225,7 +225,12 @@ impl ProfileHost {
         // Credential secrets live in the process keyring under the profile id,
         // not only in the profile's directory, so archiving the directory alone
         // would let a re-provisioned profile pick the old credential back up.
-        if let Err(e) = super::credentials::clear(&layout::profile_config(&layout, id)) {
+        let config = layout::profile_config(&layout, id);
+        let cleared = CoreContext::scope(self.records_context(id), async {
+            super::credentials::clear(&config)
+        })
+        .await;
+        if let Err(e) = cleared {
             log::warn!("[profiles] clearing credentials of profile={id} before archiving: {e}");
         }
         if layout.dir.exists() {
@@ -245,6 +250,20 @@ impl ProfileHost {
         profile_lease::release_all(self.leases(), vec![(id.clone(), grant)]).await;
         log::info!("[profiles] deprovisioned profile={id} (archived)");
         Ok(true)
+    }
+
+    /// A context acting for profile `id` without opening it: its forced
+    /// config and its tenant key, so profile-scoped storage (credentials in a
+    /// storage backend) resolves to that profile. For operator-plane work on
+    /// a profile's records; it carries no policy and runs no turns.
+    pub(crate) fn records_context(&self, id: &ProfileId) -> Arc<CoreContext> {
+        let config = layout::profile_config(&self.layout_of(id), id);
+        self.operator.derive_with(
+            ContextOverlay::new(config, user_domains(), ToolGroups::none())
+                .without_user_skill_roots()
+                .session_agent(id.as_str())
+                .profile(id.as_str()),
+        )
     }
 
     /// The forced config of provisioned profile `id`, without opening it (and
@@ -371,31 +390,32 @@ impl ProfileHost {
 
     /// Every provisioned profile, open here or not.
     pub async fn list(&self) -> Result<Vec<ProfileSummary>, String> {
-        let records = self.registry.list().await?;
-        Ok(records
-            .into_iter()
-            .map(|meta| self.summarize(meta))
-            .collect())
+        let mut summaries = Vec::new();
+        for meta in self.registry.list().await? {
+            summaries.push(self.summarize(meta).await);
+        }
+        Ok(summaries)
     }
 
     /// Profile `id`, or `None` when it is not provisioned.
     pub async fn summary(&self, id: &ProfileId) -> Result<Option<ProfileSummary>, String> {
-        Ok(self
-            .registry
-            .get(id)
-            .await?
-            .map(|meta| self.summarize(meta)))
+        match self.registry.get(id).await? {
+            Some(meta) => Ok(Some(self.summarize(meta).await)),
+            None => Ok(None),
+        }
     }
 
-    fn summarize(&self, meta: ProfileMeta) -> ProfileSummary {
-        let layout = self.layout_of(&meta.profile_id);
+    async fn summarize(&self, meta: ProfileMeta) -> ProfileSummary {
+        let id = meta.profile_id;
+        let config = layout::profile_config(&self.layout_of(&id), &id);
+        let has_credential = CoreContext::scope(self.records_context(&id), async {
+            super::credentials::has(&config)
+        })
+        .await;
         ProfileSummary {
-            open: self.is_open(&meta.profile_id),
-            has_credential: super::credentials::has(&layout::profile_config(
-                &layout,
-                &meta.profile_id,
-            )),
-            profile_id: meta.profile_id,
+            open: self.is_open(&id),
+            has_credential,
+            profile_id: id,
             created_at: meta.created_at,
         }
     }
