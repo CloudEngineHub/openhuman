@@ -486,3 +486,56 @@ async fn correct_workspace_after_stale_events() {
     assert_eq!(messages[0].id, "user:m1");
     assert_eq!(messages[0].content, "valid");
 }
+
+#[tokio::test]
+async fn claimed_channel_turns_are_left_to_their_caller() {
+    let temp = TempDir::new().expect("tempdir");
+    let subscriber = ConversationPersistenceSubscriber::new(temp.path().to_path_buf());
+    claim_channel_turn("relay-test-channel", "claimed-1");
+    assert!(is_claimed_channel_turn("relay-test-channel", "claimed-1"));
+    assert!(!is_claimed_channel_turn("relay-test-channel", "other"));
+
+    for event in [
+        DomainEvent::ChannelMessageReceived {
+            channel: "relay-test-channel".into(),
+            message_id: "claimed-1".into(),
+            sender: "alice".into(),
+            reply_target: "room-1".into(),
+            content: "hello".into(),
+            thread_ts: None,
+            inbound_envelope: None,
+            workspace_dir: temp.path().to_path_buf(),
+        },
+        DomainEvent::ChannelMessageProcessed {
+            channel: "relay-test-channel".into(),
+            message_id: "claimed-1".into(),
+            sender: "alice".into(),
+            reply_target: "room-1".into(),
+            content: "hello".into(),
+            thread_ts: None,
+            response: "hi".into(),
+            provider: "p".into(),
+            model: "m".into(),
+            elapsed_ms: 1,
+            success: true,
+            workspace_dir: temp.path().to_path_buf(),
+        },
+    ] {
+        subscriber.handle(&event).await;
+    }
+
+    let threads = crate::threads::store::list_threads(temp.path().to_path_buf()).expect("threads");
+    assert!(threads.is_empty(), "a claimed turn is not mirrored: {threads:?}");
+}
+
+#[test]
+fn the_claim_list_is_bounded() {
+    for i in 0..(CLAIMED_TURNS_CAPACITY + 10) {
+        claim_channel_turn("relay-bound-test", &format!("m{i}"));
+    }
+    assert!(!is_claimed_channel_turn("relay-bound-test", "m0"), "oldest evicted");
+    assert!(is_claimed_channel_turn(
+        "relay-bound-test",
+        &format!("m{}", CLAIMED_TURNS_CAPACITY + 9)
+    ));
+}
