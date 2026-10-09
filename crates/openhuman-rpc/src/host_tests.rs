@@ -98,27 +98,26 @@ fn tui_builder_runs_every_domain_without_services_on_the_disk_store() {
 #[cfg(feature = "server")]
 fn cli_storage_is_opened_for_one_shot_commands_only() {
     let args = |parts: &[&str]| parts.iter().map(|p| p.to_string()).collect::<Vec<_>>();
-    assert!(cli_command_uses_storage(&args(&["agent", "list"])));
-    assert!(cli_command_uses_storage(&args(&["cron", "list"])));
-    assert!(cli_command_uses_storage(&args(&[
-        "--model",
-        "x",
-        "approvals",
-        "list"
-    ])));
-    assert!(!cli_command_uses_storage(&args(&["serve"])));
-    assert!(!cli_command_uses_storage(&args(&[
-        "--provider=a",
-        "-m",
-        "b",
-        "run"
-    ])));
-    assert!(!cli_command_uses_storage(&args(&[])));
-    assert!(!cli_command_uses_storage(&args(&["--help"])));
-    assert!(!cli_command_uses_storage(&args(&["cron", "--help"])));
-    assert!(!cli_command_uses_storage(&args(&["cron", "list", "-h"])));
-    assert!(!cli_command_uses_storage(&args(&["cron"])));
-    assert!(!cli_command_uses_storage(&args(&[
-        "--config", "p", "--help"
-    ])));
+    let uses = |parts: &[&str]| cli_command_uses_storage(&args(parts), |ns| ns == "voice");
+    assert!(uses(&["agent", "list"]));
+    assert!(uses(&["cron", "list"]));
+    assert!(uses(&["--model", "x", "approvals", "list"]));
+    assert!(uses(&["--model=x", "-p", "y", "cron", "list"]));
+    // Bare `voice` has a domain CLI handler, so it runs and needs storage;
+    // other bare namespaces only print help.
+    assert!(uses(&["voice"]));
+    assert!(uses(&["voice", "--skip-cleanup"]));
+    assert!(!uses(&["cron"]));
+    assert!(!uses(&["serve"]));
+    assert!(!uses(&["--provider=a", "-m", "b", "run"]));
+    assert!(!uses(&[]));
+    assert!(!uses(&["--help"]));
+    assert!(!uses(&["help"]));
+    assert!(!uses(&["cron", "--help"]));
+    assert!(!uses(&["cron", "help"]));
+    assert!(!uses(&["cron", "list", "-h"]));
+    assert!(!uses(&["cron", "list", "--help"]));
+    // `help` as an option value is not a help request.
+    assert!(uses(&["cron", "add", "--name", "help"]));
+    assert!(uses(&["--model", "help", "cron", "list"]));
 }

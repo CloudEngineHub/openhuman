@@ -144,7 +144,9 @@ impl RuntimeBuilder {
 impl CliGlobals {
     /// Install every global; returns the storage backend, when one was
     /// configured, now opened.
-    fn install(mut self) -> Result<Option<Arc<dyn openhuman_core::storage::StorageBackend>>, String> {
+    fn install(
+        mut self,
+    ) -> Result<Option<Arc<dyn openhuman_core::storage::StorageBackend>>, String> {
         if let Some(transport) = self.transport {
             openhuman_core::backend::install_backend_transport(transport);
             log::debug!("[embed][cli] backend transport installed (process global)");

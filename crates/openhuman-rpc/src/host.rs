@@ -70,11 +70,16 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
         args.len()
     );
     let mut builder = cli_builder();
-    if cli_command_uses_storage(args) {
+    if cli_command_uses_storage(args, |namespace| {
+        crate::core_host::core::all::cli_handler_for_namespace(namespace).is_some()
+    }) {
         // The preflight reads the URL before the dispatcher loads `.env`
         // itself, so a URL supplied through the dotenv file must be loaded now.
         if let Err(error) = crate::core_host::core::cli::load_dotenv_for_cli() {
-            log::debug!("[rpc:host] cli: early dotenv load failed: {error}");
+            log::warn!(
+                "[rpc:host] cli: early dotenv load failed ({error}); a storage url set only \
+                 in that file will not be seen"
+            );
         }
         // A one-shot command reads the same backend the server would: the
         // configured storage URL, opened on the core's storage runtime so the
@@ -91,36 +96,53 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
 }
 
 /// Whether the CLI subcommand in `args` should open the configured storage
-/// backend itself. `run` / `serve` open it in their own server boot, and help,
-/// the moved TUI names and `sentry-test` never touch stored state.
+/// backend itself, following the dispatcher's own grammar
+/// (`core::cli::parse_launch_options` then the subcommand match): only the
+/// model/provider launch flags precede the command, and the first other token
+/// is the command. `run` / `serve` open storage in their own server boot;
+/// help, the moved TUI names and `sentry-test` never touch stored state; a
+/// bare namespace only prints help unless it has a domain CLI handler
+/// (`has_cli_handler`, e.g. `voice`), which runs. `help` counts only where
+/// the dispatcher reads it (the command, the function slot, or a `-h` /
+/// `--help` flag), never as an option value.
 #[cfg(feature = "server")]
-fn cli_command_uses_storage(args: &[String]) -> bool {
+fn cli_command_uses_storage(args: &[String], has_cli_handler: impl Fn(&str) -> bool) -> bool {
     let is_help = |arg: &str| matches!(arg, "-h" | "--help" | "help");
-    // Help is answered before any command runs, wherever it appears.
-    if args.iter().any(|arg| is_help(arg)) {
-        return false;
-    }
-    let mut rest = args.iter().map(String::as_str);
-    let mut positional = Vec::new();
-    while let Some(arg) = rest.next() {
+    let mut rest = args.iter().map(String::as_str).peekable();
+    while let Some(arg) = rest.peek().copied() {
         match arg {
-            // Launch-wide flags with a separate value.
             "--model" | "--model-id" | "-m" | "--provider" | "--provider-id" | "-p" => {
+                rest.next();
                 rest.next();
             }
             _ if arg.starts_with("--model=")
                 || arg.starts_with("--model-id=")
                 || arg.starts_with("--provider=")
-                || arg.starts_with("--provider-id=") => {}
-            _ if arg.starts_with('-') => {}
-            _ => positional.push(arg),
+                || arg.starts_with("--provider-id=") =>
+            {
+                rest.next();
+            }
+            _ => break,
         }
     }
-    match positional.as_slice() {
-        [] | ["run" | "serve" | "tui" | "chat" | "sentry-test", ..] => false,
-        // A bare namespace prints its help instead of running a function.
-        [namespace] => matches!(*namespace, "mcp" | "mcp-server"),
-        _ => true,
+    let Some(command) = rest.next() else {
+        return false;
+    };
+    if is_help(command) {
+        return false;
+    }
+    match command {
+        "run" | "serve" | "tui" | "chat" | "sentry-test" => false,
+        "mcp" | "mcp-server" | "call" | "agent" => true,
+        namespace => {
+            let tail: Vec<&str> = rest.collect();
+            match tail.as_slice() {
+                [] => has_cli_handler(namespace),
+                [function, ..] if is_help(function) => false,
+                [_, flag, ..] if is_help(flag) => false,
+                _ => true,
+            }
+        }
     }
 }
 
