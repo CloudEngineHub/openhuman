@@ -192,4 +192,3 @@ pub fn heartbeat(host: Arc<ProfileHost>, operator: Arc<crate::core::runtime::Cor
 #[cfg(test)]
 #[path = "lease_tests.rs"]
 mod tests;
-fn __probe() -> u32 { "x" }
