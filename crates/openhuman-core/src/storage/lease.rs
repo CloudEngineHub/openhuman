@@ -233,7 +233,7 @@ pub(crate) fn decide(
             unclean: true,
         };
     }
-    if now_ms + 1 >= record.expires_at_ms {
+    if now_ms >= record.expires_at_ms {
         return Takeover::Take {
             epoch: next,
             unclean: true,
