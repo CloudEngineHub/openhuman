@@ -271,7 +271,10 @@ async fn an_open_agent_is_gated_by_its_own_policy_not_the_operators() {
     let state = host.open(&id).unwrap();
     assert_eq!(state.context().profile(), Some(id.as_str()));
 
-    let own = state.context().agent_policy().expect("the profile carries a policy");
+    let own = state
+        .context()
+        .agent_policy()
+        .expect("the profile carries a policy");
     assert!(own.enabled, "the forced autonomy policy is on");
     assert!(own.workspace_only);
     let effective = CoreContext::scope(Arc::clone(state.context()), async {

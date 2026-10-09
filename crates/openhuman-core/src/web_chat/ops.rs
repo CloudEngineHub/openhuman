@@ -34,11 +34,11 @@ pub(crate) use state::in_flight;
 pub use state::parallel_in_flight_entries_for_test;
 #[cfg(test)]
 pub(crate) use state::scoped_key;
-#[cfg(test)]
-pub(crate) use state::{key_in, unscope_in};
 pub(super) use state::thread_sessions;
 pub use state::{cancel_should_target, in_flight_entries_for_test, invalidate_thread_sessions};
 pub(crate) use state::{event_session_id_for, key_for};
+#[cfg(test)]
+pub(crate) use state::{key_in, unscope_in};
 
 #[cfg(any(test, debug_assertions))]
 pub use test_hooks::set_test_forced_run_chat_task_error;

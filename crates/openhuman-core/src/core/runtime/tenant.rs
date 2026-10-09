@@ -116,7 +116,10 @@ pub fn current_tenant_or_isolated(site: &str) -> Tenant {
 /// share. With no profile (the desktop, embedded agents) it is the bare id,
 /// as before. A SaaS task with no scope gets a key nothing else shares.
 pub fn profile_key(id: &str) -> String {
-    tenant_key(&current_tenant_or_isolated("profile_key").profile_only(), id)
+    tenant_key(
+        &current_tenant_or_isolated("profile_key").profile_only(),
+        id,
+    )
 }
 
 /// Profile prefix byte of a [`tenant_key`].

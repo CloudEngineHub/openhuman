@@ -45,7 +45,11 @@ fn a_derived_context_inherits_the_profile_and_a_profile_gets_fresh_slots() {
     // A plain derive (a turn context) keeps the profile and its slots.
     let turn = profile.derive_with(overlay());
     assert_eq!(turn.profile(), Some("p1"));
-    *turn.agent_state().slot::<std::sync::Mutex<u32>>().lock().unwrap() = 7;
+    *turn
+        .agent_state()
+        .slot::<std::sync::Mutex<u32>>()
+        .lock()
+        .unwrap() = 7;
     assert_eq!(
         *profile
             .agent_state()
@@ -84,12 +88,18 @@ fn a_tenant_is_in_use_while_a_turn_context_or_a_handle_lives() {
     assert!(!profile.tenant_in_use());
 
     let turn = profile.derive_with(overlay());
-    assert!(profile.tenant_in_use(), "a live turn context shares the slots");
+    assert!(
+        profile.tenant_in_use(),
+        "a live turn context shares the slots"
+    );
     drop(turn);
     assert!(!profile.tenant_in_use());
 
     let handle = Arc::clone(&profile);
-    assert!(profile.tenant_in_use(), "a second handle (a request, a task)");
+    assert!(
+        profile.tenant_in_use(),
+        "a second handle (a request, a task)"
+    );
     drop(handle);
     assert!(!profile.tenant_in_use());
 
@@ -168,5 +178,8 @@ async fn profile_keys_drop_the_agent() {
     assert_eq!(key, tenant_key(&tenant(Some("p1"), None), "t1"));
     let agent_only = root.derive_with(overlay().session_agent("a1"));
     let key = CoreContext::scope(agent_only, async { profile_key("t1") }).await;
-    assert_eq!(key, "t1", "no profile: the bare id, embedded agents included");
+    assert_eq!(
+        key, "t1",
+        "no profile: the bare id, embedded agents included"
+    );
 }

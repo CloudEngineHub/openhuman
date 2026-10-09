@@ -146,7 +146,10 @@ pub(crate) struct TenantTracker(RwLock<Option<Arc<CostTracker>>>);
 /// Give `ctx` (a SaaS profile's context) a cost tracker over the profile's
 /// own workspace. Called when the profile opens; a failure leaves it without
 /// one (its usage goes unrecorded) rather than borrowing another ledger.
-pub fn seed_tenant_tracker(ctx: &crate::core::runtime::CoreContext, config: &crate::config::Config) {
+pub fn seed_tenant_tracker(
+    ctx: &crate::core::runtime::CoreContext,
+    config: &crate::config::Config,
+) {
     match CostTracker::new(config.cost.clone(), &config.workspace_dir) {
         Ok(tracker) => {
             *ctx.agent_state().slot::<TenantTracker>().0.write() = Some(Arc::new(tracker));
@@ -163,7 +166,9 @@ pub fn seed_tenant_tracker(ctx: &crate::core::runtime::CoreContext, config: &cra
 }
 
 /// The tracker `ctx` was seeded with; `None` without a context.
-pub(crate) fn tracker_in(ctx: Option<&crate::core::runtime::CoreContext>) -> Option<Arc<CostTracker>> {
+pub(crate) fn tracker_in(
+    ctx: Option<&crate::core::runtime::CoreContext>,
+) -> Option<Arc<CostTracker>> {
     ctx.and_then(|ctx| ctx.agent_state().slot::<TenantTracker>().0.read().clone())
 }
 
