@@ -1252,7 +1252,15 @@ const messages: TranslationMap = {
   'mcp.tab.aria.openServerPage': 'Abrir a página de {name}',
   'mcp.installed.emptyAddInJson': 'Adicionar um em mcp.json',
   'mcp.registry.intro':
-    'Um diretório de servidores MCP. Abrir um servidor leva à sua própria página, onde estão as instruções de instalação; adicione-o na aba mcp.json.',
+    'Um diretório de servidores MCP. Servidores hospedados que não precisam de configuração são adicionados com um clique; para os demais, abra a página do servidor para ver as instruções de instalação e declare-o na aba mcp.json.',
+  'mcp.registry.action.add': 'Adicionar',
+  'mcp.registry.action.added': 'Adicionado',
+  'mcp.registry.action.adding': 'Adicionando…',
+  'mcp.registry.aria.add': 'Adicionar {name}',
+  'mcp.registry.needsSetup':
+    'Este servidor precisa de configuração antes de ser adicionado. Abra a página dele para ver as instruções de instalação.',
+  'mcp.registry.addFailed': 'Não foi possível adicionar este servidor.',
+  'mcp.registry.connectFailed': 'Adicionado, mas o servidor não se conectou.',
   'mcp.json.loadFailedTitle': 'Não foi possível ler mcp.json',
   'mcp.json.loadFailedBody':
     'O núcleo não respondeu, então o documento não é mostrado. Um editor vazio convidaria a salvar e apagar seus servidores.',
@@ -1799,6 +1807,10 @@ const messages: TranslationMap = {
   'about.update.status.error': 'Falha na verificação de atualização',
   'about.update.status.default': 'Verificar atualizações',
   'welcome.continueLocallyExperimental': 'Continuar Localmente (Experimental)',
+  'auth.profileSwitch.title': 'Iniciar sessão com um perfil separado?',
+  'auth.profileSwitch.body':
+    'O início de sessão na nuvem mudará o OpenHuman para um perfil de conta separado. As suas conversas, memória e definições locais de fornecedores continuarão neste dispositivo, em users/{profileId}. Para voltar, termine a sessão e escolha a sessão local no ecrã de boas-vindas.',
+  'auth.profileSwitch.continue': 'Continuar sessão',
   'welcome.localSessionStarting': 'Iniciando sessão local...',
   'welcome.coreConfigUnreadable':
     'O runtime não conseguiu ler o seu ficheiro de configuração. O config.toml pode pertencer a outra conta de utilizador ou estar inacessível ao processo por outro motivo. Reinicie o runtime e, se isso não resolver, corrija a propriedade da pasta de trabalho ou recrie o seu volume.',
