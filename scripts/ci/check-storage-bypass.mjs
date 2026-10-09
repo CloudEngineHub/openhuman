@@ -135,6 +135,25 @@ export function allowed(rel, rule) {
   return ALLOW.get(rel)?.rules.includes(rule) ?? false;
 }
 
+/** Sites an allowlisted file may hold per rule: the ones it has today. */
+export const ALLOWED_SITES_PER_RULE = 1;
+
+/**
+ * Drops the first [`ALLOWED_SITES_PER_RULE`] allowlisted sites of each rule in
+ * `rel`. A further site in the same file is a new one: it is reported (or must
+ * be baselined), so the allowance covers the known fallback or local-only
+ * write and nothing added beside it.
+ */
+export function withoutAllowed(rel, found) {
+  const kept = new Map();
+  return found.filter((f) => {
+    if (!allowed(rel, f.rule)) return true;
+    const used = kept.get(f.rule) ?? 0;
+    kept.set(f.rule, used + 1);
+    return used >= ALLOWED_SITES_PER_RULE;
+  });
+}
+
 function isTestFile(rel) {
   return (
     rel.startsWith("crates/openhuman-core/src/storage/") ||
@@ -212,7 +231,7 @@ async function main() {
     const rel = relative(repoRoot, path).split(sep).join("/");
     if (isTestFile(rel)) continue;
     const found = scan(rel, await readFile(path, "utf8"));
-    findings.push(...found.filter((f) => !allowed(rel, f.rule)));
+    findings.push(...withoutAllowed(rel, found));
   }
 
   if (writeBaseline) {

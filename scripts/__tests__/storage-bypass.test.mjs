@@ -9,7 +9,13 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { ALLOW, allowed, compare, scan } from "../ci/check-storage-bypass.mjs";
+import {
+  ALLOW,
+  allowed,
+  compare,
+  scan,
+  withoutAllowed,
+} from "../ci/check-storage-bypass.mjs";
 
 const repoRoot = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -165,4 +171,20 @@ test("--write-baseline records the current sites", () => {
   assert.equal(status, 0);
   assert.equal(after.length, 1);
   assert.equal(after[0].rule, "json-write");
+});
+
+test("an allowlisted file may hold only its known site", () => {
+  const file = `${SRC}/platform/cost/tracker.rs`;
+  const found = scan(
+    file,
+    "std::fs::write(a, b);\nstd::fs::write(c, d);\nConnection::open(p);\n",
+  );
+  const kept = withoutAllowed(file, found);
+  assert.deepEqual(
+    kept.map((f) => [f.rule, f.line]),
+    [
+      ["json-write", 2],
+      ["sqlite-open", 3],
+    ],
+  );
 });
