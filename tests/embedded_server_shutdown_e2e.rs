@@ -48,6 +48,8 @@ async fn shutdown_token_stops_axum_listener_within_timeout() {
     std::env::set_var("OPENHUMAN_WORKSPACE", workspace.path());
     std::env::set_var("OPENHUMAN_DISABLE_CHANNEL_LISTENERS", "1");
     std::env::set_var("OPENHUMAN_CORE_TOKEN", "test-token-shutdown");
+    // serve_desktop connects the TinyHumans layer; keep it off any real host.
+    std::env::set_var("BACKEND_URL", "http://127.0.0.1:9");
 
     let probe = std::net::TcpListener::bind("127.0.0.1:0").expect("allocate test port");
     let port = probe.local_addr().expect("local addr").port();
