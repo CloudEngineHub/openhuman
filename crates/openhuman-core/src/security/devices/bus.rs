@@ -94,11 +94,18 @@ impl EventHandler<DomainEvent> for DeviceTunnelSubscriber {
                     .cloned();
                 match super::owner::owner_of(channel_id, pending.as_ref()).await {
                     Ok(owner) => {
-                        crate::storage::agents::within_agent(
+                        let handled = crate::storage::agents::within_agent(
                             owner.as_deref(),
                             handle_tunnel_frame(channel_id, payload_b64),
                         )
                         .await;
+                        // Fail closed: no context can act for the owner.
+                        if handled.is_none() {
+                            log::warn!(
+                                "[devices/bus] dropping tunnel frame channel_id={channel_id}: \
+                                 its owner has no context to act under"
+                            );
+                        }
                     }
                     // Fail closed: an unknown owner must not become `local`.
                     Err(failed) => log::warn!(

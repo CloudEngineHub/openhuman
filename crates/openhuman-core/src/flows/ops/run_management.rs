@@ -306,15 +306,17 @@ pub(crate) enum BootSweepPlan {
 }
 
 /// The boot sweep's scopes. On a backend other processes share (MongoDB) a
-/// `running` row below the boot floor can belong to a run another replica is
-/// still driving, and sweeping it would drop that run's checkpoint, so the
-/// agent scopes are left alone there, as the agent run reaper does — and in
-/// SaaS mode, where every scope is an agent's, nothing is swept.
+/// `running` row below the boot floor — `local` or an agent's — can belong to
+/// a run another replica is still driving, and sweeping it would drop that
+/// run's checkpoint, so nothing is swept there, as the agent run reaper does.
 pub(crate) fn boot_sweep_plan(shared: bool, saas: bool) -> BootSweepPlan {
-    match (shared, saas) {
-        (false, _) => BootSweepPlan::EveryScope,
-        (true, false) => BootSweepPlan::LocalOnly,
-        (true, true) => BootSweepPlan::Nothing,
+    // `saas` is kept for the call site's sake: a shared backend is skipped
+    // in either mode, since another replica can own even a `local` run.
+    let _ = saas;
+    if shared {
+        BootSweepPlan::Nothing
+    } else {
+        BootSweepPlan::EveryScope
     }
 }
 

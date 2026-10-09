@@ -38,19 +38,37 @@ fn cached(channel_id: &str) -> Option<Option<String>> {
         .cloned()
 }
 
-/// A scope's device lookup failed, and no other scope has the device, so its
-/// owner is unknown. The frame is dropped rather than handled as `local`:
-/// guessing could run a paired device's RPCs as the wrong agent.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(super) struct OwnerLookupFailed {
-    /// The scope whose lookup failed (`None` = `local`) and why.
-    pub(super) agent: Option<String>,
-    pub(super) error: String,
+fn forget(channel_id: &str) {
+    OWNERS
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .remove(channel_id);
+}
+
+/// A failed owner lookup (`crate::storage::agents::LookupFailed`): no scope
+/// has the device and a scope's lookup failed, so its owner is unknown. The
+/// frame is dropped rather than handled as `local`: guessing could run a
+/// paired device's RPCs as the wrong agent.
+pub(super) type OwnerLookupFailed = crate::storage::agents::LookupFailed;
+
+/// Whether the current scope holds `channel_id` as a live (not revoked)
+/// paired device. The configuration is loaded inside the scope: in SaaS mode
+/// loading it needs an acting agent, which the tunnel task does not have.
+async fn has_live_device(channel_id: &str) -> Result<bool, String> {
+    let config = crate::config::rpc::load_config_with_timeout()
+        .await
+        .map_err(|error| format!("load config: {error}"))?;
+    super::store::get_device(&config, channel_id)
+        .map(|device| device.is_some_and(|device| !device.revoked))
+        .map_err(|error| error.to_string())
 }
 
 /// The agent `channel_id` belongs to, resolved as described above: `None`
 /// for `local`, which is also where a channel no scope knows yet (a handshake
-/// still in flight) is handled.
+/// still in flight, or a revoked device) is handled.
+///
+/// A remembered owner is re-checked in its scope each time, so a revoked,
+/// deleted or re-paired channel is resolved afresh.
 ///
 /// # Errors
 ///
@@ -64,17 +82,16 @@ pub(super) async fn owner_of(
         return Ok(session.agent.clone());
     }
     if let Some(owner) = cached(channel_id) {
-        return Ok(owner);
-    }
-    // The configuration is loaded inside each scope: in SaaS mode loading it
-    // needs an acting agent, which this tunnel task does not have.
-    let lookups = crate::storage::agents::for_each_scope("device owner", || async {
-        let config = crate::config::rpc::load_config_with_timeout()
+        match crate::storage::agents::within_agent(owner.as_deref(), has_live_device(channel_id))
             .await
-            .map_err(|error| format!("load config: {error}"))?;
-        super::store::get_device(&config, channel_id)
-            .map(|device| device.is_some())
-            .map_err(|error| error.to_string())
+        {
+            Some(Ok(true)) => return Ok(owner),
+            Some(Err(error)) => return Err(OwnerLookupFailed { agent: owner, error }),
+            Some(Ok(false)) | None => forget(channel_id),
+        }
+    }
+    let lookups = crate::storage::agents::for_each_scope("device owner", || {
+        has_live_device(channel_id)
     })
     .await;
     let owner = decide(lookups)?;
@@ -88,26 +105,11 @@ pub(super) async fn owner_of(
     Ok(owner.flatten())
 }
 
-/// The owner from each scope's lookup: the first scope that has the device
-/// (`Some(Some(agent))` / `Some(None)` for `local`); `None` when none has it
-/// and every lookup succeeded; an error when none has it and one failed.
+/// The owner from each scope's lookup (`crate::storage::agents::decide`).
 fn decide(
     lookups: Vec<(Option<String>, Result<bool, String>)>,
 ) -> Result<Option<Option<String>>, OwnerLookupFailed> {
-    let mut failure = None;
-    for (agent, lookup) in lookups {
-        match lookup {
-            Ok(true) => return Ok(Some(agent)),
-            Ok(false) => {}
-            Err(error) => {
-                failure.get_or_insert(OwnerLookupFailed { agent, error });
-            }
-        }
-    }
-    match failure {
-        Some(failure) => Err(failure),
-        None => Ok(None),
-    }
+    crate::storage::agents::decide(lookups)
 }
 
 #[cfg(test)]
