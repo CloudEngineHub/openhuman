@@ -3,10 +3,13 @@ import type {
   AppendMessage,
   ThreadMessage as AuiThreadMessage,
   RespondToToolApprovalOptions,
+  ThreadMessageLike,
   ThreadSuggestion,
 } from '@assistant-ui/react';
+import debug from 'debug';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { toast } from '../components/ui/Toast';
 import { useOpenHumanQueueAdapter } from '../features/conversations/aui/queueAdapter';
 import { mapDisplayItems } from '../features/conversations/derived/mapDisplayItems';
 import { useT } from '../lib/i18n/I18nContext';
@@ -31,6 +34,8 @@ import type { ThreadMessage } from '../types/thread';
 import { buildRuntimeMessages, STREAMING_TAIL_ID } from './assistantUiMessages';
 import { getChatSurface } from './chatSurfaceHandlers';
 import { openHumanSpeechAdapter } from './speechAdapter';
+
+const log = debug('openhuman:chat:external-store');
 
 const EMPTY_MESSAGES: ThreadMessage[] = [];
 const EMPTY_SUGGESTIONS: readonly ThreadSuggestion[] = [];
@@ -336,6 +341,41 @@ function appendMessageQuote(message: AppendMessage): string {
     .join('\n')}\n\n`;
 }
 
+/** Prefix of the core's deterministic assistant-reply ids (`agent:<request_id>`). */
+const AGENT_REPLY_ID_PREFIX = 'agent:';
+
+/**
+ * Which id to hand `threads.regenerate` for the reply `sourceId`, or `null`
+ * when it cannot be regenerated.
+ *
+ * The core accepts only an assistant reply id (`agent:<request_id>`) or no id
+ * (redo the thread's last turn), so in order:
+ * - `sourceId` is already an `agent:` reply id → send it;
+ * - the reply carries its turn's `requestId` (older rows persisted under a
+ *   `msg_<uuid>` id do) → send `agent:<requestId>`;
+ * - it is the thread's last assistant message, or no reply was named at all →
+ *   send no id, which the core reads as "the last turn";
+ * - anything else is an earlier reply the core has no handle on → `null`.
+ */
+export function resolveRegenerateTarget(
+  runtimeMessages: readonly ThreadMessageLike[],
+  sourceId: string | null
+): { messageId: string | undefined } | null {
+  if (!sourceId) return { messageId: undefined };
+  if (sourceId.startsWith(AGENT_REPLY_ID_PREFIX)) return { messageId: sourceId };
+  const source = runtimeMessages.find(message => message.id === sourceId);
+  const custom = source?.metadata?.custom as
+    | { extraMetadata?: Record<string, unknown> }
+    | undefined;
+  const requestId = custom?.extraMetadata?.requestId;
+  if (typeof requestId === 'string' && requestId.length > 0) {
+    return { messageId: `${AGENT_REPLY_ID_PREFIX}${requestId}` };
+  }
+  const lastAssistant = runtimeMessages.findLast(message => message.role === 'assistant');
+  if (source && lastAssistant?.id === sourceId) return { messageId: undefined };
+  return null;
+}
+
 /**
  * Build the `ExternalStoreAdapter` that backs `useExternalStoreRuntime`.
  *
@@ -357,6 +397,7 @@ export function useOpenHumanExternalStore(
   } = {}
 ) {
   const dispatch = useAppDispatch();
+  const { t } = useT();
   const messages = useAppSelector(state =>
     threadId ? (state.thread.messagesByThreadId[threadId] ?? EMPTY_MESSAGES) : EMPTY_MESSAGES
   );
