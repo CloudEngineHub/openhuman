@@ -206,7 +206,7 @@ pub mod security {
             AuthService, APP_SESSION_PROVIDER, DEFAULT_AUTH_PROFILE_NAME,
         };
         pub mod ops {
-            pub use openhuman_core::security::credentials::ops::list_provider_credentials;
+            pub use openhuman_core::security::credentials::ops::{list_provider_credentials, store_provider_credentials};
         }
         pub mod session_support {
             pub use openhuman_core::security::credentials::session_support::{
