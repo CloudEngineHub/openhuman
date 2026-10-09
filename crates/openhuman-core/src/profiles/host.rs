@@ -2,7 +2,7 @@
 //!
 //! A profile is opened lazily on first use and kept until it has been idle
 //! for [`SaasConfig::idle_evict_secs`] or the host needs its slot
-//! ([`SaasConfig::max_profiles_open`]). An profile still in use — anyone holding
+//! ([`SaasConfig::max_profiles_open`]). A profile still in use — anyone holding
 //! its [`Profile`] — is never evicted.
 //!
 //! Each open profile carries its own [`CoreContext`], derived from the operator
@@ -130,7 +130,7 @@ impl ProfileHost {
     }
 
     /// Close profile `id` and archive its state under `<root>/deprovisioned/`.
-    /// Nothing is deleted. Returns whether there was such an profile.
+    /// Nothing is deleted. Returns whether there was such a profile.
     ///
     /// The open-profile lock is held for the whole operation, so no `open` can
     /// re-open the profile between closing it and moving its directory. An
@@ -171,7 +171,7 @@ impl ProfileHost {
     }
 
     /// The forced config of provisioned profile `id`, without opening it (and
-    /// so without taking an profile slot).
+    /// so without taking a profile slot).
     pub fn provisioned_config(&self, id: &ProfileId) -> Result<crate::config::Config, String> {
         let layout = self.layout(id);
         if !layout.meta_path.exists() {
