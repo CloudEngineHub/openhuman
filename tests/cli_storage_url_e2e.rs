@@ -59,11 +59,21 @@ fn one_shot(url: &str, args: &[&str]) -> (std::process::Output, tempfile::TempDi
 #[test]
 fn a_second_process_reads_what_a_one_shot_wrote_to_the_backend() {
     let data = tempfile::tempdir().unwrap();
+    // (url, whether this build carries the driver for it)
     let candidates = [
-        format!("sqlite://{}", data.path().join("shared.db").display()),
-        format!("file://{}", data.path().join("shared-files").display()),
+        (
+            format!("sqlite://{}", data.path().join("shared.db").display()),
+            cfg!(feature = "storage-sqlite"),
+        ),
+        (
+            format!("file://{}", data.path().join("shared-files").display()),
+            cfg!(feature = "storage-file"),
+        ),
     ];
-    for url in &candidates {
+    for (url, driver_built) in &candidates {
+        if !driver_built {
+            continue;
+        }
         let (added, _first) = one_shot(
             url,
             &[
@@ -78,14 +88,7 @@ fn a_second_process_reads_what_a_one_shot_wrote_to_the_backend() {
             ],
         );
         let stderr = String::from_utf8_lossy(&added.stderr);
-        if !added.status.success() {
-            // This build carries neither driver for the URL: nothing to share.
-            assert!(
-                stderr.contains("storage-sqlite") || stderr.contains("storage-file"),
-                "cron add failed for a reason other than a missing driver: {stderr}"
-            );
-            continue;
-        }
+        assert!(added.status.success(), "cron add against {url}: {stderr}");
 
         // A different workspace: only the backend can hold the job.
         let (listed, _second) = one_shot(url, &["cron", "list"]);
