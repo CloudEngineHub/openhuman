@@ -239,11 +239,7 @@ fn one_unreadable_agent_does_not_hide_the_rest() {
     let (a, b) = (agent("alice"), agent("bob"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
-    std::fs::write(
-        ProfileLayout::new(tmp.path(), &a).meta_path,
-        "not toml = [",
-    )
-    .unwrap();
+    std::fs::write(ProfileLayout::new(tmp.path(), &a).meta_path, "not toml = [").unwrap();
     let listed = host.list().unwrap();
     assert_eq!(listed.len(), 1);
     assert_eq!(listed[0].profile_id, b);

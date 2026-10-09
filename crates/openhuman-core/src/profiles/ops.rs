@@ -6,7 +6,7 @@
 use super::credentials::{self, UserCredentialKind};
 use super::host::{self, ProfileHost};
 use super::types::{
-    CredentialResult, DeprovisionResult, ProvisionResult, ProfileId, ProfileSummary,
+    CredentialResult, DeprovisionResult, ProfileId, ProfileSummary, ProvisionResult,
 };
 use crate::core::Outcome;
 
@@ -31,7 +31,10 @@ pub(crate) fn provision_on(
         format!("{profile_id} was already provisioned")
     };
     Ok(Outcome::single_log(
-        ProvisionResult { profile_id, created },
+        ProvisionResult {
+            profile_id,
+            created,
+        },
         log,
     ))
 }
@@ -53,7 +56,10 @@ pub(crate) fn deprovision_on(
         format!("{profile_id} was not provisioned")
     };
     Ok(Outcome::single_log(
-        DeprovisionResult { profile_id, removed },
+        DeprovisionResult {
+            profile_id,
+            removed,
+        },
         log,
     ))
 }

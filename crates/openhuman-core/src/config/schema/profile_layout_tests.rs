@@ -4,9 +4,18 @@ use super::*;
 fn every_path_sits_under_the_profile_directory() {
     let layout = ProfileLayout::new(Path::new("/srv/oh"), "alice");
     assert_eq!(layout.dir, Path::new("/srv/oh/users/alice"));
-    assert_eq!(layout.meta_path, Path::new("/srv/oh/users/alice/profile.toml"));
-    assert_eq!(layout.config_path, Path::new("/srv/oh/users/alice/config.toml"));
-    assert_eq!(layout.workspace_dir, Path::new("/srv/oh/users/alice/workspace"));
+    assert_eq!(
+        layout.meta_path,
+        Path::new("/srv/oh/users/alice/profile.toml")
+    );
+    assert_eq!(
+        layout.config_path,
+        Path::new("/srv/oh/users/alice/config.toml")
+    );
+    assert_eq!(
+        layout.workspace_dir,
+        Path::new("/srv/oh/users/alice/workspace")
+    );
     assert_eq!(layout.sandbox_dir, Path::new("/srv/oh/users/alice/sandbox"));
 }
 

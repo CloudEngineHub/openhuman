@@ -1,14 +1,18 @@
 use super::*;
+use crate::profiles::layout::{profile_config, ProfileLayout};
+use crate::profiles::ProfileId;
 use crate::security::credentials::session_support::{
     resolve_backend_credential, BackendCredential,
 };
-use crate::profiles::layout::{profile_config, ProfileLayout};
-use crate::profiles::ProfileId;
 
 /// Credential secrets live in the process keyring keyed by agent id, which
 /// every test in this binary shares; each test therefore uses its own users.
 fn agent(tmp: &tempfile::TempDir, user: &str) -> Config {
-    let id = ProfileId::for_user(&format!("{user}-{}", uuid::Uuid::new_v4()), crate::profiles::ProfileIdMode::Raw).unwrap();
+    let id = ProfileId::for_user(
+        &format!("{user}-{}", uuid::Uuid::new_v4()),
+        crate::profiles::ProfileIdMode::Raw,
+    )
+    .unwrap();
     let layout = ProfileLayout::new(tmp.path(), &id);
     std::fs::create_dir_all(&layout.workspace_dir).unwrap();
     profile_config(&layout, &id)

@@ -453,7 +453,8 @@ pub(super) async fn resolve_config_dirs_ignoring_env(
         ));
     }
 
-    let profile = crate::config::schema::ProfileLayout::at(pre_login_user_dir(default_openhuman_dir));
+    let profile =
+        crate::config::schema::ProfileLayout::at(pre_login_user_dir(default_openhuman_dir));
     tracing::debug!(
         user_id = %PRE_LOGIN_USER_ID,
         user_dir = %profile.dir.display(),

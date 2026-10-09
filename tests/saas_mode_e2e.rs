@@ -247,9 +247,12 @@ fn a_safe_deployment_serves_core_and_the_operator_plane_behind_the_gateway_beare
         .to_string();
     assert_eq!(
         profile_id,
-        openhuman_core::profiles::ProfileId::for_user("alice@example.com", openhuman_core::profiles::ProfileIdMode::Raw)
-            .unwrap()
-            .to_string(),
+        openhuman_core::profiles::ProfileId::for_user(
+            "alice@example.com",
+            openhuman_core::profiles::ProfileIdMode::Raw
+        )
+        .unwrap()
+        .to_string(),
         "a user id outside the raw charset maps to its deterministic hash"
     );
     assert!(!body.to_string().contains("alice"), "{body}");
@@ -364,7 +367,11 @@ fn gateway_requests_run_under_the_named_users_agent() {
         "openhuman.profiles_provision",
         json!({ "user_id": "alice" }),
     );
-    let alice = openhuman_core::profiles::ProfileId::for_user("alice", openhuman_core::profiles::ProfileIdMode::Raw).unwrap();
+    let alice = openhuman_core::profiles::ProfileId::for_user(
+        "alice",
+        openhuman_core::profiles::ProfileIdMode::Raw,
+    )
+    .unwrap();
     assert!(body.to_string().contains(alice.as_str()), "{body}");
     let (_, body) = rpc_with(
         &client,
@@ -464,9 +471,12 @@ fn provision(client: &reqwest::blocking::Client, base: &str, user: &str) -> Stri
         json!({ "user_id": user }),
     );
     assert!(body.get("result").is_some(), "provision {user}: {body}");
-    openhuman_core::profiles::ProfileId::for_user(user, openhuman_core::profiles::ProfileIdMode::Raw)
-        .unwrap()
-        .to_string()
+    openhuman_core::profiles::ProfileId::for_user(
+        user,
+        openhuman_core::profiles::ProfileIdMode::Raw,
+    )
+    .unwrap()
+    .to_string()
 }
 
 fn thread_ids(body: &Value) -> Vec<String> {

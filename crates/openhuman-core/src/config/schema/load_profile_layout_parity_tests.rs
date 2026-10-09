@@ -47,5 +47,8 @@ async fn the_pre_login_profile_resolves_to_its_profile_layout() {
     assert_eq!(config_dir, layout.dir);
     assert_eq!(workspace_dir, layout.workspace_dir);
     assert_eq!(config_dir, root.join("users").join("local"));
-    assert_eq!(workspace_dir, root.join("users").join("local").join("workspace"));
+    assert_eq!(
+        workspace_dir,
+        root.join("users").join("local").join("workspace")
+    );
 }

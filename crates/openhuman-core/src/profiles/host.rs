@@ -30,9 +30,7 @@ pub struct Profile {
 
 impl std::fmt::Debug for Profile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Profile")
-            .field("id", &self.id)
-            .finish()
+        f.debug_struct("Profile").field("id", &self.id).finish()
     }
 }
 

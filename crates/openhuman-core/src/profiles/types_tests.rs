@@ -25,10 +25,19 @@ fn a_user_maps_to_one_stable_profile() {
 fn raw_mode_keeps_ids_that_fit_the_charset() {
     // The desktop's 24-hex backend ids pass unchanged.
     let backend_id = "65f1c0ffee0123456789abcd";
-    assert_eq!(ProfileId::for_user(backend_id, RAW).unwrap().as_str(), backend_id);
-    assert_eq!(ProfileId::for_user("alice_1-b", RAW).unwrap().as_str(), "alice_1-b");
+    assert_eq!(
+        ProfileId::for_user(backend_id, RAW).unwrap().as_str(),
+        backend_id
+    );
+    assert_eq!(
+        ProfileId::for_user("alice_1-b", RAW).unwrap().as_str(),
+        "alice_1-b"
+    );
     let longest = "a".repeat(MAX_RAW_ID_LEN);
-    assert_eq!(ProfileId::for_user(&longest, RAW).unwrap().as_str(), longest);
+    assert_eq!(
+        ProfileId::for_user(&longest, RAW).unwrap().as_str(),
+        longest
+    );
 }
 
 #[test]
