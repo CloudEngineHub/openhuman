@@ -234,3 +234,32 @@ fn client_options_wire_the_chain_and_the_transport() {
     let before_send = options.before_send.expect("chain installed");
     assert!(before_send(event("Failed to request http://localhost:1/x: e", &[])).is_none());
 }
+
+#[test]
+fn environment_prefers_app_env_lowercased() {
+    assert_eq!(resolve_environment(Some(" Staging ".into())), "staging");
+}
+
+#[test]
+fn environment_falls_back_on_blank_or_missing() {
+    let expected = if cfg!(debug_assertions) {
+        "development"
+    } else {
+        "production"
+    };
+    assert_eq!(resolve_environment(None), expected);
+    assert_eq!(resolve_environment(Some("   ".into())), expected);
+}
+
+#[test]
+fn core_dsn_falls_back_to_the_baked_values_in_order() {
+    // Only meaningful when the runtime variables are unset; otherwise the
+    // runtime value wins, which `first_non_blank` already covers.
+    if std::env::var_os("OPENHUMAN_CORE_SENTRY_DSN").is_none()
+        && std::env::var_os("OPENHUMAN_SENTRY_DSN").is_none()
+    {
+        assert_eq!(core_dsn(Some(" a "), Some("b")).as_deref(), Some("a"));
+        assert_eq!(core_dsn(None, Some("b")).as_deref(), Some("b"));
+        assert_eq!(core_dsn(Some("  "), None), None);
+    }
+}
