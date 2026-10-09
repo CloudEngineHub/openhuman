@@ -171,7 +171,6 @@ export function extractArchive(archive, dir) {
  */
 export function normalizeStagedPermissions(root) {
   const stat = lstatSync(root);
-  if (stat.isSymbolicLink()) return;
   if (stat.isDirectory()) {
     chmodSync(root, 0o755);
     for (const name of readdirSync(root)) normalizeStagedPermissions(join(root, name));

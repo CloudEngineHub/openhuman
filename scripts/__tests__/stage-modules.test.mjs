@@ -7,6 +7,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { createHash } from "node:crypto";
@@ -26,6 +27,7 @@ import {
   hostKeyForTarget,
   extractWindowsZip,
   keepsArchive,
+  normalizeStagedPermissions,
   replaceArchiveWithMarker,
   stageModules,
 } from "../release/stage-modules.mjs";
@@ -269,4 +271,21 @@ test("staged modules carry no group or other write bits, whatever the umask and 
   for (const { path, mode, dir } of entries) {
     assert.equal(mode, dir ? 0o755 : 0o644, `${path} is ${mode.toString(8)}`);
   }
+});
+
+test("normalising staged permissions never follows a symlink out of the tree", {
+  skip: process.platform === "win32",
+}, () => {
+  const root = mkdtempSync(join(tmpdir(), "openhuman-stage-symlink-"));
+  const outside = join(root, "outside");
+  writeFileSync(outside, "not staged");
+  chmodSync(outside, 0o600);
+  const staged = join(root, "staged");
+  mkdirSync(staged);
+  symlinkSync(outside, join(staged, "link"));
+
+  normalizeStagedPermissions(staged);
+
+  assert.equal(lstatSync(outside).mode & 0o7777, 0o600);
+  assert.equal(lstatSync(staged).mode & 0o7777, 0o755);
 });
