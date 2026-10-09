@@ -89,9 +89,16 @@ fn a_second_process_reads_what_a_one_shot_wrote_to_the_backend() {
 
         // A different workspace: only the backend can hold the job.
         let (listed, _second) = one_shot(url, &["cron", "list"]);
-        assert!(listed.status.success(), "{}", String::from_utf8_lossy(&listed.stderr));
+        assert!(
+            listed.status.success(),
+            "{}",
+            String::from_utf8_lossy(&listed.stderr)
+        );
         let stdout = String::from_utf8_lossy(&listed.stdout);
-        assert!(stdout.contains("storage-probe"), "second process sees the job: {stdout}");
+        assert!(
+            stdout.contains("storage-probe"),
+            "second process sees the job: {stdout}"
+        );
 
         // And without the URL the same fresh workspace has nothing.
         let workspace = tempfile::tempdir().unwrap();
