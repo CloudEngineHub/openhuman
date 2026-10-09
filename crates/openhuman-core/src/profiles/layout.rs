@@ -18,6 +18,7 @@
 use std::path::{Path, PathBuf};
 
 use super::types::ProfileId;
+use crate::config::schema::MemoryLayoutMode;
 use crate::config::Config;
 use crate::security::AutonomyLevel;
 
@@ -38,15 +39,21 @@ pub fn memory_root(id: &ProfileId) -> String {
     format!("user:{id}")
 }
 
-/// The config agent `id` runs with.
+/// The config profile `id` runs with.
 ///
-/// Everything that decides **where** the agent reads and writes, and **what
+/// Everything that decides **where** the profile reads and writes, and **what
 /// it may do**, is forced here and cannot come from anywhere else:
 ///
-/// - every path sits under the agent's own directory;
-/// - memory is bound to the agent (`[memory] agent_id`, `root = user:<id>`),
+/// - every path sits under the profile's own directory;
+/// - memory is bound to the profile (`[memory] agent_id`, `root = user:<id>`),
 ///   so a definition pin or a team root cannot move it onto another user's
 ///   tree (a host binding wins over both);
+/// - the memory layout is pinned to the legacy tree, confined to that root
+///   (`memory::user_scope`). Layout v3 would ignore `root` and bind the engine
+///   below `memory::scope::user_root`, which reads the person from the config
+///   path (`users/<id>/config.toml`): `org:<id>` for an id that looks like a
+///   TinyHumans account, a freshly minted `org:local-…` otherwise. Either
+///   disagrees with `user:<id>`, so a profile never runs v3;
 /// - the autonomy policy is on and supervised, with no auto-approval, no tool
 ///   installation, no trusted roots beyond the sandbox, and workspace-only
 ///   paths.
@@ -57,11 +64,12 @@ pub fn profile_config(layout: &ProfileLayout, id: &ProfileId) -> Config {
         action_dir: layout.sandbox_dir.clone(),
         ..Config::default()
     };
-    // Artifacts land in the agent's sandbox, never the host's shared
+    // Artifacts land in the profile's sandbox, never the host's shared
     // `~/OpenHuman/projects/Files`.
     config.files_dir_override = Some(layout.sandbox_dir.join("files"));
     config.memory.agent_id = Some(id.to_string());
     config.memory.root = Some(memory_root(id));
+    config.memory.layout = MemoryLayoutMode::Legacy;
 
     let autonomy = &mut config.autonomy;
     autonomy.enabled = true;
