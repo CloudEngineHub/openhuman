@@ -10,7 +10,7 @@
 //! ```
 //!
 //! No user header means the operator plane. With one, the request runs under
-//! that user's agent — which must already be provisioned — and nothing else.
+//! that user's profile — which must already be provisioned — and nothing else.
 //! The signature, required unless the operator turns it off, binds the user id
 //! to the bearer holder and a ±60 s window: a gateway that forwards a client's
 //! headers by mistake cannot be talked into acting as another user.
@@ -91,7 +91,7 @@ impl GatewayRefusal {
 pub enum GatewayScope {
     /// No user header: the operator plane.
     Operator,
-    /// One user's agent.
+    /// One user's profile.
     User(Arc<Profile>),
 }
 
@@ -108,18 +108,18 @@ pub fn resolve_scope(
         return Ok(GatewayScope::Operator);
     };
     let host = host::host().ok_or_else(|| GatewayRefusal::new(503, "this core serves no users"))?;
-    let agent = ProfileId::for_user(user_id, host.saas().profile_ids).map_err(|e| GatewayRefusal::new(400, e))?;
+    let profile = ProfileId::for_user(user_id, host.saas().profile_ids).map_err(|e| GatewayRefusal::new(400, e))?;
     if host.saas().require_user_signature {
         let signature = signature
             .ok_or_else(|| GatewayRefusal::new(401, format!("missing {USER_SIG_HEADER}")))?;
         verify(secret, user_id, signature, now).map_err(|e| {
-            log::warn!("[profiles][gateway] refused agent={agent}: {e}");
+            log::warn!("[profiles][gateway] refused profile={profile}: {e}");
             GatewayRefusal::new(401, e)
         })?;
     }
-    match host.open(&agent) {
+    match host.open(&profile) {
         Ok(state) => {
-            log::debug!("[profiles][gateway] scoped request to agent={agent}");
+            log::debug!("[profiles][gateway] scoped request to profile={profile}");
             Ok(GatewayScope::User(state))
         }
         Err(e) if e.contains("not provisioned") => Err(GatewayRefusal::new(403, e)),

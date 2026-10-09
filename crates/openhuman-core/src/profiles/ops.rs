@@ -1,6 +1,6 @@
 //! Operator-plane operations on profiles.
 //!
-//! Gateway user ids are taken here and turned into agent ids at once; they
+//! Gateway user ids are taken here and turned into profile ids at once; they
 //! are never logged, stored or returned.
 
 use super::credentials::{self, UserCredentialKind};
@@ -14,7 +14,7 @@ fn require_host() -> Result<std::sync::Arc<ProfileHost>, String> {
     host::host().ok_or_else(|| "profiles exist only in SaaS mode".to_string())
 }
 
-/// Create the agent for gateway user `user_id`, if it does not exist yet.
+/// Create the profile for gateway user `user_id`, if it does not exist yet.
 pub fn provision(user_id: &str) -> Result<Outcome<ProvisionResult>, String> {
     provision_on(&*require_host()?, user_id)
 }
@@ -36,7 +36,7 @@ pub(crate) fn provision_on(
     ))
 }
 
-/// Close agent `profile_id` and archive its state.
+/// Close profile `profile_id` and archive its state.
 pub fn deprovision(profile_id: &str) -> Result<Outcome<DeprovisionResult>, String> {
     deprovision_on(&*require_host()?, profile_id)
 }
@@ -58,14 +58,14 @@ pub(crate) fn deprovision_on(
     ))
 }
 
-/// Every provisioned agent.
+/// Every provisioned profile.
 pub fn list() -> Result<Outcome<Vec<ProfileSummary>>, String> {
-    let agents = require_host()?.list()?;
-    let log = format!("{} profile(s)", agents.len());
-    Ok(Outcome::single_log(agents, log))
+    let profiles = require_host()?.list()?;
+    let log = format!("{} profile(s)", profiles.len());
+    Ok(Outcome::single_log(profiles, log))
 }
 
-/// One agent, or an error when it is not provisioned.
+/// One profile, or an error when it is not provisioned.
 pub fn status(profile_id: &str) -> Result<Outcome<ProfileSummary>, String> {
     status_on(&*require_host()?, profile_id)
 }
@@ -77,14 +77,14 @@ pub(crate) fn status_on(
     let profile_id = ProfileId::parse(profile_id)?;
     let summary = host
         .summary(&profile_id)?
-        .ok_or_else(|| format!("agent {profile_id} is not provisioned"))?;
+        .ok_or_else(|| format!("profile {profile_id} is not provisioned"))?;
     Ok(Outcome::single_log(
         summary,
         format!("status of {profile_id}"),
     ))
 }
 
-/// Install the backend credential the gateway holds for agent `profile_id`.
+/// Install the backend credential the gateway holds for profile `profile_id`.
 pub fn set_credential(
     profile_id: &str,
     kind: UserCredentialKind,
@@ -103,10 +103,10 @@ pub(crate) fn set_credential_on(
 ) -> Result<Outcome<CredentialResult>, String> {
     let profile_id = ProfileId::parse(profile_id)?;
     // From the layout, not `open`: installing or revoking a credential must
-    // work even when every agent slot is busy.
+    // work even when every profile slot is busy.
     let config = host.provisioned_config(&profile_id)?;
     credentials::store(&config, kind, token, expires_at)?;
-    log::info!("[profiles] credential installed for agent={profile_id} kind={kind:?}");
+    log::info!("[profiles] credential installed for profile={profile_id} kind={kind:?}");
     Ok(Outcome::single_log(
         CredentialResult {
             profile_id: profile_id.clone(),
@@ -116,7 +116,7 @@ pub(crate) fn set_credential_on(
     ))
 }
 
-/// Remove every credential agent `profile_id` holds.
+/// Remove every credential profile `profile_id` holds.
 pub fn clear_credential(profile_id: &str) -> Result<Outcome<CredentialResult>, String> {
     clear_credential_on(&*require_host()?, profile_id)
 }
@@ -128,7 +128,7 @@ pub(crate) fn clear_credential_on(
     let profile_id = ProfileId::parse(profile_id)?;
     let config = host.provisioned_config(&profile_id)?;
     let removed = credentials::clear(&config)?;
-    log::info!("[profiles] credential cleared for agent={profile_id} removed={removed}");
+    log::info!("[profiles] credential cleared for profile={profile_id} removed={removed}");
     let log = if removed {
         format!("credential cleared for {profile_id}")
     } else {
