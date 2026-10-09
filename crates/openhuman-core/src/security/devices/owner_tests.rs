@@ -25,18 +25,43 @@ async fn a_pending_pairing_names_its_agent() {
     assert_eq!(owner_of("owner-test-pending", Some(&local)).await, Ok(None));
 }
 
+/// A remembered owner is re-checked in its scope: once that scope no longer
+/// holds the device (revoked, deleted, re-paired elsewhere) the entry is
+/// forgotten and the channel resolved afresh.
 #[tokio::test]
-async fn a_remembered_owner_is_used_without_a_lookup() {
-    remember("owner-test-cached", Some("agent-9".to_string()));
-    assert_eq!(
-        owner_of("owner-test-cached", None)
-            .await
-            .unwrap()
-            .as_deref(),
-        Some("agent-9")
+async fn a_remembered_owner_that_lost_the_device_is_forgotten() {
+    let tmp = tempfile::tempdir().unwrap();
+    let context = crate::core::runtime::CoreContext::for_test_with_config(
+        crate::core::runtime::DomainSet::full(),
+        scoped_config(tmp.path()),
     );
-    remember("owner-test-local", None);
-    assert_eq!(owner_of("owner-test-local", None).await, Ok(None));
+    remember("owner-test-stale", None);
+    let owner =
+        crate::core::runtime::CoreContext::scope(context, owner_of("owner-test-stale", None)).await;
+    assert_eq!(owner, Ok(None));
+    assert_eq!(cached("owner-test-stale"), None, "the stale entry is gone");
+}
+
+#[tokio::test]
+async fn a_revoked_device_is_not_its_agents_any_more() {
+    let tmp = tempfile::tempdir().unwrap();
+    let config = scoped_config(tmp.path());
+    super::super::store::insert_device(&config, "owner-test-revoked", "label", "pk", "hash")
+        .unwrap();
+    super::super::store::revoke_device(&config, "owner-test-revoked").unwrap();
+    let context = crate::core::runtime::CoreContext::for_test_with_config(
+        crate::core::runtime::DomainSet::full(),
+        config,
+    );
+    let owner =
+        crate::core::runtime::CoreContext::scope(context, owner_of("owner-test-revoked", None))
+            .await;
+    assert_eq!(owner, Ok(None));
+    assert_eq!(
+        cached("owner-test-revoked"),
+        None,
+        "a revoked device is not remembered"
+    );
 }
 
 #[test]
