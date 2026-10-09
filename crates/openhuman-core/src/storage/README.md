@@ -94,6 +94,12 @@ reference model.
 
 ## Consumers
 
+- The SaaS profile host (`profiles::lease`, `profiles::registry`): one
+  lease per profile (`DocumentLeases` over the installed backend, else
+  `LocalLeases` under `<root>/users`) and the profile registry, collection
+  `profiles` in the same `cluster` scope. A lease taken over unclean runs
+  the profile's workspace recovery; a lost one fences the profile. See
+  `profiles/README.md`.
 - The session store: `openhuman_rpc::session_store::install_for_host` opens
   the configured backend before boot and installs `DriverSessionStores`
   over it. See that module's README.
