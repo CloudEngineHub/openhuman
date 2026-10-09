@@ -289,7 +289,13 @@ async fn run(nodes: usize, steps: Vec<Op>) -> Result<(), TestCaseError> {
                 prop_assert_eq!(s.expires_at_ms, m.expires_at_ms, "step {}", step);
                 prop_assert_eq!(s.released, m.released, "step {}", step);
             }
-            _ => prop_assert!(false, "step {}: stored {:?} vs model {:?}", step, stored, model.rec),
+            _ => prop_assert!(
+                false,
+                "step {}: stored {:?} vs model {:?}",
+                step,
+                stored,
+                model.rec
+            ),
         }
     }
     Ok(())

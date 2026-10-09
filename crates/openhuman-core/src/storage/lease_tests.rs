@@ -12,7 +12,13 @@ fn record(owner: &str, epoch: u64, expires_at_ms: u64, released: bool) -> LeaseR
 
 #[test]
 fn keys_cannot_escape_a_directory_or_an_id() {
-    for good in ["user-1", "a", "alice@example.com", "x_y.z", &"k".repeat(MAX_KEY_LEN)] {
+    for good in [
+        "user-1",
+        "a",
+        "alice@example.com",
+        "x_y.z",
+        &"k".repeat(MAX_KEY_LEN),
+    ] {
         assert!(validate_key(good).is_ok(), "{good}");
     }
     let too_long = "k".repeat(MAX_KEY_LEN + 1);

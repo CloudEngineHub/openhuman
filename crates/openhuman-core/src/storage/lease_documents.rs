@@ -15,8 +15,8 @@ use async_trait::async_trait;
 use tinystoragedrivers::{CollectionSpec, ErrorKind, Precondition, Scope, Version};
 
 use super::lease::{
-    decide, validate_key, LeaseError, LeaseGrant, LeaseRecord, LeaseStore, Takeover,
-    CLUSTER_SCOPE, LEASE_COLLECTION,
+    decide, validate_key, LeaseError, LeaseGrant, LeaseRecord, LeaseStore, Takeover, CLUSTER_SCOPE,
+    LEASE_COLLECTION,
 };
 use super::{DocumentStore, StorageBackend, StorageError};
 
@@ -136,9 +136,8 @@ impl DocumentLeases {
         let Some(stored) = self.docs.get(LEASE_COLLECTION, key).await? else {
             return Ok(None);
         };
-        let record: LeaseRecord = serde_json::from_value(stored.doc).map_err(|error| {
-            StorageError::serialization(format!("lease record {key}: {error}"))
-        })?;
+        let record: LeaseRecord = serde_json::from_value(stored.doc)
+            .map_err(|error| StorageError::serialization(format!("lease record {key}: {error}")))?;
         Ok(Some((stored.version, record)))
     }
 
@@ -196,28 +195,29 @@ impl LeaseStore for DocumentLeases {
         let expires_at_ms = now_ms.saturating_add(self.ttl_ms);
         for attempt in 0..ACQUIRE_ATTEMPTS {
             let found = self.read(key).await?;
-            let (epoch, unclean) =
-                match decide(found.as_ref().map(|(_, r)| r), &self.node, self.held_epoch(key), now_ms)
-                {
-                    Takeover::Take { epoch, unclean } => (epoch, unclean),
-                    Takeover::Refuse => {
-                        let (_, record) = found.expect("refuse implies a record");
-                        tracing::debug!(
-                            target: "openhuman::storage::lease",
-                            key,
-                            node = %self.node,
-                            owner = %record.owner,
-                            epoch = record.epoch,
-                            "[lease] acquire refused: held elsewhere"
-                        );
-                        return Err(LeaseError::Held(record));
-                    }
-                };
-            let precondition = found
-                .as_ref()
-                .map_or(Precondition::Absent, |(version, _)| {
-                    Precondition::Version(*version)
-                });
+            let (epoch, unclean) = match decide(
+                found.as_ref().map(|(_, r)| r),
+                &self.node,
+                self.held_epoch(key),
+                now_ms,
+            ) {
+                Takeover::Take { epoch, unclean } => (epoch, unclean),
+                Takeover::Refuse => {
+                    let (_, record) = found.expect("refuse implies a record");
+                    tracing::debug!(
+                        target: "openhuman::storage::lease",
+                        key,
+                        node = %self.node,
+                        owner = %record.owner,
+                        epoch = record.epoch,
+                        "[lease] acquire refused: held elsewhere"
+                    );
+                    return Err(LeaseError::Held(record));
+                }
+            };
+            let precondition = found.as_ref().map_or(Precondition::Absent, |(version, _)| {
+                Precondition::Version(*version)
+            });
             let record = self.record(epoch, expires_at_ms, false);
             match self.write(key, &record, precondition).await {
                 Ok(version) => {
