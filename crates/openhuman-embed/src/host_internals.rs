@@ -187,7 +187,9 @@ pub mod inference {
         }
     }
     pub mod http {
-        pub use openhuman_core::inference::http::{router, EXTERNAL_OPENAI_COMPAT_PROVIDER};
+        #[cfg(feature = "http-server")]
+        pub use openhuman_core::inference::http::router;
+        pub use openhuman_core::inference::http::EXTERNAL_OPENAI_COMPAT_PROVIDER;
     }
 }
 
@@ -295,11 +297,13 @@ pub mod voice {
             subscribe_dictation_events, subscribe_transcription_results,
         };
     }
+    #[cfg(feature = "voice")]
     pub mod live {
         pub mod ws {
             pub use openhuman_core::voice::live::ws::handle_live_voice_ws;
         }
     }
+    #[cfg(all(feature = "voice", feature = "http-server"))]
     pub mod streaming {
         pub use openhuman_core::voice::streaming::handle_dictation_ws;
     }
