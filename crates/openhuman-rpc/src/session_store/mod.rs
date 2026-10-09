@@ -16,6 +16,34 @@
 //! and the embed facade reach session state through the port, and keep a
 //! fallback to the same files only for hosts that install no store.
 //!
+//! # Why there are three install paths
+//!
+//! The store is one provider; what differs is how long it must stay installed:
+//!
+//! - **Servers (`server::shims::build_and_serve`, used by `host::cli` and
+//!   `host::desktop`)** install it for the life of the process
+//!   ([`install_for_host`]), before the runtime builds so the recovery sweep
+//!   sees it. They deliberately avoid `RuntimeBuilder::session_store`, which
+//!   restores the previous provider when the runtime drops: the desktop
+//!   restarts its in-process server in place, and a detached turn still
+//!   writing across that gap must keep landing in this layout rather than in
+//!   the core's no-provider fallback. A builder that carries its own store
+//!   skips this step.
+//! - **The TUI (`host::tui_builder` / `host::tui`)** hands the provider to the
+//!   builder ([`provider`], [`provider_for_host`]). Its runtime lives for the
+//!   whole process and is dropped once at exit, so restore-on-drop is correct
+//!   and leaves nothing installed behind it.
+//! - **SaaS (`server::run_server_saas`)** calls [`install`] directly. The core
+//!   boots from `server::saas::build`, which has no `RuntimeBuilder`, and the
+//!   store resolves the workspace of the context each call runs under, so
+//!   every user agent keeps its own sessions. It is process-lifetime for the
+//!   same reason as the servers.
+//!
+//! [`install_for_host`] and [`provider_for_host`] differ from [`install`] and
+//! [`provider`] only in honouring a configured storage URL
+//! (`OPENHUMAN_STORAGE_URL` / `[storage] url`), which swaps this on-disk layout
+//! for TinyAgents' `DriverSessionStores` over that backend.
+//!
 //! It serves one operator: every agent shares the workspace, as it always
 //! has, so it does not claim the per-agent isolation a multi-user host's
 //! store must provide.
