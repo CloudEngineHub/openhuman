@@ -384,6 +384,24 @@ describe('BootCheckGate — picker test connection', () => {
     });
   }
 
+  it('flags a core with realtime (Socket.IO) disabled even though RPC works', async () => {
+    mockTestCoreRpcConnection.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ result: { ok: true } }),
+    } as unknown as Response);
+    mockProbeCoreRealtime.mockResolvedValue('disabled');
+
+    await renderPicker();
+    fillCloudInputs();
+    fireEvent.click(screen.getByRole('button', { name: 'Test Connection' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('test-status-socket-disabled')).toHaveTextContent('--jsonrpc-only');
+    });
+    expect(screen.queryByTestId('test-status-ok')).not.toBeInTheDocument();
+  });
+
   it('shows Connected on a 200 response', async () => {
     mockTestCoreRpcConnection.mockResolvedValue({
       ok: true,
