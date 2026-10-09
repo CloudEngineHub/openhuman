@@ -19,7 +19,7 @@
 // as tinyhumans`, a glob, or `pub use …::embed;`): each one names the items it
 // passes up, so `__host` cannot leak to a host through a re-exported crate.
 // `__host` itself may be forwarded by tinyhumans (rpc's only route to it, doc
-// hidden) and must be `pub(crate)` inside rpc; any `pub use` of `__host` or
+// hidden) and must stay a private binding inside rpc; any `pub use` of `__host` or
 // `core_host` in rpc, or a reach for either through `openhuman_rpc::` from a
 // host, root test or example, fails.
 //
