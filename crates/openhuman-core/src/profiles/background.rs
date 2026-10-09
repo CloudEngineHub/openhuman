@@ -60,9 +60,9 @@ pub fn spawn(host: Arc<ProfileHost>) -> tokio::task::JoinHandle<()> {
 
 /// One visit to every provisioned profile.
 pub async fn tick(host: &ProfileHost) -> TickReport {
-    host.evict_idle();
+    host.evict_idle().await;
     let mut report = TickReport::default();
-    let profiles = match host.list() {
+    let profiles = match host.list().await {
         Ok(profiles) => profiles,
         Err(error) => {
             log::warn!("[profiles][background] listing profiles failed: {error}");
@@ -74,7 +74,7 @@ pub async fn tick(host: &ProfileHost) -> TickReport {
         if !jobs::has_pending(&host.layout_of(&id).workspace_dir) {
             continue;
         }
-        let state = match host.open(&id) {
+        let state = match host.open(&id).await {
             Ok(state) => state,
             Err(error) => {
                 log::debug!("[profiles][background] profile={id} not opened: {error}");

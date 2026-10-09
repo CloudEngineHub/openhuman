@@ -7,6 +7,7 @@ use super::credentials::{self, UserCredentialKind};
 use super::host::{self, ProfileHost};
 use super::types::{
     CredentialResult, DeprovisionResult, ProfileId, ProfileSummary, ProvisionResult,
+    ReleaseResult,
 };
 use crate::core::Outcome;
 
@@ -15,16 +16,16 @@ fn require_host() -> Result<std::sync::Arc<ProfileHost>, String> {
 }
 
 /// Create the profile for gateway user `user_id`, if it does not exist yet.
-pub fn provision(user_id: &str) -> Result<Outcome<ProvisionResult>, String> {
-    provision_on(&*require_host()?, user_id)
+pub async fn provision(user_id: &str) -> Result<Outcome<ProvisionResult>, String> {
+    provision_on(&*require_host()?, user_id).await
 }
 
-pub(crate) fn provision_on(
+pub(crate) async fn provision_on(
     host: &ProfileHost,
     user_id: &str,
 ) -> Result<Outcome<ProvisionResult>, String> {
     let profile_id = ProfileId::for_user(user_id, host.saas().profile_ids)?;
-    let created = host.provision(&profile_id)?;
+    let created = host.provision(&profile_id).await?;
     let log = if created {
         format!("provisioned {profile_id}")
     } else {
@@ -40,16 +41,16 @@ pub(crate) fn provision_on(
 }
 
 /// Close profile `profile_id` and archive its state.
-pub fn deprovision(profile_id: &str) -> Result<Outcome<DeprovisionResult>, String> {
-    deprovision_on(&*require_host()?, profile_id)
+pub async fn deprovision(profile_id: &str) -> Result<Outcome<DeprovisionResult>, String> {
+    deprovision_on(&*require_host()?, profile_id).await
 }
 
-pub(crate) fn deprovision_on(
+pub(crate) async fn deprovision_on(
     host: &ProfileHost,
     profile_id: &str,
 ) -> Result<Outcome<DeprovisionResult>, String> {
     let profile_id = ProfileId::parse(profile_id)?;
-    let removed = host.deprovision(&profile_id)?;
+    let removed = host.deprovision(&profile_id).await?;
     let log = if removed {
         format!("archived {profile_id}")
     } else {
@@ -65,24 +66,25 @@ pub(crate) fn deprovision_on(
 }
 
 /// Every provisioned profile.
-pub fn list() -> Result<Outcome<Vec<ProfileSummary>>, String> {
-    let profiles = require_host()?.list()?;
+pub async fn list() -> Result<Outcome<Vec<ProfileSummary>>, String> {
+    let profiles = require_host()?.list().await?;
     let log = format!("{} profile(s)", profiles.len());
     Ok(Outcome::single_log(profiles, log))
 }
 
 /// One profile, or an error when it is not provisioned.
-pub fn status(profile_id: &str) -> Result<Outcome<ProfileSummary>, String> {
-    status_on(&*require_host()?, profile_id)
+pub async fn status(profile_id: &str) -> Result<Outcome<ProfileSummary>, String> {
+    status_on(&*require_host()?, profile_id).await
 }
 
-pub(crate) fn status_on(
+pub(crate) async fn status_on(
     host: &ProfileHost,
     profile_id: &str,
 ) -> Result<Outcome<ProfileSummary>, String> {
     let profile_id = ProfileId::parse(profile_id)?;
     let summary = host
-        .summary(&profile_id)?
+        .summary(&profile_id)
+        .await?
         .ok_or_else(|| format!("profile {profile_id} is not provisioned"))?;
     Ok(Outcome::single_log(
         summary,
@@ -91,16 +93,16 @@ pub(crate) fn status_on(
 }
 
 /// Install the backend credential the gateway holds for profile `profile_id`.
-pub fn set_credential(
+pub async fn set_credential(
     profile_id: &str,
     kind: UserCredentialKind,
     token: &str,
     expires_at: Option<&str>,
 ) -> Result<Outcome<CredentialResult>, String> {
-    set_credential_on(&*require_host()?, profile_id, kind, token, expires_at)
+    set_credential_on(&*require_host()?, profile_id, kind, token, expires_at).await
 }
 
-pub(crate) fn set_credential_on(
+pub(crate) async fn set_credential_on(
     host: &ProfileHost,
     profile_id: &str,
     kind: UserCredentialKind,
@@ -110,7 +112,7 @@ pub(crate) fn set_credential_on(
     let profile_id = ProfileId::parse(profile_id)?;
     // From the layout, not `open`: installing or revoking a credential must
     // work even when every profile slot is busy.
-    let config = host.provisioned_config(&profile_id)?;
+    let config = host.provisioned_config(&profile_id).await?;
     credentials::store(&config, kind, token, expires_at)?;
     log::info!("[profiles] credential installed for profile={profile_id} kind={kind:?}");
     Ok(Outcome::single_log(
@@ -123,16 +125,16 @@ pub(crate) fn set_credential_on(
 }
 
 /// Remove every credential profile `profile_id` holds.
-pub fn clear_credential(profile_id: &str) -> Result<Outcome<CredentialResult>, String> {
-    clear_credential_on(&*require_host()?, profile_id)
+pub async fn clear_credential(profile_id: &str) -> Result<Outcome<CredentialResult>, String> {
+    clear_credential_on(&*require_host()?, profile_id).await
 }
 
-pub(crate) fn clear_credential_on(
+pub(crate) async fn clear_credential_on(
     host: &ProfileHost,
     profile_id: &str,
 ) -> Result<Outcome<CredentialResult>, String> {
     let profile_id = ProfileId::parse(profile_id)?;
-    let config = host.provisioned_config(&profile_id)?;
+    let config = host.provisioned_config(&profile_id).await?;
     let removed = credentials::clear(&config)?;
     log::info!("[profiles] credential cleared for profile={profile_id} removed={removed}");
     let log = if removed {
@@ -144,6 +146,32 @@ pub(crate) fn clear_credential_on(
         CredentialResult {
             profile_id,
             has_credential: false,
+        },
+        log,
+    ))
+}
+
+/// Close profile `profile_id` on this node and release its lease, so another
+/// node can host it at once.
+pub async fn release(profile_id: &str) -> Result<Outcome<ReleaseResult>, String> {
+    release_on(&*require_host()?, profile_id).await
+}
+
+pub(crate) async fn release_on(
+    host: &ProfileHost,
+    profile_id: &str,
+) -> Result<Outcome<ReleaseResult>, String> {
+    let profile_id = ProfileId::parse(profile_id)?;
+    let released = host.release(&profile_id).await?;
+    let log = if released {
+        format!("released {profile_id}")
+    } else {
+        format!("{profile_id} was not open on this node")
+    };
+    Ok(Outcome::single_log(
+        ReleaseResult {
+            profile_id,
+            released,
         },
         log,
     ))

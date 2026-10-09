@@ -31,13 +31,14 @@ struct CredentialParams {
     expires_at: Option<String>,
 }
 
-const FUNCTIONS: [&str; 6] = [
+const FUNCTIONS: [&str; 7] = [
     "provision",
     "deprovision",
     "list",
     "status",
     "set_credential",
     "clear_credential",
+    "release",
 ];
 
 pub fn all_profiles_controller_schemas() -> Vec<ControllerSchema> {
@@ -69,6 +70,10 @@ pub fn all_profiles_registered_controllers() -> Vec<RegisteredController> {
         RegisteredController {
             schema: profiles_schemas("clear_credential"),
             handler: handle_clear_credential,
+        },
+        RegisteredController {
+            schema: profiles_schemas("release"),
+            handler: handle_release,
         },
     ]
 }
@@ -162,6 +167,17 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
                 bool_field("has_credential", "Always false on success."),
             ],
         },
+        "release" => ControllerSchema {
+            namespace: "profiles",
+            function: "release",
+            description: "Close a profile on this node and release its lease, so another node can host it at once. \
+                          Refused while the profile is in use.",
+            inputs: vec![string_field("profile_id", "The profile to release.")],
+            outputs: vec![
+                string_field("profile_id", "The profile."),
+                bool_field("released", "False when it was not open on this node."),
+            ],
+        },
         _ => ControllerSchema {
             namespace: "profiles",
             function: "unknown",
@@ -175,25 +191,25 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
 fn handle_provision(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let payload = deserialize_params::<UserParams>(params)?;
-        to_json(super::ops::provision(&payload.user_id)?)
+        to_json(super::ops::provision(&payload.user_id).await?)
     })
 }
 
 fn handle_deprovision(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let payload = deserialize_params::<ProfileParams>(params)?;
-        to_json(super::ops::deprovision(&payload.profile_id)?)
+        to_json(super::ops::deprovision(&payload.profile_id).await?)
     })
 }
 
 fn handle_list(_params: Map<String, Value>) -> ControllerFuture {
-    Box::pin(async move { to_json(super::ops::list()?) })
+    Box::pin(async move { to_json(super::ops::list().await?) })
 }
 
 fn handle_status(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let payload = deserialize_params::<ProfileParams>(params)?;
-        to_json(super::ops::status(&payload.profile_id)?)
+        to_json(super::ops::status(&payload.profile_id).await?)
     })
 }
 
@@ -205,14 +221,22 @@ fn handle_set_credential(params: Map<String, Value>) -> ControllerFuture {
             payload.kind,
             &payload.token,
             payload.expires_at.as_deref(),
-        )?)
+        )
+        .await?)
     })
 }
 
 fn handle_clear_credential(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let payload = deserialize_params::<ProfileParams>(params)?;
-        to_json(super::ops::clear_credential(&payload.profile_id)?)
+        to_json(super::ops::clear_credential(&payload.profile_id).await?)
+    })
+}
+
+fn handle_release(params: Map<String, Value>) -> ControllerFuture {
+    Box::pin(async move {
+        let payload = deserialize_params::<ProfileParams>(params)?;
+        to_json(super::ops::release(&payload.profile_id).await?)
     })
 }
 

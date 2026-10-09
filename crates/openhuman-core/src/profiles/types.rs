@@ -161,6 +161,14 @@ pub struct DeprovisionResult {
     pub removed: bool,
 }
 
+/// What [`release`](super::ops::release) did.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ReleaseResult {
+    pub profile_id: ProfileId,
+    /// `false` when the profile was not open on this node.
+    pub released: bool,
+}
+
 /// One provisioned profile, as the operator plane sees it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProfileSummary {
