@@ -169,3 +169,11 @@ fn boot_jobs_are_independent_from_runtime_service_flags() {
     assert!(!headless.integrations);
     assert!(!headless.memory_sync);
 }
+
+/// Sentry TAURI-RUST-122R/122S: the desktop shell updates through the Tauri
+/// updater, and releases publish no core archive for macOS or Windows, so an
+/// in-process core polling GitHub for one reported a missing asset every hour.
+#[test]
+fn desktop_service_set_does_not_run_the_core_update_scheduler() {
+    assert!(!ServiceSet::desktop().update_scheduler);
+}
