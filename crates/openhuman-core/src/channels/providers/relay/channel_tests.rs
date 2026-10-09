@@ -38,7 +38,14 @@ async fn send_publishes_under_the_callers_stamp_and_records_the_text() {
         crate::core::runtime::DomainSet::full(),
         None,
     )
-    .derive_with(crate::core::runtime::ContextOverlay::default().session_agent("u-relay-test"));
+    .derive_with(
+        crate::core::runtime::ContextOverlay::new(
+            crate::config::Config::default(),
+            crate::core::runtime::DomainSet::full(),
+            Default::default(),
+        )
+        .session_agent("u-relay-test"),
+    );
     let channel = Arc::new(RelayChannel::new(
         "telegram",
         "gw-stamp",
