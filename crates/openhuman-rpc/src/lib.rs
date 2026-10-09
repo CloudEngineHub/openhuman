@@ -27,10 +27,10 @@
 //!   persistence-free.
 //! - [`host`]: the shared host boot, one entry per host shape
 //!   ([`host::cli`], [`host::desktop`], [`host::tui`]).
-//! - [`tinyhumans`] (and through it `tinyhumans::embed`): the curated library
-//!   facade hosts configure a runtime with. [`embed`] is the same crate as
-//!   `tinyhumans::embed`, re-exported here so a host (app, CLI, TUI) that
-//!   depends on this crate alone names it in one step.
+//! - [`tinyhumans`] and [`embed`]: curated lists of the TinyHumans-layer and
+//!   embed items the hosts (app, CLI, TUI) use, so a host that depends on
+//!   this crate alone names them in one step. Neither is the layer below
+//!   re-exported wholesale.
 //!
 //! Hosts depend on `openhuman-rpc` and nothing else from this repository
 //! (`scripts/ci/check-crate-chain.mjs` enforces it). What they reach is the
