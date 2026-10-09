@@ -71,6 +71,17 @@ async fn has_live_device(channel_id: &str) -> Result<bool, String> {
         .map_err(|error| error.to_string())
 }
 
+/// Whether the current scope holds `channel_id` as a revoked device (a missing
+/// row is not revoked).
+async fn is_revoked(channel_id: &str) -> Result<bool, String> {
+    let config = crate::config::rpc::load_config_with_timeout()
+        .await
+        .map_err(|error| format!("load config: {error}"))?;
+    super::store::get_device(&config, channel_id)
+        .map(|device| device.is_some_and(|device| device.revoked))
+        .map_err(|error| error.to_string())
+}
+
 /// The agent `channel_id` belongs to, resolved as described above: `None`
 /// for `local`, which is also where a channel no scope knows yet (a handshake
 /// still in flight) is handled. A channel no scope holds live but whose session
@@ -87,12 +98,34 @@ pub(super) async fn owner_of(
     channel_id: &str,
     pending: Option<&PairingSession>,
 ) -> Result<Option<String>, OwnerLookupFailed> {
-    // A pending pairing names its agent only until the handshake completes;
-    // once this process holds the channel's session cipher the device is
-    // paired, and the store (not a leftover pairing session) decides whether
-    // it is still live — it may have been revoked by another process.
-    if let Some(session) = pending.filter(|_| !has_active_cipher(channel_id)) {
-        return Ok(session.agent.clone());
+    // A pending pairing names its agent. Once this process holds the channel's
+    // session cipher the handshake has completed, and the session may be a
+    // leftover: another process sharing the backend can have revoked the
+    // device since. The session's own scope then decides — a revoked row drops
+    // the frame; no row yet (the first frame can race the row being persisted
+    // right after the handshake ACK) keeps the session's agent.
+    if let Some(session) = pending {
+        if !has_active_cipher(channel_id) {
+            return Ok(session.agent.clone());
+        }
+        let revoked =
+            crate::storage::agents::within_agent(session.agent.as_deref(), is_revoked(channel_id))
+                .await;
+        return match revoked {
+            Some(Ok(false)) => Ok(session.agent.clone()),
+            Some(Ok(true)) => Err(OwnerLookupFailed {
+                agent: session.agent.clone(),
+                error: "device is revoked".to_string(),
+            }),
+            Some(Err(error)) => Err(OwnerLookupFailed {
+                agent: session.agent.clone(),
+                error,
+            }),
+            None => Err(OwnerLookupFailed {
+                agent: session.agent.clone(),
+                error: "no context can act for the pairing agent".to_string(),
+            }),
+        };
     }
     if let Some(owner) = cached(channel_id) {
         match crate::storage::agents::within_agent(owner.as_deref(), has_live_device(channel_id))

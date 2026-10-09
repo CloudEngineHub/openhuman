@@ -163,22 +163,22 @@ async fn a_revoked_device_with_a_live_cipher_is_dropped() {
 }
 
 /// A pairing session left over after the handshake does not vouch for a device
-/// another process has since revoked: with the cipher live, the store decides.
+/// another process has since revoked, but a device whose row is not persisted
+/// yet (the first frame racing the handshake ACK) still belongs to the
+/// session's agent.
 #[tokio::test]
 async fn a_leftover_pairing_session_does_not_outlive_a_revocation() {
     let tmp = tempfile::tempdir().unwrap();
+    let config = scoped_config(tmp.path());
     let context = crate::core::runtime::CoreContext::for_test_with_config(
         crate::core::runtime::DomainSet::full(),
-        scoped_config(tmp.path()),
+        config.clone(),
     );
-    let pending = session(Some("agent-7"));
+    let pending = session(None);
     // Before the handshake the session names the agent.
     assert_eq!(
-        owner_of("owner-test-leftover", Some(&pending))
-            .await
-            .unwrap()
-            .as_deref(),
-        Some("agent-7")
+        owner_of("owner-test-leftover", Some(&pending)).await,
+        Ok(None)
     );
     super::super::rpc::ACTIVE_CIPHERS.lock().unwrap().insert(
         "owner-test-leftover".to_string(),
@@ -186,6 +186,17 @@ async fn a_leftover_pairing_session_does_not_outlive_a_revocation() {
             super::super::crypto::TunnelCipher::new(&[9u8; 32]),
         )),
     );
+    // Cipher live, row not persisted yet: still the session's agent.
+    let racing = crate::core::runtime::CoreContext::scope(
+        std::sync::Arc::clone(&context),
+        owner_of("owner-test-leftover", Some(&pending)),
+    )
+    .await;
+    assert_eq!(racing, Ok(None));
+    // Cipher live, row revoked elsewhere: dropped.
+    super::super::store::insert_device(&config, "owner-test-leftover", "label", "pk", "hash")
+        .unwrap();
+    super::super::store::revoke_device(&config, "owner-test-leftover").unwrap();
     let owner = crate::core::runtime::CoreContext::scope(
         context,
         owner_of("owner-test-leftover", Some(&pending)),
