@@ -70,6 +70,33 @@ pub struct SaasConfig {
     /// (see `profiles::gateway`).
     #[serde(default = "default_true")]
     pub require_user_signature: bool,
+    /// The storage backend every node of a deployment shares (`sqlite:…`,
+    /// `mongodb://…`): the profile registry, the profile leases and the
+    /// session store. `OPENHUMAN_STORAGE_URL` wins over it. Unset keeps the
+    /// on-disk layout, `profile.toml` files and file-lock leases.
+    #[serde(default)]
+    pub storage_url: Option<String>,
+    /// This node's id in the profile leases. Defaults to `OPENHUMAN_NODE_ID`,
+    /// else a random id per process ([`Self::resolve_node_id`]). Must be
+    /// unique among live nodes; a stable one lets a restarted node take its
+    /// own profiles back at once instead of waiting out their leases.
+    #[serde(default)]
+    pub node_id: Option<String>,
+    /// Where the gateway reaches this node, named to callers that hit another
+    /// node while this one holds their profile. Setting it marks the node as
+    /// one of a cluster, which needs a backend whose compare-and-swap holds
+    /// across processes (the boot guard checks).
+    #[serde(default)]
+    pub advertise_url: Option<String>,
+    /// Seconds a profile lease lasts without renewal. The holder renews every
+    /// third of it; a node that stops renewing loses its profiles to others
+    /// after this long.
+    #[serde(default = "default_lease_ttl_secs")]
+    pub lease_ttl_secs: u64,
+    /// The operator's own state directory. Defaults to `<root>/operator`;
+    /// nodes sharing one root each set their own.
+    #[serde(default)]
+    pub operator_dir: Option<PathBuf>,
 }
 
 /// `[sandbox]`: the one-shot container a user's shell command runs in. The
@@ -130,6 +157,13 @@ fn default_idle_evict_secs() -> u64 {
     30 * 60
 }
 
+fn default_lease_ttl_secs() -> u64 {
+    30
+}
+
+/// The environment variable that names this node (see [`SaasConfig::node_id`]).
+pub const NODE_ID_VAR: &str = "OPENHUMAN_NODE_ID";
+
 impl SaasConfig {
     /// A config rooted at `root` with every default.
     pub fn new(root: impl Into<PathBuf>) -> Self {
@@ -145,6 +179,11 @@ impl SaasConfig {
             shared_backend_api_key: false,
             custom_definitions: false,
             require_user_signature: true,
+            storage_url: None,
+            node_id: None,
+            advertise_url: None,
+            lease_ttl_secs: default_lease_ttl_secs(),
+            operator_dir: None,
         }
     }
 
@@ -169,9 +208,56 @@ impl SaasConfig {
             .unwrap_or_else(|| self.root.join("service.token"))
     }
 
-    /// The operator's own state directory: `<root>/operator`.
+    /// The operator's own state directory: [`Self::operator_dir`] when set,
+    /// else `<root>/operator`.
     pub fn operator_dir(&self) -> PathBuf {
-        self.root.join("operator")
+        self.operator_dir
+            .clone()
+            .unwrap_or_else(|| self.root.join("operator"))
+    }
+
+    /// The storage URL in effect: `env` (`OPENHUMAN_STORAGE_URL`) when set,
+    /// else [`Self::storage_url`]. Blank values count as unset.
+    pub fn storage_url_with(&self, env: Option<&str>) -> Option<String> {
+        env.into_iter()
+            .chain(self.storage_url.as_deref())
+            .map(str::trim)
+            .find(|url| !url.is_empty())
+            .map(str::to_owned)
+    }
+
+    /// [`Self::storage_url_with`] the process environment.
+    pub fn resolved_storage_url(&self) -> Option<String> {
+        let env = std::env::var(crate::storage::STORAGE_URL_VAR).ok();
+        self.storage_url_with(env.as_deref())
+    }
+
+    /// Fill in [`Self::node_id`]: the configured one, else `env`
+    /// (`OPENHUMAN_NODE_ID`), else a fresh random id. Called once at boot so
+    /// every lease this process takes names the same node.
+    pub fn resolve_node_id(&mut self, env: Option<&str>) -> &str {
+        let id = self
+            .node_id
+            .as_deref()
+            .into_iter()
+            .chain(env)
+            .map(str::trim)
+            .find(|id| !id.is_empty())
+            .map(str::to_owned)
+            .unwrap_or_else(|| format!("node-{}", uuid::Uuid::new_v4().simple()));
+        self.node_id.insert(id).as_str()
+    }
+
+    /// Whether this node is one of a cluster (it advertises an endpoint).
+    pub fn is_clustered(&self) -> bool {
+        self.advertise_url
+            .as_deref()
+            .is_some_and(|url| !url.trim().is_empty())
+    }
+
+    /// How long a profile lease lasts without renewal (at least one second).
+    pub fn lease_ttl(&self) -> std::time::Duration {
+        std::time::Duration::from_secs(self.lease_ttl_secs.max(1))
     }
 
     /// The config the operator plane boots with. It roots every path under
@@ -215,7 +301,7 @@ impl DomainSet {
 /// Boot a SaaS core: check the deployment, lock the process to SaaS, and
 /// build the operator plane.
 pub async fn build(
-    config: SaasConfig,
+    mut config: SaasConfig,
     host: Option<String>,
     port: Option<u16>,
 ) -> anyhow::Result<CoreRuntime> {
@@ -248,6 +334,8 @@ pub async fn build(
     let ServiceToken::Valid(bearer) = token else {
         unreachable!("boot guard accepts only a valid service token");
     };
+    let node_env = std::env::var(NODE_ID_VAR).ok();
+    let node_id = config.resolve_node_id(node_env.as_deref()).to_owned();
 
     mode::lock_mode(Mode::Saas).map_err(|e| anyhow::anyhow!("[saas] {e}"))?;
 
@@ -268,8 +356,11 @@ pub async fn build(
         );
     }
     log::info!(
-        "[saas] booting operator plane root={} max_profiles_open={} profile_ids={:?} idle_evict_secs={}",
+        "[saas] booting operator plane root={} node={node_id} clustered={} lease_ttl_secs={} \
+         max_profiles_open={} profile_ids={:?} idle_evict_secs={}",
         config.root.display(),
+        config.is_clustered(),
+        config.lease_ttl_secs,
         config.max_profiles_open,
         config.profile_ids,
         config.idle_evict_secs
