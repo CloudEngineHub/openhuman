@@ -12,6 +12,7 @@ import {
   checkRepository,
   findForbiddenPaths,
   findPatternHits,
+  CORE_WHOLESALE_REEXPORT_PATTERNS,
   HOST_RPC_INTERNAL_PATTERNS,
   RPC_INTERNAL_REEXPORT_PATTERNS,
   WHOLESALE_REEXPORT_PATTERNS,
@@ -173,6 +174,20 @@ test('a layer re-exporting the layer below wholesale is flagged', () => {
   assert.deepEqual(flagged('/* pub use openhuman_embed::*; */\n'), []);
 });
 
+test('embed may not re-export the core wholesale, and grouped wholesale forms are flagged', () => {
+  const core = text =>
+    findPatternHits(text, 'lib.rs', CORE_WHOLESALE_REEXPORT_PATTERNS).map(h => h.line);
+  assert.deepEqual(core('pub use openhuman_core as core;\n'), [1]);
+  assert.deepEqual(core('pub use openhuman_core::*;\n'), [1]);
+  assert.deepEqual(core('pub use openhuman_core::{self, agent};\n'), [1]);
+  assert.deepEqual(core('pub use openhuman_core::agent::turn_origin::AgentTurnOrigin;\n'), []);
+  assert.deepEqual(core('pub use openhuman_core::{CoreBuilder, CoreRuntime};\n'), []);
+  const grouped = text =>
+    findPatternHits(text, 'lib.rs', WHOLESALE_REEXPORT_PATTERNS).map(h => h.line);
+  assert.deepEqual(grouped('pub use openhuman_embed::{self as embed};\n'), [1]);
+  assert.deepEqual(grouped('pub use openhuman_tinyhumans::{embed, SessionManager};\n'), []);
+});
+
 test('rpc may not re-export the internal list on a public path', () => {
   const flagged = text =>
     findPatternHits(text, 'lib.rs', RPC_INTERNAL_REEXPORT_PATTERNS).map(h => `${h.line}`);
@@ -184,7 +199,9 @@ test('rpc may not re-export the internal list on a public path', () => {
     ['2']
   );
   assert.deepEqual(flagged('pub(crate) use openhuman_tinyhumans::__host as core_host;\n'), []);
-  // Re-exporting one item reached through the list is an item, not the list.
+  // A public re-export of a module beneath the list is still the list leaking.
+  assert.deepEqual(flagged('pub use crate::core_host::config;\n'), ['1']);
+  // `unwrap_rpc` is the one item rpc passes up from the list.
   assert.deepEqual(flagged('pub use crate::core_host::core::unwrap_rpc;\n'), []);
 });
 

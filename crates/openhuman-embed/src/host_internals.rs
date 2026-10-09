@@ -300,7 +300,7 @@ pub mod voice {
             subscribe_dictation_events, subscribe_transcription_results,
         };
     }
-    #[cfg(feature = "voice")]
+    #[cfg(all(feature = "voice", feature = "http-server"))]
     pub mod live {
         pub mod ws {
             pub use openhuman_core::voice::live::ws::handle_live_voice_ws;

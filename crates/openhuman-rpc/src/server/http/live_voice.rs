@@ -31,9 +31,9 @@ pub(super) async fn live_voice_ws_handler(
                 return;
             }
         };
-        #[cfg(feature = "voice")]
+        #[cfg(all(feature = "voice", feature = "http-server"))]
         crate::core_host::voice::live::ws::handle_live_voice_ws(socket, config).await;
-        #[cfg(not(feature = "voice"))]
+        #[cfg(not(all(feature = "voice", feature = "http-server")))]
         {
             // The core only carries the live-voice socket with voice compiled in.
             let _ = (socket, config);

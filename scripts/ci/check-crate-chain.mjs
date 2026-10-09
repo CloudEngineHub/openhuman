@@ -63,7 +63,11 @@ export const FORBIDDEN_HOST_PATTERNS = [
 ];
 
 /** Layer crates whose `src/` must not re-export the layer below wholesale. */
-export const LAYER_SOURCE_DIRS = ['crates/openhuman-tinyhumans/src', 'crates/openhuman-rpc/src'];
+export const LAYER_SOURCE_DIRS = [
+  'crates/openhuman-embed/src',
+  'crates/openhuman-tinyhumans/src',
+  'crates/openhuman-rpc/src',
+];
 
 /** Wholesale re-exports of a lower layer (matched across lines, comments stripped). */
 export const WHOLESALE_REEXPORT_PATTERNS = [
@@ -80,6 +84,11 @@ export const WHOLESALE_REEXPORT_PATTERNS = [
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)(?:::embed)?::\*/,
   },
   {
+    name: 'pub use openhuman_embed::{self, *} (grouped wholesale)',
+    regex:
+      /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)(?:::embed)?::\{[^}]*(?:\bself\b|\*)/,
+  },
+  {
     name: 'pub use openhuman_embed / openhuman_tinyhumans (the bare crate)',
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)\s*;/,
   },
@@ -89,11 +98,19 @@ export const WHOLESALE_REEXPORT_PATTERNS = [
   },
 ];
 
+/** Embed must not re-export the core wholesale either. */
+export const CORE_WHOLESALE_REEXPORT_PATTERNS = [
+  {
+    name: 'pub use openhuman_core (the bare crate, an alias or a glob)',
+    regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_core\s*(?:;|as\b|::\*|::\{[^}]*(?:\bself\b|\*))/,
+  },
+];
+
 /** `pub use` of the internal list from rpc (it may only be `pub(crate)`). */
 export const RPC_INTERNAL_REEXPORT_PATTERNS = [
   {
-    name: 'pub use of the __host / core_host list itself',
-    regex: /\bpub\s+use\b[^;]*\b(?:__host|core_host)\b\s*(?:as\s+\w+\s*)?(?:[;,}]|::\*)/,
+    name: 'pub use of anything under __host / core_host (bar unwrap_rpc)',
+    regex: /\bpub\s+use\b(?![^;]*::unwrap_rpc\s*;)[^;]*\b(?:__host|core_host)\b/,
   },
 ];
 
@@ -362,7 +379,9 @@ export function checkRepository(root) {
     if (!existsSync(abs)) throw new Error(`missing layer source directory ${dir}`);
     const patterns = dir.includes('openhuman-rpc')
       ? [...WHOLESALE_REEXPORT_PATTERNS, ...RPC_INTERNAL_REEXPORT_PATTERNS]
-      : WHOLESALE_REEXPORT_PATTERNS;
+      : dir.includes('openhuman-embed')
+        ? CORE_WHOLESALE_REEXPORT_PATTERNS
+        : WHOLESALE_REEXPORT_PATTERNS;
     for (const file of rustFiles(abs)) {
       facadeViolations.push(
         ...findPatternHits(readFileSync(file, 'utf8'), relative(root, file), patterns)
