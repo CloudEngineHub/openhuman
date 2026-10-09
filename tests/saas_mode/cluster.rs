@@ -58,7 +58,7 @@ impl Node {
             .lines()
             .filter(|line| !line.contains("rpc_handler [rpc]"))
             .collect();
-        lines[lines.len().saturating_sub(80)..].join("\n")
+        lines[lines.len().saturating_sub(400)..].join("\n")
     }
 
     fn kill(&mut self) {
