@@ -61,19 +61,35 @@ pub async fn run_server_headless(host: Option<&str>, port: Option<u16>) -> anyho
 /// Runs a SaaS core: many users behind a trusted gateway, booted from the
 /// operator's config file and refused unless its boot guard passes.
 ///
-/// The on-disk session store is installed before boot. It resolves the
-/// workspace of the context each call runs under, so every user agent keeps
-/// its sessions, transcripts and turn states in its own workspace.
+/// The session store is installed before boot. With no storage URL it is the
+/// on-disk store, which resolves the workspace of the context each call runs
+/// under, so every profile keeps its sessions, transcripts and turn states in
+/// its own workspace. With one (`OPENHUMAN_STORAGE_URL`, else the operator's
+/// `storage_url`) the backend is opened and installed — the profile registry
+/// and leases live there too — and its session store never recovers on open:
+/// recovery follows the profile lease instead.
+///
+/// On shutdown the leases of profiles nothing is using are released, so
+/// another node can take them at once.
 pub async fn run_server_saas(
     host: Option<&str>,
     port: Option<u16>,
     saas_config: &std::path::Path,
 ) -> anyhow::Result<()> {
     let config = crate::core_host::core::runtime::SaasConfig::load(saas_config)?;
-    crate::session_store::install();
+    let storage_url = config.resolved_storage_url();
+    log::info!(
+        "[rpc:saas] session store: {}",
+        if storage_url.is_some() { "storage backend" } else { "on-disk" }
+    );
+    crate::session_store::install_for_saas(storage_url).await?;
     let runtime =
         crate::core_host::core::runtime::saas::build(config, host.map(str::to_owned), port).await?;
-    super::serve::serve(&runtime, None, None).await
+    let served = super::serve::serve(&runtime, None, None).await;
+    if let Some(profiles) = crate::core_host::profiles::host::host() {
+        profiles.release_idle_on_shutdown().await;
+    }
+    served
 }
 
 /// Like [`run_server`] but marks the instance as embedded.

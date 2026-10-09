@@ -232,6 +232,31 @@ pub async fn install_for_url(url: Option<String>) -> anyhow::Result<()> {
 pub async fn provider_for_url(
     url: Option<String>,
 ) -> anyhow::Result<Arc<dyn SessionStoreProvider>> {
+    provider_for_url_with(url, None).await
+}
+
+/// [`install_for_url`] for a SaaS core: a backend's session store never
+/// sweeps in-flight turns on open, whatever its driver. In SaaS mode recovery
+/// is lease-driven — a profile's turns are interrupted only when its lease is
+/// taken over from a holder that never released it — because another node
+/// may be running them. With no URL this is the classic on-disk store.
+///
+/// # Errors
+///
+/// When `url` cannot be parsed or opened.
+pub async fn install_for_saas(url: Option<String>) -> anyhow::Result<()> {
+    let provider = provider_for_url_with(url, Some(false)).await?;
+    log::debug!("[rpc:session_store] installing process-wide (SaaS, lease-driven recovery)");
+    crate::core_host::agent::session_store::install(provider);
+    Ok(())
+}
+
+/// [`provider_for_url`] with the recovery sweep made explicit: `None`
+/// recovers on open exactly when the driver is single-process.
+async fn provider_for_url_with(
+    url: Option<String>,
+    recover_on_open: Option<bool>,
+) -> anyhow::Result<Arc<dyn SessionStoreProvider>> {
     use anyhow::Context as _;
 
     let Some(url) = url else {
@@ -244,15 +269,16 @@ pub async fn provider_for_url(
     let backend = crate::core_host::storage::open(&url)
         .await
         .context("opening the configured storage backend")?;
-    let single_process = !crate::core_host::storage::driver_is_shared(backend.driver());
+    let recover = recover_on_open
+        .unwrap_or_else(|| !crate::core_host::storage::driver_is_shared(backend.driver()));
     let provider = tinyagents_session::DriverSessionStores::new(Arc::clone(&backend))
         .context("starting the session store bridge")?
-        .recover_on_open(single_process);
+        .recover_on_open(recover);
     // Only a fully working bridge makes the backend the process's storage.
     crate::core_host::storage::install(backend);
     log::info!(
         "[rpc:session_store] opened the storage-backed session store \
-         recover_on_open={single_process}"
+         recover_on_open={recover}"
     );
     Ok(Arc::new(provider))
 }
