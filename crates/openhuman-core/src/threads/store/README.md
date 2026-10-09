@@ -23,7 +23,9 @@ bus subscriber (see [`memory/`](../../memory/)).
   Telegram, ...) persist alongside the UI's own threads.
   A caller that persists a channel turn itself (the hosted-channel relay)
   calls `claim_channel_turn(channel, message_id)` first; the subscriber skips
-  claimed turns rather than mirroring them under a second thread id.
+  claimed turns rather than mirroring them under a second thread id. In SaaS
+  the subscriber is not registered and a claim is a no-op, so the untenanted
+  `(channel, message_id)` key never spans profiles.
 
 ## On-disk layout
 

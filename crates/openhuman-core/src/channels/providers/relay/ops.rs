@@ -44,7 +44,8 @@ pub async fn channel_relay_inbound(params: RelayInboundParams) -> Result<Outcome
         ));
     }
     // The turn persists itself under this workspace; the process-wide
-    // subscriber would mirror it a second time under another id.
+    // subscriber (single-user only; a no-op claim in SaaS) would mirror it a
+    // second time under another id.
     crate::threads::store::claim_channel_turn(&params.channel, &params.message_id);
 
     let request_id = uuid::Uuid::new_v4().to_string();
