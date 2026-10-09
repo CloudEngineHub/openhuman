@@ -530,12 +530,15 @@ async fn claimed_channel_turns_are_left_to_their_caller() {
 
 #[test]
 fn the_claim_list_is_bounded() {
-    for i in 0..(CLAIMED_TURNS_CAPACITY + 10) {
-        claim_channel_turn("relay-bound-test", &format!("m{i}"));
+    let mut claimed = ClaimedTurns::new(3);
+    for i in 0..5 {
+        claimed.claim("telegram", &format!("m{i}"));
     }
-    assert!(!is_claimed_channel_turn("relay-bound-test", "m0"), "oldest evicted");
-    assert!(is_claimed_channel_turn(
-        "relay-bound-test",
-        &format!("m{}", CLAIMED_TURNS_CAPACITY + 9)
-    ));
+    claimed.claim("telegram", "m4");
+    assert!(!claimed.contains("telegram", "m0"), "oldest evicted");
+    assert!(!claimed.contains("telegram", "m1"), "oldest evicted");
+    assert!(claimed.contains("telegram", "m2"));
+    assert!(claimed.contains("telegram", "m4"));
+    assert!(!claimed.contains("discord", "m4"), "keyed by channel too");
+    assert_eq!(claimed.keys.len(), 3, "a repeated claim is not stored twice");
 }

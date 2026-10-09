@@ -83,36 +83,58 @@ const CLAIMED_TURNS_CAPACITY: usize = 1024;
 
 /// Channel turns whose caller persists them itself (the hosted-channel relay,
 /// which writes under the caller's own scope and thread id). Keyed by
-/// `(channel, message_id)`, oldest first.
-static CLAIMED_TURNS: OnceLock<std::sync::Mutex<std::collections::VecDeque<(String, String)>>> =
-    OnceLock::new();
+/// `(channel, message_id)`, oldest first, at most `capacity` long.
+#[derive(Debug)]
+struct ClaimedTurns {
+    capacity: usize,
+    keys: std::collections::VecDeque<(String, String)>,
+}
 
-fn claimed_turns() -> &'static std::sync::Mutex<std::collections::VecDeque<(String, String)>> {
-    CLAIMED_TURNS.get_or_init(|| std::sync::Mutex::new(std::collections::VecDeque::new()))
+impl ClaimedTurns {
+    fn new(capacity: usize) -> Self {
+        Self {
+            capacity,
+            keys: std::collections::VecDeque::new(),
+        }
+    }
+
+    fn claim(&mut self, channel: &str, message_id: &str) {
+        if self.contains(channel, message_id) {
+            return;
+        }
+        if self.keys.len() >= self.capacity {
+            self.keys.pop_front();
+        }
+        self.keys
+            .push_back((channel.to_string(), message_id.to_string()));
+    }
+
+    fn contains(&self, channel: &str, message_id: &str) -> bool {
+        self.keys
+            .iter()
+            .any(|(c, m)| c == channel && m == message_id)
+    }
+}
+
+static CLAIMED_TURNS: OnceLock<std::sync::Mutex<ClaimedTurns>> = OnceLock::new();
+
+fn claimed_turns() -> std::sync::MutexGuard<'static, ClaimedTurns> {
+    CLAIMED_TURNS
+        .get_or_init(|| std::sync::Mutex::new(ClaimedTurns::new(CLAIMED_TURNS_CAPACITY)))
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
 }
 
 /// Mark the channel message `(channel, message_id)` as persisted by its
 /// caller, so this subscriber does not mirror it a second time under the
 /// listener-derived thread id.
 pub(crate) fn claim_channel_turn(channel: &str, message_id: &str) {
-    let mut claimed = claimed_turns().lock().unwrap_or_else(|e| e.into_inner());
-    let key = (channel.to_string(), message_id.to_string());
-    if claimed.contains(&key) {
-        return;
-    }
-    if claimed.len() >= CLAIMED_TURNS_CAPACITY {
-        claimed.pop_front();
-    }
-    claimed.push_back(key);
+    claimed_turns().claim(channel, message_id);
 }
 
 /// Whether `(channel, message_id)` was claimed by [`claim_channel_turn`].
 pub(crate) fn is_claimed_channel_turn(channel: &str, message_id: &str) -> bool {
-    claimed_turns()
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .iter()
-        .any(|(c, m)| c == channel && m == message_id)
+    claimed_turns().contains(channel, message_id)
 }
 
 pub struct ConversationPersistenceSubscriber {
