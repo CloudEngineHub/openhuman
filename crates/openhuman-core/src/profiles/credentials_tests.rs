@@ -21,8 +21,8 @@ fn profile(tmp: &tempfile::TempDir, user: &str) -> Config {
 #[test]
 fn each_profile_resolves_only_its_own_credential() {
     let tmp = tempfile::tempdir().unwrap();
-    let alice = agent(&tmp, "alice");
-    let bob = agent(&tmp, "bob");
+    let alice = profile(&tmp, "alice");
+    let bob = profile(&tmp, "bob");
     store(&alice, UserCredentialKind::Session, "alice-jwt", None).unwrap();
     store(&bob, UserCredentialKind::ApiKey, "bob-key", None).unwrap();
 
@@ -39,8 +39,8 @@ fn each_profile_resolves_only_its_own_credential() {
 #[test]
 fn clearing_one_profile_leaves_the_other() {
     let tmp = tempfile::tempdir().unwrap();
-    let alice = agent(&tmp, "alice");
-    let bob = agent(&tmp, "bob");
+    let alice = profile(&tmp, "alice");
+    let bob = profile(&tmp, "bob");
     store(&alice, UserCredentialKind::Session, "alice-jwt", None).unwrap();
     store(&bob, UserCredentialKind::Session, "bob-jwt", None).unwrap();
     assert!(clear(&alice).unwrap());
@@ -52,7 +52,7 @@ fn clearing_one_profile_leaves_the_other() {
 #[test]
 fn an_expired_session_is_rejected_locally() {
     let tmp = tempfile::tempdir().unwrap();
-    let alice = agent(&tmp, "alice");
+    let alice = profile(&tmp, "alice");
     store(
         &alice,
         UserCredentialKind::Session,
@@ -67,7 +67,7 @@ fn an_expired_session_is_rejected_locally() {
 #[test]
 fn bad_input_is_refused() {
     let tmp = tempfile::tempdir().unwrap();
-    let alice = agent(&tmp, "alice");
+    let alice = profile(&tmp, "alice");
     assert!(store(&alice, UserCredentialKind::Session, "  ", None).is_err());
     assert!(store(&alice, UserCredentialKind::Session, "t", Some("tomorrow")).is_err());
     assert!(!has(&alice));
@@ -76,7 +76,7 @@ fn bad_input_is_refused() {
 #[test]
 fn installing_one_kind_replaces_the_other() {
     let tmp = tempfile::tempdir().unwrap();
-    let alice = agent(&tmp, "alice-rotates");
+    let alice = profile(&tmp, "alice-rotates");
     store(&alice, UserCredentialKind::ApiKey, "old-key", None).unwrap();
     store(&alice, UserCredentialKind::Session, "new-jwt", None).unwrap();
     assert_eq!(
@@ -95,7 +95,7 @@ fn installing_one_kind_replaces_the_other() {
 #[test]
 fn every_profile_of_the_other_kind_is_removed() {
     let tmp = tempfile::tempdir().unwrap();
-    let alice = agent(&tmp, "alice-profiles");
+    let alice = profile(&tmp, "alice-profiles");
     // A non-default, active API-key profile.
     AuthService::from_config(&alice)
         .store_provider_token(

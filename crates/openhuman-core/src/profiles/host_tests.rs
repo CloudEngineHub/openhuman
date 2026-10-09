@@ -15,7 +15,7 @@ fn profile(name: &str) -> ProfileId {
 fn provisioning_creates_the_layout_once() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let id = agent("alice");
+    let id = profile("alice");
     assert!(host.provision(&id).unwrap());
     assert!(!host.provision(&id).unwrap(), "second provision is a no-op");
     let layout = ProfileLayout::new(tmp.path(), &id);
@@ -29,7 +29,7 @@ fn provisioning_creates_the_layout_once() {
 fn only_provisioned_profiles_open() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let err = host.open(&agent("nobody")).unwrap_err();
+    let err = host.open(&profile("nobody")).unwrap_err();
     assert!(err.contains("not provisioned"), "{err}");
 }
 
@@ -37,7 +37,7 @@ fn only_provisioned_profiles_open() {
 fn an_open_profile_runs_under_its_own_scope() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let (a, b) = (agent("alice"), agent("bob"));
+    let (a, b) = (profile("alice"), profile("bob"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
     let state_a = host.open(&a).unwrap();
@@ -61,7 +61,7 @@ fn an_open_profile_runs_under_its_own_scope() {
 fn a_full_host_evicts_the_least_recently_used_idle_profile() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 2, 3600);
-    let ids: Vec<_> = ["a", "b", "c"].iter().map(|n| agent(n)).collect();
+    let ids: Vec<_> = ["a", "b", "c"].iter().map(|n| profile(n)).collect();
     for id in &ids {
         host.provision(id).unwrap();
     }
@@ -77,7 +77,7 @@ fn a_full_host_evicts_the_least_recently_used_idle_profile() {
 fn an_profile_in_use_is_never_evicted() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 1, 0);
-    let (a, b) = (agent("a"), agent("b"));
+    let (a, b) = (profile("a"), profile("b"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
     let held = host.open(&a).unwrap();
@@ -93,7 +93,7 @@ fn an_profile_in_use_is_never_evicted() {
 fn idle_profiles_are_swept() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 0);
-    let id = agent("a");
+    let id = profile("a");
     host.provision(&id).unwrap();
     drop(host.open(&id).unwrap());
     host.evict_idle();
@@ -104,7 +104,7 @@ fn idle_profiles_are_swept() {
 fn deprovisioning_archives_and_closes() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let id = agent("a");
+    let id = profile("a");
     host.provision(&id).unwrap();
     drop(host.open(&id).unwrap());
     assert!(host.deprovision(&id).unwrap());
@@ -123,7 +123,7 @@ fn list_reports_provisioned_profiles_only() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     assert!(host.list().unwrap().is_empty());
-    let (a, b) = (agent("a"), agent("b"));
+    let (a, b) = (profile("a"), profile("b"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
     std::fs::create_dir_all(layout::users_dir(tmp.path()).join("not-an-agent")).unwrap();
@@ -142,7 +142,7 @@ fn list_reports_provisioned_profiles_only() {
 fn a_reprovisioned_profile_does_not_inherit_the_old_credential() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let id = agent(&format!("returning-{}", uuid::Uuid::new_v4()));
+    let id = profile(&format!("returning-{}", uuid::Uuid::new_v4()));
     host.provision(&id).unwrap();
     let config = host.open(&id).unwrap().config.clone();
     super::super::credentials::store(
@@ -165,7 +165,7 @@ fn a_reprovisioned_profile_does_not_inherit_the_old_credential() {
 fn the_first_open_settles_a_previous_process_once() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 0);
-    let id = agent(&format!("recover-{}", uuid::Uuid::new_v4()));
+    let id = profile(&format!("recover-{}", uuid::Uuid::new_v4()));
     host.provision(&id).unwrap();
     drop(host.open(&id).unwrap());
     assert!(host.recovered.lock().unwrap().contains(&id));
@@ -181,7 +181,7 @@ fn the_first_open_settles_a_previous_process_once() {
 #[test]
 fn recovery_of_an_empty_workspace_is_a_no_op() {
     let tmp = tempfile::tempdir().unwrap();
-    let id = agent("empty");
+    let id = profile("empty");
     recover_workspace(&id, tmp.path());
 }
 
@@ -189,7 +189,7 @@ fn recovery_of_an_empty_workspace_is_a_no_op() {
 fn an_profile_in_use_is_not_archived_from_under_it() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let id = agent("alice");
+    let id = profile("alice");
     host.provision(&id).unwrap();
     let state = host.open(&id).unwrap();
     let err = host.deprovision(&id).unwrap_err();
@@ -204,7 +204,7 @@ fn an_profile_in_use_is_not_archived_from_under_it() {
 fn deprovisioning_twice_in_a_second_archives_twice() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let id = agent("alice");
+    let id = profile("alice");
     for _ in 0..2 {
         host.provision(&id).unwrap();
         assert!(host.deprovision(&id).unwrap());
@@ -220,7 +220,7 @@ fn opening_an_open_profile_sweeps_the_idle_ones() {
     let tmp = tempfile::tempdir().unwrap();
     // Everything is idle the moment it is released.
     let host = host(&tmp, 4, 0);
-    let (a, b) = (agent("alice"), agent("bob"));
+    let (a, b) = (profile("alice"), profile("bob"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
     drop(host.open(&a).unwrap());
@@ -236,7 +236,7 @@ fn opening_an_open_profile_sweeps_the_idle_ones() {
 fn one_unreadable_profile_does_not_hide_the_rest() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
-    let (a, b) = (agent("alice"), agent("bob"));
+    let (a, b) = (profile("alice"), profile("bob"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
     std::fs::write(ProfileLayout::new(tmp.path(), &a).meta_path, "not toml = [").unwrap();
@@ -249,11 +249,11 @@ fn one_unreadable_profile_does_not_hide_the_rest() {
 fn a_provisioned_config_needs_no_profile_slot() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 1, 60);
-    let (a, b) = (agent("alice"), agent("bob"));
+    let (a, b) = (profile("alice"), profile("bob"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
     let _held = host.open(&a).unwrap();
     assert!(host.open(&b).is_err(), "the only slot is taken");
     assert!(host.provisioned_config(&b).is_ok());
-    assert!(host.provisioned_config(&agent("nobody")).is_err());
+    assert!(host.provisioned_config(&profile("nobody")).is_err());
 }
