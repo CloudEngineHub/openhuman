@@ -77,6 +77,44 @@ pub fn register_conversation_persistence_subscriber(workspace_dir: PathBuf) {
     }
 }
 
+/// How many claimed channel turns are remembered. The subscriber sees an
+/// event within moments of its publication, so a short FIFO is plenty.
+const CLAIMED_TURNS_CAPACITY: usize = 1024;
+
+/// Channel turns whose caller persists them itself (the hosted-channel relay,
+/// which writes under the caller's own scope and thread id). Keyed by
+/// `(channel, message_id)`, oldest first.
+static CLAIMED_TURNS: OnceLock<std::sync::Mutex<std::collections::VecDeque<(String, String)>>> =
+    OnceLock::new();
+
+fn claimed_turns() -> &'static std::sync::Mutex<std::collections::VecDeque<(String, String)>> {
+    CLAIMED_TURNS.get_or_init(|| std::sync::Mutex::new(std::collections::VecDeque::new()))
+}
+
+/// Mark the channel message `(channel, message_id)` as persisted by its
+/// caller, so this subscriber does not mirror it a second time under the
+/// listener-derived thread id.
+pub(crate) fn claim_channel_turn(channel: &str, message_id: &str) {
+    let mut claimed = claimed_turns().lock().unwrap_or_else(|e| e.into_inner());
+    let key = (channel.to_string(), message_id.to_string());
+    if claimed.contains(&key) {
+        return;
+    }
+    if claimed.len() >= CLAIMED_TURNS_CAPACITY {
+        claimed.pop_front();
+    }
+    claimed.push_back(key);
+}
+
+/// Whether `(channel, message_id)` was claimed by [`claim_channel_turn`].
+pub(crate) fn is_claimed_channel_turn(channel: &str, message_id: &str) -> bool {
+    claimed_turns()
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .iter()
+        .any(|(c, m)| c == channel && m == message_id)
+}
+
 pub struct ConversationPersistenceSubscriber {
     workspace_dir: Arc<RwLock<PathBuf>>,
 }
@@ -111,6 +149,24 @@ impl EventHandler<DomainEvent> for ConversationPersistenceSubscriber {
     }
 
     async fn handle(&self, event: &DomainEvent) {
+        if let DomainEvent::ChannelMessageReceived {
+            channel,
+            message_id,
+            ..
+        }
+        | DomainEvent::ChannelMessageProcessed {
+            channel,
+            message_id,
+            ..
+        } = event
+        {
+            if is_claimed_channel_turn(channel, message_id) {
+                log::debug!(
+                    "{LOG_PREFIX} skipping channel turn persisted by its caller channel={channel}"
+                );
+                return;
+            }
+        }
         match event {
             DomainEvent::ChannelMessageReceived {
                 channel,

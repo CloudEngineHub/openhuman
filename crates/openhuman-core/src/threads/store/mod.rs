@@ -32,6 +32,7 @@ mod bus;
 use tinyagents_session::threads as store;
 
 pub use bus::register_conversation_persistence_subscriber;
+pub(crate) use bus::claim_channel_turn;
 pub use store::{
     append_message, delete_messages_from, delete_thread, ensure_thread, get_messages,
     is_deterministic_message_id, list_threads, purge_threads, reply_run_id, run_reply_message_id,
