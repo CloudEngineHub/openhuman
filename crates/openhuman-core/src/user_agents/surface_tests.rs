@@ -138,6 +138,7 @@ fn delete_purge_and_the_channel_relay_are_open_to_users() {
     }
 }
 
+#[cfg(feature = "channels")]
 #[test]
 fn users_still_cannot_mint_channel_threads() {
     // The relay derives `channel:` ids itself; a user choosing one is refused.
