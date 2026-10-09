@@ -89,8 +89,16 @@ pub fn build_core_http_router(socketio_enabled: bool) -> Router {
         .layer(middleware::from_fn(http_request_log_middleware))
         .layer(middleware::from_fn(
             crate::server::auth::rpc_auth_middleware,
-        ))
-        .layer(middleware::from_fn(cors::cors_middleware));
+        ));
+    // Socket.IO is off (`--jsonrpc-only`): answer its path before the bearer
+    // middleware can mistake the handshake for an unauthenticated request.
+    // Sits inside CORS so browser clients can read the body.
+    let router = if socketio_enabled {
+        router
+    } else {
+        router.layer(middleware::from_fn(socketio_disabled_middleware))
+    };
+    let router = router.layer(middleware::from_fn(cors::cors_middleware));
 
     if socketio_enabled {
         let (socket_layer, io) = crate::server::socketio::attach_socketio();
@@ -98,12 +106,7 @@ pub fn build_core_http_router(socketio_enabled: bool) -> Router {
         return router.layer(socket_layer);
     }
 
-    // Socket.IO is off (`--jsonrpc-only`): answer its path before the bearer
-    // middleware can mistake the handshake for an unauthenticated request.
-    // Sits inside CORS so browser clients can read the body.
     router
-        .layer(middleware::from_fn(socketio_disabled_middleware))
-        .layer(middleware::from_fn(cors::cors_middleware))
 }
 
 /// Stable machine-readable `error` code of the "Socket.IO is off" response.
