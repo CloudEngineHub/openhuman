@@ -102,17 +102,15 @@ fn a_tenant_is_in_use_while_a_turn_context_or_a_handle_lives() {
 async fn a_turn_scope_keeps_the_tenant_in_use() {
     let root = CoreContext::for_test(DomainSet::full(), None);
     let profile = root.derive_with(overlay().profile("p1"));
-    let probe = Arc::clone(&profile);
-    let observed = CoreContext::scope_with_turn_origin(Arc::clone(&profile), None, async move {
-        // Inside: the turn context plus the scope's handle hold the tenant.
-        let in_turn = probe.tenant_in_use();
-        let tenant = current_tenant_or_isolated("test");
-        (in_turn, tenant)
-    })
-    .await;
-    assert!(observed.0);
-    assert_eq!(observed.1.profile.as_deref(), Some("p1"));
-    assert!(!profile.tenant_in_use());
+    let probe = &profile;
+    let (in_turn, tenant) =
+        CoreContext::scope_with_turn_origin(Arc::clone(&profile), None, async move {
+            (probe.tenant_in_use(), current_tenant_or_isolated("test"))
+        })
+        .await;
+    assert!(in_turn, "a running turn holds its profile");
+    assert_eq!(tenant.profile.as_deref(), Some("p1"));
+    assert!(!profile.tenant_in_use(), "released once the turn ends");
 }
 
 #[test]
