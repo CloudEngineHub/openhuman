@@ -210,7 +210,7 @@ pub fn sandbox_policy_with(
     let users = super::layout::users_dir(saas_root);
     let profile_dir = action_dir.parent();
     let is_user_sandbox = profile_dir.and_then(Path::parent) == Some(users.as_path())
-        && agent_dir
+        && profile_dir
             .and_then(Path::file_name)
             .and_then(|name| name.to_str())
             .is_some_and(|name| super::types::ProfileId::parse(name).is_ok())
