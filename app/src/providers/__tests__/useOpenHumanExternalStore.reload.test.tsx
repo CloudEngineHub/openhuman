@@ -16,7 +16,7 @@ import { Provider } from 'react-redux';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import chatRuntimeReducer from '../../store/chatRuntimeSlice';
-import threadReducer from '../../store/threadSlice';
+import threadReducer, { addInferenceResponse } from '../../store/threadSlice';
 import type { ThreadMessage } from '../../types/thread';
 import { useOpenHumanExternalStore } from '../useOpenHumanExternalStore';
 
@@ -173,7 +173,11 @@ describe('onReload — regenerating an assistant reply', () => {
     // drop the fresh reply along with the discarded one.
     hoisted.regenerate.mockImplementation(async () => {
       store.dispatch(
-        addMessageLocal({ threadId: THREAD_ID, message: row('agent:req-new', 'agent') })
+        addInferenceResponse.fulfilled(
+          { threadId: THREAD_ID, message: row('agent:req-new', 'agent') },
+          'request-new',
+          {} as never
+        )
       );
     });
 
