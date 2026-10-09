@@ -93,9 +93,12 @@ fn ids_cannot_forge_another_chats_thread() {
     }
 }
 
+/// A change that breaks one field of a valid message.
+type Mutation = Box<dyn Fn(&mut RelayInboundParams)>;
+
 #[test]
 fn every_field_is_checked() {
-    let cases: Vec<(&str, Box<dyn Fn(&mut RelayInboundParams)>)> = vec![
+    let cases: Vec<(&str, Mutation)> = vec![
         ("channel", Box::new(|p| p.channel = "Web".into())),
         ("chat_id", Box::new(|p| p.chat_id = "a/b".into())),
         ("sender_id", Box::new(|p| p.sender_id = String::new())),
