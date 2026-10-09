@@ -136,3 +136,28 @@ fn a_failed_lookup_without_a_match_fails_closed() {
     assert_eq!(decide(vec![(None, Ok(false))]), Ok(None));
     assert_eq!(decide(Vec::new()), Ok(None));
 }
+
+/// A device revoked in another process leaves its session cipher here; its
+/// frames are dropped, not handled as `local`.
+#[tokio::test]
+async fn a_revoked_device_with_a_live_cipher_is_dropped() {
+    let tmp = tempfile::tempdir().unwrap();
+    let context = crate::core::runtime::CoreContext::for_test_with_config(
+        crate::core::runtime::DomainSet::full(),
+        scoped_config(tmp.path()),
+    );
+    super::super::rpc::ACTIVE_CIPHERS.lock().unwrap().insert(
+        "owner-test-cipher".to_string(),
+        std::sync::Arc::new(std::sync::Mutex::new(
+            super::super::crypto::TunnelCipher::new(&[7u8; 32]),
+        )),
+    );
+    let owner =
+        crate::core::runtime::CoreContext::scope(context, owner_of("owner-test-cipher", None))
+            .await;
+    super::super::rpc::ACTIVE_CIPHERS
+        .lock()
+        .unwrap()
+        .remove("owner-test-cipher");
+    assert!(owner.is_err(), "{owner:?}");
+}
