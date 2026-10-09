@@ -3,26 +3,18 @@
 
 use super::super::dispatch::{run_message_dispatch_loop, RuntimeChannelMessage};
 use super::super::supervision::spawn_supervised_listener;
-use super::chat_workload::{resolve_chat_workload, ChatWorkloadResolution};
 use super::credentials::{hydrate_channel_credentials, RuntimeProxyClients};
-use super::prompt::format_access_context;
 use super::relay::start_relay_runtime;
-use crate::agent::host_runtime;
-use crate::channels::context::{
-    effective_channel_message_timeout_secs, ChannelRuntimeContext,
-    DEFAULT_CHANNEL_INITIAL_BACKOFF_SECS, DEFAULT_CHANNEL_MAX_BACKOFF_SECS,
-};
-use crate::channels::system_prompt::{ChannelPromptInputs, ChannelSystemPrompt};
+use super::turn_parts::{build_channel_turn_parts, runtime_context, PromptToolDescs};
+use crate::channels::context::{DEFAULT_CHANNEL_INITIAL_BACKOFF_SECS, DEFAULT_CHANNEL_MAX_BACKOFF_SECS};
 use crate::channels::traits;
 use crate::config::Config;
 use crate::core::bus::BUS;
 use crate::core::events::DomainEvent;
-use crate::inference::provider;
 use crate::security::SecurityPolicy;
-use crate::tools;
 use anyhow::Result;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tinychannels::runtime::compute_max_in_flight_messages;
 use tokio_util::task::AbortOnDropHandle;
 
