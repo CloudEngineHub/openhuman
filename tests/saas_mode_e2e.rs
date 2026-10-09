@@ -442,8 +442,8 @@ fn gateway_requests_run_under_the_named_users_agent() {
     }
 
     // The credential lives in alice's own directory.
-    let agent_dir = d.root.join("users").join(alice.as_str());
-    let stored: Vec<_> = std::fs::read_dir(&agent_dir)
+    let profile_dir = d.root.join("users").join(alice.as_str());
+    let stored: Vec<_> = std::fs::read_dir(&profile_dir)
         .unwrap()
         .flatten()
         .map(|e| e.file_name().to_string_lossy().into_owned())
