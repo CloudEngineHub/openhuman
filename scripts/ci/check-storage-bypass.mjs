@@ -33,7 +33,10 @@ const repoRoot =
     ? resolve(dirname(fileURLToPath(import.meta.url)), "../..")
     : resolve(process.argv[rootFlag + 1]);
 const scanRoot = resolve(repoRoot, "crates/openhuman-core/src");
-const baselinePath = resolve(repoRoot, "scripts/ci/storage-bypass-baseline.json");
+const baselinePath = resolve(
+  repoRoot,
+  "scripts/ci/storage-bypass-baseline.json",
+);
 const writeBaseline = process.argv.includes("--write-baseline");
 
 export const RULES = [
@@ -44,20 +47,34 @@ export const RULES = [
   },
   {
     rule: "json-write",
-    pattern: /\b(?:fs::write|File::create|OpenOptions::new|NamedTempFile::new_in)\s*\(/,
+    pattern:
+      /\b(?:fs::write|File::create|OpenOptions::new|NamedTempFile::new_in)\s*\(/,
     hint: "persist through the storage port, or allowlist it with a reason in ALLOW",
   },
 ];
 
 const SRC = "crates/openhuman-core/src/";
-const FALLBACK = "legacy fallback of a store that already runs on the storage port";
+const FALLBACK =
+  "legacy fallback of a store that already runs on the storage port";
 
 /** path -> { rules, reason }: sites a rule does not apply to. */
 export const ALLOW = new Map([
-  [`${SRC}security/approval/store.rs`, { rules: ["sqlite-open"], reason: FALLBACK }],
-  [`${SRC}security/devices/store.rs`, { rules: ["sqlite-open"], reason: FALLBACK }],
-  [`${SRC}desktop/notifications/store.rs`, { rules: ["sqlite-open"], reason: FALLBACK }],
-  [`${SRC}integrations/task_sources/store.rs`, { rules: ["sqlite-open"], reason: FALLBACK }],
+  [
+    `${SRC}security/approval/store.rs`,
+    { rules: ["sqlite-open"], reason: FALLBACK },
+  ],
+  [
+    `${SRC}security/devices/store.rs`,
+    { rules: ["sqlite-open"], reason: FALLBACK },
+  ],
+  [
+    `${SRC}desktop/notifications/store.rs`,
+    { rules: ["sqlite-open"], reason: FALLBACK },
+  ],
+  [
+    `${SRC}integrations/task_sources/store.rs`,
+    { rules: ["sqlite-open"], reason: FALLBACK },
+  ],
   [`${SRC}cron/policy.rs`, { rules: ["sqlite-open"], reason: FALLBACK }],
   [
     `${SRC}config/workspace/state.rs`,
@@ -67,9 +84,18 @@ export const ALLOW = new Map([
         "vault watcher state is absolute local paths and their mtimes: per-machine filesystem state that is meaningless on, and must not be shared through, another host's database",
     },
   ],
-  [`${SRC}platform/cost/tracker.rs`, { rules: ["json-write"], reason: FALLBACK }],
-  [`${SRC}agent/orchestration/subagent_sessions/store.rs`, { rules: ["json-write"], reason: FALLBACK }],
-  [`${SRC}integrations/composio/file_store.rs`, { rules: ["json-write"], reason: FALLBACK }],
+  [
+    `${SRC}platform/cost/tracker.rs`,
+    { rules: ["json-write"], reason: FALLBACK },
+  ],
+  [
+    `${SRC}agent/orchestration/subagent_sessions/store.rs`,
+    { rules: ["json-write"], reason: FALLBACK },
+  ],
+  [
+    `${SRC}integrations/composio/file_store.rs`,
+    { rules: ["json-write"], reason: FALLBACK },
+  ],
   [
     `${SRC}desktop/control/ops.rs`,
     {
@@ -202,7 +228,9 @@ async function main() {
   try {
     baseline = JSON.parse(await readFile(baselinePath, "utf8"));
   } catch (error) {
-    console.error(`Unable to read ${relative(repoRoot, baselinePath)}: ${error.message}`);
+    console.error(
+      `Unable to read ${relative(repoRoot, baselinePath)}: ${error.message}`,
+    );
     return 1;
   }
 
@@ -217,13 +245,20 @@ async function main() {
     console.error(`New storage-bypass sites (${added.length}):`);
     for (const f of added) {
       const hint = RULES.find((r) => r.rule === f.rule)?.hint ?? "";
-      console.error(`  ${f.rule}: ${f.path}:${f.line}: ${f.text}\n    -> ${hint}`);
+      console.error(
+        `  ${f.rule}: ${f.path}:${f.line}: ${f.text}\n    -> ${hint}`,
+      );
     }
   }
   if (stale.length) {
-    console.error(`\nFixed sites still in the baseline (${stale.length}); remove them:`);
-    for (const f of stale) console.error(`  ${f.rule}: ${f.path}: ${f.text} [${f.occurrence}]`);
-    console.error("\nTighten the baseline with --write-baseline once nothing new was added.");
+    console.error(
+      `\nFixed sites still in the baseline (${stale.length}); remove them:`,
+    );
+    for (const f of stale)
+      console.error(`  ${f.rule}: ${f.path}: ${f.text} [${f.occurrence}]`);
+    console.error(
+      "\nTighten the baseline with --write-baseline once nothing new was added.",
+    );
   }
   return 1;
 }

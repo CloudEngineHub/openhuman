@@ -11,28 +11,49 @@ import { fileURLToPath } from "node:url";
 
 import { ALLOW, allowed, compare, scan } from "../ci/check-storage-bypass.mjs";
 
-const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+const repoRoot = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+);
 const script = path.join(repoRoot, "scripts", "ci", "check-storage-bypass.mjs");
 const SRC = "crates/openhuman-core/src";
 
 function run(files, baseline, args = []) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "openhuman-storage-bypass-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "openhuman-storage-bypass-"),
+  );
   for (const [rel, body] of Object.entries(files)) {
     const abs = path.join(root, rel);
     fs.mkdirSync(path.dirname(abs), { recursive: true });
     fs.writeFileSync(abs, body);
   }
-  const written = path.join(root, "scripts", "ci", "storage-bypass-baseline.json");
+  const written = path.join(
+    root,
+    "scripts",
+    "ci",
+    "storage-bypass-baseline.json",
+  );
   if (baseline) {
     fs.mkdirSync(path.dirname(written), { recursive: true });
     fs.writeFileSync(written, `${JSON.stringify(baseline, null, 2)}\n`);
   }
-  const result = spawnSync(process.execPath, [script, "--root", root, ...args], {
-    encoding: "utf8",
-  });
-  const after = fs.existsSync(written) ? JSON.parse(fs.readFileSync(written, "utf8")) : null;
+  const result = spawnSync(
+    process.execPath,
+    [script, "--root", root, ...args],
+    {
+      encoding: "utf8",
+    },
+  );
+  const after = fs.existsSync(written)
+    ? JSON.parse(fs.readFileSync(written, "utf8"))
+    : null;
   fs.rmSync(root, { recursive: true, force: true });
-  return { status: result.status, out: `${result.stdout}${result.stderr}`, after };
+  return {
+    status: result.status,
+    out: `${result.stdout}${result.stderr}`,
+    after,
+  };
 }
 
 test("flags a database open and a raw file write", () => {
@@ -55,14 +76,30 @@ test("flags a database open and a raw file write", () => {
 test("ignores comments and doc lines", () => {
   const found = scan(
     "x.rs",
-    ["// Connection::open(&p)", "//! fs::write(p, b)", "let s = 1; // File::create(p)"].join("\n"),
+    [
+      "// Connection::open(&p)",
+      "//! fs::write(p, b)",
+      "let s = 1; // File::create(p)",
+    ].join("\n"),
   );
   assert.deepEqual(found, []);
 });
 
 test("compare reports added and stale sites", () => {
-  const finding = { rule: "sqlite-open", path: "a.rs", line: 3, text: "x", occurrence: 1 };
-  const other = { rule: "json-write", path: "b.rs", line: 4, text: "y", occurrence: 1 };
+  const finding = {
+    rule: "sqlite-open",
+    path: "a.rs",
+    line: 3,
+    text: "x",
+    occurrence: 1,
+  };
+  const other = {
+    rule: "json-write",
+    path: "b.rs",
+    line: 4,
+    text: "y",
+    occurrence: 1,
+  };
   const { added, stale } = compare([finding], [other]);
   assert.deepEqual(added, [finding]);
   assert.deepEqual(stale, [other]);
@@ -72,7 +109,8 @@ test("every allowlisted path carries a reason and known rules", () => {
   for (const [file, entry] of ALLOW) {
     assert.ok(file.startsWith(`${SRC}/`), file);
     assert.ok(entry.reason.length > 20, file);
-    for (const rule of entry.rules) assert.ok(["sqlite-open", "json-write"].includes(rule));
+    for (const rule of entry.rules)
+      assert.ok(["sqlite-open", "json-write"].includes(rule));
   }
   assert.ok(allowed(`${SRC}/config/workspace/state.rs`, "sqlite-open"));
   assert.ok(!allowed(`${SRC}/config/workspace/state.rs`, "json-write"));
@@ -85,7 +123,10 @@ test("a new database open fails the check", () => {
   );
   assert.equal(status, 1);
   assert.match(out, /New storage-bypass sites/);
-  assert.match(out, /sqlite-open: crates\/openhuman-core\/src\/foo\/store\.rs:1/);
+  assert.match(
+    out,
+    /sqlite-open: crates\/openhuman-core\/src\/foo\/store\.rs:1/,
+  );
 });
 
 test("the storage module, tests and allowlisted fallbacks are not flagged", () => {
@@ -103,7 +144,13 @@ test("the storage module, tests and allowlisted fallbacks are not flagged", () =
 
 test("a fixed site left in the baseline fails until removed", () => {
   const { status, out } = run({ [`${SRC}/foo/store.rs`]: "fn f() {}\n" }, [
-    { rule: "sqlite-open", path: `${SRC}/foo/store.rs`, line: 1, text: "x", occurrence: 1 },
+    {
+      rule: "sqlite-open",
+      path: `${SRC}/foo/store.rs`,
+      line: 1,
+      text: "x",
+      occurrence: 1,
+    },
   ]);
   assert.equal(status, 1);
   assert.match(out, /Fixed sites still in the baseline/);
