@@ -126,7 +126,7 @@ fn list_reports_provisioned_agents_only() {
     let (a, b) = (agent("a"), agent("b"));
     host.provision(&a).unwrap();
     host.provision(&b).unwrap();
-    std::fs::create_dir_all(layout::agents_dir(tmp.path()).join("not-an-agent")).unwrap();
+    std::fs::create_dir_all(layout::users_dir(tmp.path()).join("not-an-agent")).unwrap();
     let _held = host.open(&b).unwrap();
     let listed = host.list().unwrap();
     assert_eq!(listed.len(), 2);

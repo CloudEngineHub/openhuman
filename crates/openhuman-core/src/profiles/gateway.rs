@@ -108,7 +108,7 @@ pub fn resolve_scope(
         return Ok(GatewayScope::Operator);
     };
     let host = host::host().ok_or_else(|| GatewayRefusal::new(503, "this core serves no users"))?;
-    let agent = ProfileId::for_user(user_id).map_err(|e| GatewayRefusal::new(400, e))?;
+    let agent = ProfileId::for_user(user_id, host.saas().profile_ids).map_err(|e| GatewayRefusal::new(400, e))?;
     if host.saas().require_user_signature {
         let signature = signature
             .ok_or_else(|| GatewayRefusal::new(401, format!("missing {USER_SIG_HEADER}")))?;

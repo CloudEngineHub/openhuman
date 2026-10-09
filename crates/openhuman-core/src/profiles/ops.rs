@@ -23,7 +23,7 @@ pub(crate) fn provision_on(
     host: &ProfileHost,
     user_id: &str,
 ) -> Result<Outcome<ProvisionResult>, String> {
-    let profile_id = ProfileId::for_user(user_id)?;
+    let profile_id = ProfileId::for_user(user_id, host.saas().profile_ids)?;
     let created = host.provision(&profile_id)?;
     let log = if created {
         format!("provisioned {profile_id}")

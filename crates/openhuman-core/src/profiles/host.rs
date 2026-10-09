@@ -252,7 +252,7 @@ impl ProfileHost {
 
     /// Every provisioned agent, open or not.
     pub fn list(&self) -> Result<Vec<ProfileSummary>, String> {
-        let dir = layout::agents_dir(&self.saas.root);
+        let dir = layout::users_dir(&self.saas.root);
         let entries = match std::fs::read_dir(&dir) {
             Ok(entries) => entries,
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),

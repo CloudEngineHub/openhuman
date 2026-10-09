@@ -207,7 +207,7 @@ pub fn sandbox_policy_with(
     action_dir: &Path,
     state_dir: &Path,
 ) -> Result<SandboxPolicy, String> {
-    let agents = super::layout::agents_dir(saas_root);
+    let agents = super::layout::users_dir(saas_root);
     let agent_dir = action_dir.parent();
     let is_user_sandbox = agent_dir.and_then(Path::parent) == Some(agents.as_path())
         && agent_dir
