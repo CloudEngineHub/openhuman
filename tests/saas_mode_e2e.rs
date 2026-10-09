@@ -227,58 +227,58 @@ fn a_safe_deployment_serves_core_and_the_operator_plane_behind_the_gateway_beare
         );
     }
 
-    // The operator plane provisions one agent per user, keyed by a hash of
-    // the gateway's user id, which is never echoed back.
+    // The operator plane provisions one profile per user. A user id outside
+    // the raw charset is hashed, and never echoed back.
     let (_, body) = rpc_with(
         &client,
         &base,
         Some(BEARER),
-        "openhuman.user_agents_provision",
+        "openhuman.profiles_provision",
         json!({ "user_id": "alice@example.com" }),
     );
     let result = body
         .get("result")
         .unwrap_or_else(|| panic!("provision: {body}"));
-    let agent_id = result
-        .pointer("/result/agent_id")
-        .or_else(|| result.get("agent_id"))
+    let profile_id = result
+        .pointer("/result/profile_id")
+        .or_else(|| result.get("profile_id"))
         .and_then(Value::as_str)
-        .unwrap_or_else(|| panic!("agent_id in {result}"))
+        .unwrap_or_else(|| panic!("profile_id in {result}"))
         .to_string();
     assert_eq!(
-        agent_id,
-        openhuman_core::user_agents::UserAgentId::for_user("alice@example.com")
+        profile_id,
+        openhuman_core::profiles::ProfileId::for_user("alice@example.com", openhuman_core::profiles::ProfileIdMode::Raw)
             .unwrap()
             .to_string(),
-        "the agent id is the deterministic hash of the user id"
+        "a user id outside the raw charset maps to its deterministic hash"
     );
     assert!(!body.to_string().contains("alice"), "{body}");
     assert!(d
         .root
-        .join("agents")
-        .join(&agent_id)
+        .join("users")
+        .join(&profile_id)
         .join("workspace")
         .is_dir());
 
-    let (_, body) = rpc(&client, &base, Some(BEARER), "openhuman.user_agents_list");
-    assert!(body.to_string().contains(&agent_id), "{body}");
+    let (_, body) = rpc(&client, &base, Some(BEARER), "openhuman.profiles_list");
+    assert!(body.to_string().contains(&profile_id), "{body}");
     let (_, body) = rpc_with(
         &client,
         &base,
         Some(BEARER),
-        "openhuman.user_agents_status",
-        json!({ "agent_id": agent_id }),
+        "openhuman.profiles_status",
+        json!({ "profile_id": profile_id }),
     );
     assert!(body.get("result").is_some(), "{body}");
     let (_, body) = rpc_with(
         &client,
         &base,
         Some(BEARER),
-        "openhuman.user_agents_deprovision",
-        json!({ "agent_id": agent_id }),
+        "openhuman.profiles_deprovision",
+        json!({ "profile_id": profile_id }),
     );
     assert!(body.get("result").is_some(), "{body}");
-    assert!(!d.root.join("agents").join(&agent_id).exists());
+    assert!(!d.root.join("users").join(&profile_id).exists());
     assert!(
         d.root.join("deprovisioned").is_dir(),
         "archived, not deleted"
@@ -335,7 +335,7 @@ fn user_rpc_with(
     method: &str,
     params: Value,
 ) -> (u16, Value) {
-    use openhuman_core::user_agents::gateway::{sign, USER_HEADER, USER_SIG_HEADER};
+    use openhuman_core::profiles::gateway::{sign, USER_HEADER, USER_SIG_HEADER};
     let signature = sig
         .map(str::to_owned)
         .unwrap_or_else(|| sign(BEARER, user, now()));
@@ -361,17 +361,17 @@ fn gateway_requests_run_under_the_named_users_agent() {
         &client,
         &base,
         Some(BEARER),
-        "openhuman.user_agents_provision",
+        "openhuman.profiles_provision",
         json!({ "user_id": "alice" }),
     );
-    let alice = openhuman_core::user_agents::UserAgentId::for_user("alice").unwrap();
+    let alice = openhuman_core::profiles::ProfileId::for_user("alice", openhuman_core::profiles::ProfileIdMode::Raw).unwrap();
     assert!(body.to_string().contains(alice.as_str()), "{body}");
     let (_, body) = rpc_with(
         &client,
         &base,
         Some(BEARER),
-        "openhuman.user_agents_set_credential",
-        json!({ "agent_id": alice.as_str(), "kind": "session", "token": "alice-session-jwt" }),
+        "openhuman.profiles_set_credential",
+        json!({ "profile_id": alice.as_str(), "kind": "session", "token": "alice-session-jwt" }),
     );
     assert!(body.get("result").is_some(), "{body}");
     assert!(!body.to_string().contains("alice-session-jwt"), "{body}");
@@ -379,8 +379,8 @@ fn gateway_requests_run_under_the_named_users_agent() {
         &client,
         &base,
         Some(BEARER),
-        "openhuman.user_agents_status",
-        json!({ "agent_id": alice.as_str() }),
+        "openhuman.profiles_status",
+        json!({ "profile_id": alice.as_str() }),
     );
     assert!(
         body.to_string().contains("\"has_credential\":true"),
@@ -399,7 +399,7 @@ fn gateway_requests_run_under_the_named_users_agent() {
         BEARER,
         "alice",
         None,
-        "openhuman.user_agents_list",
+        "openhuman.profiles_list",
     );
     assert!(
         body.get("error").is_some(),
@@ -423,7 +423,7 @@ fn gateway_requests_run_under_the_named_users_agent() {
         "core.ping",
     );
     assert_eq!(status, 401, "{body}");
-    let forged = openhuman_core::user_agents::gateway::sign(BEARER, "alice", now());
+    let forged = openhuman_core::profiles::gateway::sign(BEARER, "alice", now());
     let (status, body) = user_rpc(&client, &base, BEARER, "bob", Some(&forged), "core.ping");
     assert_eq!(status, 401, "alice's signature does not cover bob: {body}");
     let (status, body) = user_rpc(&client, &base, BEARER, "bob", None, "core.ping");
@@ -442,7 +442,7 @@ fn gateway_requests_run_under_the_named_users_agent() {
     }
 
     // The credential lives in alice's own directory.
-    let agent_dir = d.root.join("agents").join(alice.as_str());
+    let agent_dir = d.root.join("users").join(alice.as_str());
     let stored: Vec<_> = std::fs::read_dir(&agent_dir)
         .unwrap()
         .flatten()
@@ -460,11 +460,11 @@ fn provision(client: &reqwest::blocking::Client, base: &str, user: &str) -> Stri
         client,
         base,
         Some(BEARER),
-        "openhuman.user_agents_provision",
+        "openhuman.profiles_provision",
         json!({ "user_id": user }),
     );
     assert!(body.get("result").is_some(), "provision {user}: {body}");
-    openhuman_core::user_agents::UserAgentId::for_user(user)
+    openhuman_core::profiles::ProfileId::for_user(user, openhuman_core::profiles::ProfileIdMode::Raw)
         .unwrap()
         .to_string()
 }
@@ -536,7 +536,7 @@ fn each_user_sees_only_their_own_threads() {
 
     // Each user's threads live in their own workspace.
     for (agent, owner) in [(&alice, "alice"), (&bob, "bob")] {
-        let threads = d.root.join("agents").join(agent).join("workspace");
+        let threads = d.root.join("users").join(agent).join("workspace");
         assert!(threads.is_dir(), "{owner}'s workspace");
     }
     // Boot migrations leave an empty index in the operator workspace; no user
@@ -567,7 +567,7 @@ fn each_user_sees_only_their_own_threads() {
 
 /// Open `/events?client_id=` for `user` and forward each SSE `data:` line.
 fn user_events(base: &str, user: &str, client_id: &str) -> std::sync::mpsc::Receiver<String> {
-    use openhuman_core::user_agents::gateway::{sign, USER_HEADER, USER_SIG_HEADER};
+    use openhuman_core::profiles::gateway::{sign, USER_HEADER, USER_SIG_HEADER};
     use std::io::BufRead;
     let (tx, rx) = std::sync::mpsc::channel();
     let url = format!("{base}/events?client_id={client_id}");
@@ -816,8 +816,8 @@ fn a_users_turn_reaches_inference_with_their_own_credential() {
         &client,
         &base,
         Some(BEARER),
-        "openhuman.user_agents_set_credential",
-        json!({ "agent_id": alice, "kind": "session", "token": "alice-session-jwt" }),
+        "openhuman.profiles_set_credential",
+        json!({ "profile_id": alice, "kind": "session", "token": "alice-session-jwt" }),
     );
     assert!(body.get("result").is_some(), "{body}");
 
@@ -860,11 +860,11 @@ fn a_users_turn_reaches_inference_with_their_own_credential() {
 
 #[test]
 fn a_duplicate_or_unreadable_user_header_is_refused() {
-    use openhuman_core::user_agents::gateway::USER_HEADER;
+    use openhuman_core::profiles::gateway::USER_HEADER;
     let d = deployment(true);
     let (server, base, client) = start(&d);
     let body =
-        json!({ "jsonrpc": "2.0", "id": 1, "method": "openhuman.user_agents_list", "params": {} });
+        json!({ "jsonrpc": "2.0", "id": 1, "method": "openhuman.profiles_list", "params": {} });
 
     // Two user headers: refused, never run as the operator.
     let status = client
