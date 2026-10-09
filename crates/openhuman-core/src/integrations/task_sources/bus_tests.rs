@@ -59,3 +59,33 @@ async fn an_unreadable_scope_is_skipped() {
     };
     fire_for_connection(&config, ProviderSlug::Github, "github", "conn-1").await;
 }
+
+/// The subscriber handles a connection event through each scope's own
+/// configuration: toolkits that are not task sources are ignored, and a
+/// scope whose configuration disables task sources fires nothing.
+#[tokio::test]
+async fn a_connection_event_is_handled_per_scope() {
+    let _lock = crate::config::TEST_ENV_LOCK.lock().await;
+    let workspace = tempfile::TempDir::new().unwrap();
+    let _guard = crate::config::test_env::EnvVarGuard::workspace_unlocked(workspace.path());
+    let event = |toolkit: &str| DomainEvent::ComposioConnectionCreated {
+        toolkit: toolkit.to_string(),
+        connection_id: "conn-1".to_string(),
+        connect_url: String::new(),
+    };
+    // Not a task-source toolkit.
+    TaskSourcesConnectionSubscriber
+        .handle(&event("not-a-toolkit"))
+        .await;
+    // A task-source toolkit: the local scope loads its configuration and
+    // fires (or skips) its sources.
+    TaskSourcesConnectionSubscriber.handle(&event("github")).await;
+    // An event of another kind is ignored.
+    TaskSourcesConnectionSubscriber
+        .handle(&DomainEvent::ComposioConnectionDeleted {
+            toolkit: "github".to_string(),
+            connection_id: "conn-1".to_string(),
+        })
+        .await;
+    fire_in_scope(ProviderSlug::Github, "github", "conn-1").await;
+}
