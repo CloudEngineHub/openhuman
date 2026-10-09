@@ -94,7 +94,7 @@ mod decision {
                                 Err(refusal) => refusal_response(refusal),
                             }
                         }
-                        Err(response) => response,
+                        Err(refused) => refused.into_response(),
                     }
                 },
             ))

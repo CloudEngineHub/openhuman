@@ -84,6 +84,26 @@ pub(crate) fn refusal_response(refusal: GatewayRefusal) -> Response {
     response
 }
 
+/// A request the gateway checks turned away, before any profile was
+/// resolved.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct Refused {
+    pub(crate) status: u16,
+    pub(crate) message: &'static str,
+}
+
+impl Refused {
+    fn new(status: u16, message: &'static str) -> Self {
+        Self { status, message }
+    }
+}
+
+impl IntoResponse for Refused {
+    fn into_response(self) -> Response {
+        refuse(self.status, self.message)
+    }
+}
+
 /// A request the gateway checks let through.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum Admitted {
@@ -115,7 +135,7 @@ pub(crate) async fn saas_gateway(operator: Arc<CoreContext>, req: Request, next:
         .unwrap_or_default();
     let secret = crate::core_host::core::auth::get_rpc_token();
     let (user, signature) = match decide(&req, secret) {
-        Err(response) => return response,
+        Err(refused) => return refused.into_response(),
         Ok(Admitted::Operator) => return CoreContext::scope(operator, next.run(req)).await,
         Ok(Admitted::User { user, signature }) => (user, signature),
     };
@@ -140,11 +160,11 @@ pub(crate) async fn saas_gateway(operator: Arc<CoreContext>, req: Request, next:
 ///
 /// `secret` is the service bearer (`None` before the core has one). Taking it
 /// as an argument keeps the decision free of process-wide state.
-pub(crate) fn decide(req: &Request, secret: Option<&str>) -> Result<Admitted, Response> {
+pub(crate) fn decide(req: &Request, secret: Option<&str>) -> Result<Admitted, Refused> {
     let path = req.uri().path();
     if is_closed_in_saas(path) {
         log::debug!("[rpc:saas] {path} is not served in SaaS mode");
-        return Err(refuse(404, "not found"));
+        return Err(Refused::new(404, "not found"));
     }
 
     // Absent means the operator plane. Present but unreadable, or present
@@ -154,26 +174,26 @@ pub(crate) fn decide(req: &Request, secret: Option<&str>) -> Result<Admitted, Re
     let Some(first) = user_headers.next() else {
         // The chat event stream is a user's; the operator has none.
         if path == "/events" {
-            return Err(refuse(404, "not found"));
+            return Err(Refused::new(404, "not found"));
         }
         return Ok(Admitted::Operator);
     };
     if user_headers.next().is_some() {
         log::debug!("[rpc:saas] refusing a request with more than one {USER_HEADER}");
-        return Err(refuse(400, "more than one user header"));
+        return Err(Refused::new(400, "more than one user header"));
     }
     let Ok(user) = first.to_str() else {
         log::debug!("[rpc:saas] refusing an unreadable {USER_HEADER}");
-        return Err(refuse(400, "unreadable user header"));
+        return Err(Refused::new(400, "unreadable user header"));
     };
 
     let Some(secret) = secret else {
-        return Err(refuse(503, "the core is not ready"));
+        return Err(Refused::new(503, "the core is not ready"));
     };
     if !bearer(req)
         .is_some_and(|supplied| crate::core_host::core::auth::bearer_matches(supplied, secret))
     {
-        return Err(refuse(401, "unauthorized"));
+        return Err(Refused::new(401, "unauthorized"));
     }
     // Checked after the bearer, so an unauthenticated caller learns nothing.
     // A second signature must not be ignored in favour of the first.
@@ -181,7 +201,7 @@ pub(crate) fn decide(req: &Request, secret: Option<&str>) -> Result<Admitted, Re
     let signature = sig_headers.next();
     if sig_headers.next().is_some() {
         log::debug!("[rpc:saas] refusing a request with more than one {USER_SIG_HEADER}");
-        return Err(refuse(400, "more than one user signature header"));
+        return Err(Refused::new(400, "more than one user signature header"));
     }
     let signature = signature
         .and_then(|value| value.to_str().ok())
