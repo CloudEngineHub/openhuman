@@ -257,3 +257,58 @@ fn a_provisioned_config_needs_no_profile_slot() {
     assert!(host.provisioned_config(&b).is_ok());
     assert!(host.provisioned_config(&profile("nobody")).is_err());
 }
+
+#[tokio::test]
+async fn an_open_profile_is_gated_by_its_own_policy_not_the_operators() {
+    let tmp = tempfile::tempdir().unwrap();
+    let host = host(&tmp, 4, 60);
+    let id = profile("alice");
+    host.provision(&id).unwrap();
+    let state = host.open(&id).unwrap();
+    assert_eq!(state.context().profile(), Some(id.as_str()));
+
+    let own = state
+        .context()
+        .agent_policy()
+        .expect("the profile carries a policy");
+    assert!(own.enabled, "the forced autonomy policy is on");
+    assert!(own.workspace_only);
+    let effective = CoreContext::scope(Arc::clone(state.context()), async {
+        crate::security::live_policy::effective()
+    })
+    .await
+    .expect("a policy is in effect");
+    assert!(
+        Arc::ptr_eq(&effective, &own),
+        "inside the profile's scope the gate answers with its policy"
+    );
+}
+
+#[tokio::test]
+async fn a_profile_with_a_live_turn_is_not_evicted() {
+    let tmp = tempfile::tempdir().unwrap();
+    let host = host(&tmp, 1, 0);
+    let (a, b) = (profile("a"), profile("b"));
+    host.provision(&a).unwrap();
+    host.provision(&b).unwrap();
+    // The request that started the turn has answered and let go of the
+    // state; the turn keeps running on a context derived from the profile's.
+    let context = Arc::clone(host.open(&a).unwrap().context());
+    let (release, released) = tokio::sync::oneshot::channel::<()>();
+    let turn = tokio::spawn(CoreContext::scope_with_turn_origin(context, None, async {
+        let _ = released.await;
+    }));
+    tokio::task::yield_now().await;
+
+    host.evict_idle();
+    assert!(host.is_open(&a), "a live turn keeps its profile open");
+    let err = host.open(&b).unwrap_err();
+    assert!(err.contains("slots are in use"), "{err}");
+    assert!(host.deprovision(&a).unwrap_err().contains("in use"));
+
+    release.send(()).unwrap();
+    turn.await.unwrap();
+    host.evict_idle();
+    assert!(!host.is_open(&a), "evicted once the turn ended");
+    host.open(&b).unwrap();
+}
