@@ -281,7 +281,9 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     assert!(body.get("result").is_some(), "{body}");
     start_turn(&two, "alice", "t-kill");
     // In flight, and far enough that its snapshot is on disk.
-    wait_until("alice's turn in flight on core 2", &two, Duration::from_secs(90), || {
+    let turn_states = d.root.join("users/alice/workspace/memory/conversations/turn_states");
+    let _ = &turn_states;
+    wait_until(&format!("alice's turn in flight on core 2 (files: {:?})", walk(&d.root.join("users/alice/workspace/memory"))), &two, Duration::from_secs(30), || {
         active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()
     });
     assert_eq!(
@@ -413,4 +415,15 @@ fn two_users_with_the_same_thread_id_stay_apart() {
         active(&node, "alice", "t1"),
         "alice's turn on the same thread id is untouched"
     );
+}
+
+fn walk(dir: &Path) -> Vec<String> {
+    let mut out = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for e in entries.flatten() {
+            let p = e.path();
+            if p.is_dir() { out.extend(walk(&p)); } else { out.push(p.display().to_string()); }
+        }
+    }
+    out
 }
