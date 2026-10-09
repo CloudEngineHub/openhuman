@@ -163,23 +163,30 @@ pub fn transcript_root(workspace_dir: &std::path::Path) -> std::path::PathBuf {
     }
 }
 
-/// The stores of the agent the current [`CoreContext`] works for — the one
-/// it was derived for ([`CoreContext::session_agent`]), else
-/// [`DEFAULT_AGENT`] — or `None` when the core keeps the on-disk layout.
+/// The stores of the tenant the current [`CoreContext`] works for, keyed by
+/// [`session_key`](crate::core::runtime::session_key): the agent it was
+/// derived for ([`CoreContext::session_agent`]), else [`DEFAULT_AGENT`],
+/// prefixed by its SaaS profile when it serves one — or `None` when the core
+/// keeps the on-disk layout.
 ///
 /// For code that has a workspace path but no agent id of its own (goals,
 /// todos, the turn journal): under an embedded agent's context it lands in
-/// that agent's stores.
+/// that agent's stores. A SaaS task with no scope gets none rather than the
+/// shared default bucket.
 ///
 /// [`CoreContext`]: crate::core::runtime::CoreContext
 /// [`CoreContext::session_agent`]: crate::core::runtime::CoreContext::session_agent
 #[must_use]
 pub fn current() -> Option<AgentStores> {
     let provider = installed()?;
-    let agent = crate::core::runtime::CoreContext::current()
-        .and_then(|context| context.session_agent().map(str::to_owned))
-        .unwrap_or_else(|| DEFAULT_AGENT.to_string());
-    Some(provider.for_agent(&agent))
+    let tenant = match crate::core::runtime::current_tenant() {
+        Ok(tenant) => tenant,
+        Err(no_tenant) => {
+            log::warn!("[session_store] current: {no_tenant}");
+            return None;
+        }
+    };
+    Some(provider.for_agent(&crate::core::runtime::session_key(&tenant)))
 }
 
 /// The workspace the current [`CoreContext`](crate::core::runtime::CoreContext)
