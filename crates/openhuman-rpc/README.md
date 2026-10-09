@@ -101,7 +101,7 @@ for the hosts that still call them:
 
 | Path | What it does |
 | --- | --- |
-| [`src/lib.rs`](src/lib.rs) | Module wiring and re-exports (`tinyhumans`, the client helpers, `unwrap_rpc`). |
+| [`src/lib.rs`](src/lib.rs) | Module wiring and curated re-exports (`tinyhumans` and `embed` item lists, the client helpers, `unwrap_rpc`). |
 | [`src/host.rs`](src/host.rs) | `server` / `session-store` features: the shared host boot — `cli`, `desktop` / `serve_desktop`, `tui`, and the `*_builder` each starts from. |
 | [`src/envelope.rs`](src/envelope.rs) | `RpcRequest`, `RpcSuccess`, `RpcFailure`, `RpcError`, `JSONRPC_VERSION`, `SERVER_ERROR_CODE`, and the client half: `request_body`, `decode_response`. |
 | [`src/origin.rs`](src/origin.rs) | `is_origin_allowed_with_extra` and `ALLOWED_ORIGINS_ENV`: the browser-origin allowlist. Pure; the caller reads the environment. |
