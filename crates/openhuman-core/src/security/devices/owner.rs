@@ -38,6 +38,14 @@ fn cached(channel_id: &str) -> Option<Option<String>> {
         .cloned()
 }
 
+/// Whether this process holds a post-handshake session cipher for the channel.
+fn has_active_cipher(channel_id: &str) -> bool {
+    super::rpc::ACTIVE_CIPHERS
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .contains_key(channel_id)
+}
+
 fn forget(channel_id: &str) {
     OWNERS
         .lock()
@@ -79,7 +87,11 @@ pub(super) async fn owner_of(
     channel_id: &str,
     pending: Option<&PairingSession>,
 ) -> Result<Option<String>, OwnerLookupFailed> {
-    if let Some(session) = pending {
+    // A pending pairing names its agent only until the handshake completes;
+    // once this process holds the channel's session cipher the device is
+    // paired, and the store (not a leftover pairing session) decides whether
+    // it is still live — it may have been revoked by another process.
+    if let Some(session) = pending.filter(|_| !has_active_cipher(channel_id)) {
         return Ok(session.agent.clone());
     }
     if let Some(owner) = cached(channel_id) {
@@ -113,16 +125,10 @@ pub(super) async fn owner_of(
         // session cipher: it was revoked or removed elsewhere (another process
         // sharing the backend). Dropping the frame, rather than handling it as
         // `local`, keeps the revoked device from gaining the operator's scope.
-        None if super::rpc::ACTIVE_CIPHERS
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner)
-            .contains_key(channel_id) =>
-        {
-            Err(OwnerLookupFailed {
-                agent: None,
-                error: "device is revoked or no longer paired".to_string(),
-            })
-        }
+        None if has_active_cipher(channel_id) => Err(OwnerLookupFailed {
+            agent: None,
+            error: "device is revoked or no longer paired".to_string(),
+        }),
         None => Ok(None),
     }
 }

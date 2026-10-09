@@ -60,9 +60,10 @@ async fn an_unreadable_scope_is_skipped() {
     fire_for_connection(&config, ProviderSlug::Github, "github", "conn-1").await;
 }
 
-/// The subscriber handles a connection event through each scope's own
-/// configuration: toolkits that are not task sources are ignored, and a
-/// scope whose configuration disables task sources fires nothing.
+/// Smoke test: the subscriber handles connection events through the scope's
+/// own configuration without panicking or hanging — a non-task-source toolkit
+/// and an unrelated event are ignored, a task-source toolkit is handled. (The
+/// firing itself is asserted by the test above.)
 #[tokio::test]
 async fn a_connection_event_is_handled_per_scope() {
     let _lock = crate::config::TEST_ENV_LOCK.lock().await;

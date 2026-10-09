@@ -161,3 +161,39 @@ async fn a_revoked_device_with_a_live_cipher_is_dropped() {
         .remove("owner-test-cipher");
     assert!(owner.is_err(), "{owner:?}");
 }
+
+/// A pairing session left over after the handshake does not vouch for a device
+/// another process has since revoked: with the cipher live, the store decides.
+#[tokio::test]
+async fn a_leftover_pairing_session_does_not_outlive_a_revocation() {
+    let tmp = tempfile::tempdir().unwrap();
+    let context = crate::core::runtime::CoreContext::for_test_with_config(
+        crate::core::runtime::DomainSet::full(),
+        scoped_config(tmp.path()),
+    );
+    let pending = session(Some("agent-7"));
+    // Before the handshake the session names the agent.
+    assert_eq!(
+        owner_of("owner-test-leftover", Some(&pending))
+            .await
+            .unwrap()
+            .as_deref(),
+        Some("agent-7")
+    );
+    super::super::rpc::ACTIVE_CIPHERS.lock().unwrap().insert(
+        "owner-test-leftover".to_string(),
+        std::sync::Arc::new(std::sync::Mutex::new(
+            super::super::crypto::TunnelCipher::new(&[9u8; 32]),
+        )),
+    );
+    let owner = crate::core::runtime::CoreContext::scope(
+        context,
+        owner_of("owner-test-leftover", Some(&pending)),
+    )
+    .await;
+    super::super::rpc::ACTIVE_CIPHERS
+        .lock()
+        .unwrap()
+        .remove("owner-test-leftover");
+    assert!(owner.is_err(), "{owner:?}");
+}
