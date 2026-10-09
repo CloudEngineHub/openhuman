@@ -386,8 +386,9 @@ async fn handle_tunnel_frame(channel_id: &str, payload_b64: &str) {
             Ok(device) => {
                 super::owner::remember(
                     channel_id,
-                    crate::core::runtime::CoreContext::current()
-                        .and_then(|context| context.session_agent().map(str::to_string)),
+                    crate::core::runtime::current_tenant()
+                        .ok()
+                        .and_then(|tenant| tenant.agent),
                 );
                 log::info!(
                     "[devices/bus] device persisted channel_id={} label={}",

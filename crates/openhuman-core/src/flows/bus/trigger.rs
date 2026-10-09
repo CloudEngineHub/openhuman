@@ -116,8 +116,9 @@ impl FlowTriggerSubscriber {
     /// — its provider, access policy and action directory — else the one this
     /// subscriber was registered with.
     pub(super) fn config_for_scope(&self) -> Arc<Config> {
-        let acting = crate::core::runtime::CoreContext::current()
-            .is_some_and(|context| context.session_agent().is_some());
+        // A SaaS profile acts as its own tenant even with no agent inside it.
+        let acting = crate::core::runtime::current_tenant()
+            .is_ok_and(|tenant| tenant.agent.is_some() || tenant.profile.is_some());
         match acting.then(crate::core::runtime::CoreContext::current_embedder_config) {
             Some(Some(config)) => Arc::new(config),
             _ => Arc::clone(&self.config),

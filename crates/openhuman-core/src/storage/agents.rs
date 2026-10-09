@@ -136,7 +136,8 @@ pub fn contexts() -> Vec<(String, Arc<CoreContext>)> {
     } else {
         installed()
     };
-    contexts_in(backend, CoreContext::current().as_ref())
+    let fallback = crate::core::runtime::tenant::context_in(crate::core::runtime::mode::is_saas());
+    contexts_in(backend, fallback.as_ref())
 }
 
 /// [`contexts`] with the backend whose recorded agents are visited, and the
@@ -168,7 +169,7 @@ pub fn context_for(agent: &str) -> Option<Arc<CoreContext>> {
         if crate::core::runtime::mode::is_saas() {
             return None;
         }
-        CoreContext::current().map(|current| current.for_agent(agent))
+        crate::core::runtime::tenant::context_in(false).map(|current| current.for_agent(agent))
     })
 }
 
