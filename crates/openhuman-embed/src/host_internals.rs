@@ -300,15 +300,23 @@ pub mod voice {
             subscribe_dictation_events, subscribe_transcription_results,
         };
     }
-    #[cfg(all(feature = "voice", feature = "http-server"))]
+    // The core carries the live-voice and dictation sockets only with voice and
+    // the HTTP server compiled in. Where its features differ from embed's (a
+    // workspace build unifies them separately), rpc still names these paths, so
+    // embed supplies a socket-dropping stand-in rather than a missing item.
     pub mod live {
         pub mod ws {
+            #[cfg(all(feature = "voice", feature = "http-server"))]
             pub use openhuman_core::voice::live::ws::handle_live_voice_ws;
+            #[cfg(not(all(feature = "voice", feature = "http-server")))]
+            pub async fn handle_live_voice_ws<S, C>(_socket: S, _config: C) {}
         }
     }
-    #[cfg(all(feature = "voice", feature = "http-server"))]
     pub mod streaming {
+        #[cfg(all(feature = "voice", feature = "http-server"))]
         pub use openhuman_core::voice::streaming::handle_dictation_ws;
+        #[cfg(not(all(feature = "voice", feature = "http-server")))]
+        pub async fn handle_dictation_ws<S, C>(_socket: S, _config: C) {}
     }
 }
 
