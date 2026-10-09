@@ -372,6 +372,25 @@ pub enum ExpectedErrorKind {
     WalletNotConfigured,
 }
 
+/// A native module failed to load and the cached failure is being returned.
+///
+/// Anchors, all produced by module loading and nothing else:
+///
+/// - [`crate::tools::status::MODULE_FAULT_MARKER`] — every terminal load
+///   failure from `modules::ops` and tinybus' `load_first_admitted` carries it;
+/// - `module '<id>' could not be loaded` — the load wording itself, for a
+///   caller that rewrapped the reason without the marker;
+/// - `the memory module failed to load` — the memory facade's rendering of the
+///   same cached failure.
+///
+/// A bare `could not be loaded` is deliberately not enough: config, update
+/// policy and workflows use it for failures that must keep paging.
+fn is_module_unavailable_message(message: &str, lower: &str) -> bool {
+    message.contains(crate::tools::status::MODULE_FAULT_MARKER)
+        || (lower.contains("module '") && lower.contains("could not be loaded"))
+        || lower.contains("the memory module failed to load")
+}
+
 pub fn expected_error_kind(message: &str) -> Option<ExpectedErrorKind> {
     let lower = message.to_ascii_lowercase();
     // F2/F4: a managed-backend `errorCode` (#870) means the backend owns this
@@ -440,6 +459,12 @@ pub fn expected_error_kind(message: &str) -> Option<ExpectedErrorKind> {
     // ordering here is for clarity rather than precedence.
     if is_wallet_not_configured_message(&lower) {
         return Some(ExpectedErrorKind::WalletNotConfigured);
+    }
+    // A cached native-module load failure handed back to another caller. The
+    // failure was reported once at resolution; every re-report is the flood
+    // (TAURI-RUST-117K et al.). See `ExpectedErrorKind::ModuleUnavailable`.
+    if is_module_unavailable_message(message, &lower) {
+        return Some(ExpectedErrorKind::ModuleUnavailable);
     }
     if lower.contains("local ai is disabled") {
         return Some(ExpectedErrorKind::LocalAiDisabled);
