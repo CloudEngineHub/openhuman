@@ -34,7 +34,7 @@
 //!   whole process and is dropped once at exit, so restore-on-drop is correct
 //!   and leaves nothing installed behind it.
 //! - **SaaS (`server::run_server_saas`)** calls [`install`] directly. The core
-//!   boots from `server::saas::build`, which has no `RuntimeBuilder`, and the
+//!   boots from `core::runtime::saas::build` rather than a `RuntimeBuilder`, and the
 //!   store resolves the workspace of the context each call runs under, so
 //!   every user agent keeps its own sessions. It is process-lifetime for the
 //!   same reason as the servers.

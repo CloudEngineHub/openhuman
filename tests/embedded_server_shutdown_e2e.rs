@@ -3,7 +3,7 @@
 //! fires.
 //!
 //! This used to be a `#[ignore]`d unit test in `openhuman-rpc`
-//! (`shims_tests.rs`, #1552). `run_server_embedded` runs the full production
+//! (`shims_tests.rs`, #1552). `host::serve_desktop` runs the full production
 //! bootstrap, which spawns background tasks and writes process-global statics
 //! (`scheduler_gate::STATE`, `SIGNED_OUT`, the LLM permit semaphore, the
 //! `agent.run_turn` registry, ...) with no teardown, so inside the shared unit
@@ -12,6 +12,7 @@
 
 use std::time::Duration;
 
+use openhuman_rpc::host::{desktop_builder, serve_desktop, DesktopOptions};
 use tokio_util::sync::CancellationToken;
 
 async fn wait_until_port(port: u16, accepting: bool) {
@@ -54,15 +55,15 @@ async fn shutdown_token_stops_axum_listener_within_timeout() {
 
     let shutdown_token = CancellationToken::new();
     let server_token = shutdown_token.clone();
-    let server = tokio::spawn(async move {
-        openhuman_rpc::server::run_server_embedded(
-            Some("127.0.0.1"),
-            Some(port),
-            false,
-            server_token,
-        )
-        .await
-    });
+    let options = DesktopOptions {
+        host: Some("127.0.0.1".into()),
+        port: Some(port),
+        socketio: false,
+        rpc_token: None,
+    };
+    let builder = desktop_builder(&options);
+    let (ready_tx, _ready_rx) = tokio::sync::oneshot::channel();
+    let server = tokio::spawn(serve_desktop(builder, server_token, ready_tx));
 
     wait_until_port(port, true).await;
     shutdown_token.cancel();
