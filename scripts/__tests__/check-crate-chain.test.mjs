@@ -213,6 +213,20 @@ test('a host, root test or example naming the internal list is flagged, aliased 
   assert.deepEqual(flagged('use openhuman_rpc::embed::config;\n'), []);
 });
 
+test('char literals do not desynchronize the stripper; grouped embed is flagged', () => {
+  const flagged = text =>
+    findPatternHits(text, 'lib.rs', WHOLESALE_REEXPORT_PATTERNS).map(h => h.line);
+  assert.deepEqual(flagged("let t = s.trim_matches('\"');\npub use openhuman_embed as e;\n"), [2]);
+  assert.deepEqual(flagged('pub use openhuman_tinyhumans::{embed, RuntimeBuilder};\n'), [1]);
+  assert.deepEqual(
+    flagged('pub use openhuman_tinyhumans::{embed::process, RuntimeBuilder};\n'),
+    []
+  );
+  const internal = text =>
+    findPatternHits(text, 'lib.rs', RPC_INTERNAL_REEXPORT_PATTERNS).map(h => h.line);
+  assert.deepEqual(internal('pub use crate::core_host::{core::unwrap_rpc, secret};\n'), [1]);
+});
+
 test('string literals and comments are not code', () => {
   const flagged = text =>
     findPatternHits(text, 'lib.rs', WHOLESALE_REEXPORT_PATTERNS).map(h => h.pattern);

@@ -93,6 +93,10 @@ export const WHOLESALE_REEXPORT_PATTERNS = [
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_(?:embed|tinyhumans)\s*;/,
   },
   {
+    name: 'pub use openhuman_tinyhumans::{embed, …} (grouped)',
+    regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_tinyhumans::\{[^}]*\bembed\b(?!\s*::)[^}]*\}/,
+  },
+  {
     name: 'pub use openhuman_tinyhumans::embed (the crate, not a list)',
     regex: /\bpub(?:\([^)]*\))?\s+use\s+openhuman_tinyhumans::embed\s*(?:as\s+\w+\s*)?;/,
   },
@@ -110,7 +114,7 @@ export const CORE_WHOLESALE_REEXPORT_PATTERNS = [
 export const RPC_INTERNAL_REEXPORT_PATTERNS = [
   {
     name: 'pub use of anything under __host / core_host (bar unwrap_rpc)',
-    regex: /\bpub\s+use\b(?![^;]*::unwrap_rpc\s*;)[^;]*\b(?:__host|core_host)\b/,
+    regex: /\bpub\s+use\b(?!\s+[^;{},]*::unwrap_rpc\s*;)[^;]*\b(?:__host|core_host)\b/,
   },
 ];
 
@@ -157,6 +161,9 @@ export function stripRustComments(text) {
       const stop = end === -1 ? text.length : end + close.length;
       out += blank(text.slice(i, stop));
       i = stop;
+    } else if ((m = /^b?'(?:\\(?:x[0-9a-fA-F]{2}|u\{[0-9a-fA-F]+\}|.)|[^\\'])'/.exec(rest))) {
+      out += blank(m[0]);
+      i += m[0].length;
     } else if (rest.startsWith('"') || rest.startsWith('b"')) {
       let j = i + (rest.startsWith('b') ? 2 : 1);
       while (j < text.length && text[j] !== '"') j += text[j] === '\\' ? 2 : 1;
