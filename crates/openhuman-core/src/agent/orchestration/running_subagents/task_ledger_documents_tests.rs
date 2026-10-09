@@ -8,7 +8,7 @@ fn repo_in(storage: &MemoryStorage, scope: &str) -> Repo {
 }
 
 fn spec(id: &str) -> OrchestrationTaskSpec {
-    OrchestrationTaskSpec::new(id, OrchestrationTaskKind::SubAgent)
+    OrchestrationTaskSpec::new(id, OrchestrationTaskKind::SubAgent { agent: "a".into() })
 }
 
 #[test]
