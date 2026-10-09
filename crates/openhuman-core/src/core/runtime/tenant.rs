@@ -110,6 +110,15 @@ pub fn current_tenant_or_isolated(site: &str) -> Tenant {
     })
 }
 
+/// [`tenant_key`] of `id` under the calling tenant's profile alone: for
+/// process-wide tables keyed by a caller-chosen id (thread or session ids)
+/// that must keep SaaS profiles apart but that the agents of one profile
+/// share. With no profile (the desktop, embedded agents) it is the bare id,
+/// as before. A SaaS task with no scope gets a key nothing else shares.
+pub fn profile_key(id: &str) -> String {
+    tenant_key(&current_tenant_or_isolated("profile_key").profile_only(), id)
+}
+
 /// Profile prefix byte of a [`tenant_key`].
 const PROFILE_MARK: char = '\u{1e}';
 /// Agent prefix byte of a [`tenant_key`] (and of the web-chat keys before it).

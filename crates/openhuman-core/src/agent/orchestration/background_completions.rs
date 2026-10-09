@@ -22,6 +22,9 @@
 //! [`super::completion_notice`].
 
 use std::collections::{HashMap, HashSet, VecDeque};
+
+// Keys of `HostState`'s thread and session maps: per profile (see `profile_key`).
+use crate::core::runtime::tenant::profile_key as key;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Duration;
@@ -83,18 +86,6 @@ pub(super) struct HostState {
     pub(super) deleted_threads: HashSet<String>,
     /// Workspaces whose log boot recovery has already scanned this process.
     pub(super) recovered_workspaces: HashSet<PathBuf>,
-}
-
-/// The key of `id` (a thread or a parent session id, both caller chosen) in
-/// [`HostState`]'s maps: [`tenant_key`](crate::core::runtime::tenant_key) of
-/// the calling tenant's profile. Two SaaS users on thread `t1` hold two
-/// entries, so one user's Stop or delete never gates the other's work. The
-/// agents of one profile share entries, and with no profile (the desktop,
-/// embedded agents) the key is the bare id, as before.
-pub(super) fn key(id: &str) -> String {
-    let tenant =
-        crate::core::runtime::tenant::current_tenant_or_isolated("background_completions");
-    crate::core::runtime::tenant_key(&tenant.profile_only(), id)
 }
 
 pub(super) fn state() -> std::sync::MutexGuard<'static, HostState> {
