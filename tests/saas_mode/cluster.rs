@@ -40,8 +40,12 @@ struct Node {
 impl Node {
     fn log_tail(&self) -> String {
         let log = std::fs::read_to_string(&self.log).unwrap_or_default();
-        let lines: Vec<&str> = log.lines().collect();
-        lines[lines.len().saturating_sub(60)..].join("\n")
+        // The polling RPCs drown everything else out.
+        let lines: Vec<&str> = log
+            .lines()
+            .filter(|line| !line.contains("rpc_handler [rpc]"))
+            .collect();
+        lines[lines.len().saturating_sub(80)..].join("\n")
     }
 
     fn kill(&mut self) {
