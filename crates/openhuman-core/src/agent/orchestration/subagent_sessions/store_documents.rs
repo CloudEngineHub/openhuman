@@ -20,7 +20,6 @@ use tinystoragedrivers::{CollectionSpec, Precondition};
 
 use super::types::DurableSubagentSession;
 use crate::storage::documents::Repo;
-use crate::storage::DocumentStoreExt;
 
 const SESSIONS: &str = "subagent_sessions";
 const LIST_ID: &str = "all";

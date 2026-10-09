@@ -22,7 +22,6 @@ use serde_json::json;
 use tinystoragedrivers::{CollectionSpec, Precondition};
 
 use crate::storage::documents::Repo;
-use crate::storage::DocumentStoreExt;
 
 const STATE: &str = "composio_state";
 const DOMAIN: &str = "composio::file_store";
