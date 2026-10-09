@@ -250,7 +250,7 @@ fn builder_options_collect_into_the_seams() {
     assert!(builder.seams.server_launcher.is_none());
 }
 
-static STORAGE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+static STORAGE_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::new(());
 
 async fn memory_backend() -> Arc<dyn openhuman_core::storage::StorageBackend> {
     openhuman_core::storage::open("memory")
@@ -260,7 +260,7 @@ async fn memory_backend() -> Arc<dyn openhuman_core::storage::StorageBackend> {
 
 #[tokio::test]
 async fn a_storage_url_is_opened_installed_and_the_previous_backend_restored() {
-    let _lock = STORAGE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = STORAGE_LOCK.lock().await;
     let previous = memory_backend().await;
     openhuman_core::storage::install(Arc::clone(&previous));
 
@@ -281,7 +281,7 @@ async fn a_storage_url_is_opened_installed_and_the_previous_backend_restored() {
 
 #[tokio::test]
 async fn a_backend_with_no_predecessor_is_cleared_and_a_replaced_one_left_alone() {
-    let _lock = STORAGE_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = STORAGE_LOCK.lock().await;
     openhuman_core::storage::clear();
 
     let backend = memory_backend().await;
