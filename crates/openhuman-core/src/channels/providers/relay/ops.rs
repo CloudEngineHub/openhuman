@@ -24,6 +24,9 @@ use crate::security::SecurityPolicy;
 /// a duplicate and runs no turn, so a gateway can retry a delivery.
 pub async fn channel_relay_inbound(params: RelayInboundParams) -> Result<Outcome<Value>, String> {
     params.validate()?;
+    // In SaaS a relayed message must run as its user: with no tenant scope
+    // there is no workspace, stream or config it may touch.
+    let tenant = crate::core::runtime::current_tenant().map_err(|error| error.to_string())?;
     let thread_id = params.thread_id();
     let config = crate::config::rpc::load_config_with_timeout().await?;
     let workspace_dir = config.workspace_dir.clone();
@@ -54,6 +57,7 @@ pub async fn channel_relay_inbound(params: RelayInboundParams) -> Result<Outcome
         channel = %params.channel,
         thread_id = %thread_id,
         request_id = %request_id,
+        profile = ?tenant.profile,
         chars = params.text.chars().count(),
         "[channels::relay] relayed message accepted"
     );
