@@ -163,6 +163,9 @@ test('a layer re-exporting the layer below wholesale is flagged', () => {
     'pub use openhuman_tinyhumans::embed (the crate, not a list)',
   ]);
   assert.deepEqual(flagged('pub use openhuman_embed::*;\n'), ['pub use openhuman_embed::*']);
+  assert.deepEqual(flagged('pub use openhuman_embed;\n'), [
+    'pub use openhuman_embed / openhuman_tinyhumans (the bare crate)',
+  ]);
   // Curated lists, private aliases and comments are fine.
   assert.deepEqual(flagged('pub use openhuman_embed::{Runtime, RuntimeBuilder};\n'), []);
   assert.deepEqual(flagged('use openhuman_embed as embed;\n'), []);
@@ -185,14 +188,24 @@ test('rpc may not re-export the internal list on a public path', () => {
   assert.deepEqual(flagged('pub use crate::core_host::core::unwrap_rpc;\n'), []);
 });
 
-test('a host reaching the internal list through openhuman_rpc is flagged', () => {
+test('a host, root test or example naming the internal list is flagged, aliased or not', () => {
   const flagged = text =>
     findPatternHits(text, 'main.rs', HOST_RPC_INTERNAL_PATTERNS).map(h => `${h.line}`);
   assert.deepEqual(flagged('use openhuman_rpc::embed::__host::config;\n'), ['1']);
-  assert.deepEqual(flagged('use openhuman_rpc::{\n    embed::config,\n    core_host,\n};\n'), [
-    '1',
-  ]);
+  assert.deepEqual(flagged('use openhuman_rpc as rpc;\nuse rpc::core_host::agent;\n'), ['2']);
   assert.deepEqual(flagged('use openhuman_rpc::embed::config;\n'), []);
+});
+
+test('string literals and comments are not code', () => {
+  const flagged = text =>
+    findPatternHits(text, 'lib.rs', WHOLESALE_REEXPORT_PATTERNS).map(h => h.pattern);
+  assert.deepEqual(flagged('log::warn!("pub use openhuman_embed as embed;");\n'), []);
+  assert.deepEqual(flagged('let s = r#"pub use openhuman_embed::*;"#;\n'), []);
+  assert.deepEqual(flagged('let s = "a \\" pub use openhuman_embed as e;";\n'), []);
+  assert.deepEqual(flagged('/* a /* nested */ pub use openhuman_embed as e; */\n'), []);
+  assert.deepEqual(flagged('"x";\npub use openhuman_embed as embed;\n'), [
+    'pub use openhuman_embed as …',
+  ]);
 });
 
 // ── the real repository ────────────────────────────────────────────────────
