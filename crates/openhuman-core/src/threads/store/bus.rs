@@ -48,6 +48,13 @@ const LOG_PREFIX: &str = "[memory:conversations:bus]";
 /// This bridges typed channel events onto the workspace-backed JSONL
 /// conversation store so non-web channels persist alongside UI threads.
 pub fn register_conversation_persistence_subscriber(workspace_dir: PathBuf) {
+    // One subscriber bound to one workspace cannot serve many users: in SaaS
+    // it would write every user's channel conversations into the operator's
+    // workspace. Profiles keep their threads through their own scoped turns.
+    if crate::core::runtime::is_saas() {
+        log::info!("{LOG_PREFIX} conversation persistence subscriber not registered in SaaS mode");
+        return;
+    }
     let workspace = CONVERSATION_PERSISTENCE_WORKSPACE
         .get_or_init(|| Arc::new(RwLock::new(workspace_dir.clone())));
     match workspace.write() {
