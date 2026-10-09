@@ -24,7 +24,7 @@ async fn nothing_to_do_does_nothing() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 3600);
     assert_eq!(tick(&host).await, TickReport::default());
-    let id = ProfileId::for_user(&format!("idle-{}", uuid::Uuid::new_v4())).unwrap();
+    let id = ProfileId::for_user(&format!("idle-{}", uuid::Uuid::new_v4()), crate::profiles::ProfileIdMode::Raw).unwrap();
     host.provision(&id).unwrap();
     assert_eq!(tick(&host).await, TickReport::default());
     assert!(
@@ -37,8 +37,8 @@ async fn nothing_to_do_does_nothing() {
 async fn only_agents_with_queued_memory_jobs_are_run() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 3600);
-    let busy = ProfileId::for_user(&format!("busy-{}", uuid::Uuid::new_v4())).unwrap();
-    let quiet = ProfileId::for_user(&format!("quiet-{}", uuid::Uuid::new_v4())).unwrap();
+    let busy = ProfileId::for_user(&format!("busy-{}", uuid::Uuid::new_v4()), crate::profiles::ProfileIdMode::Raw).unwrap();
+    let quiet = ProfileId::for_user(&format!("quiet-{}", uuid::Uuid::new_v4()), crate::profiles::ProfileIdMode::Raw).unwrap();
     host.provision(&busy).unwrap();
     host.provision(&quiet).unwrap();
 
@@ -60,7 +60,7 @@ async fn only_agents_with_queued_memory_jobs_are_run() {
 async fn a_tick_sweeps_idle_agents() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 0);
-    let id = ProfileId::for_user(&format!("sweep-{}", uuid::Uuid::new_v4())).unwrap();
+    let id = ProfileId::for_user(&format!("sweep-{}", uuid::Uuid::new_v4()), crate::profiles::ProfileIdMode::Raw).unwrap();
     host.provision(&id).unwrap();
     drop(host.open(&id).unwrap());
     assert!(host.is_open(&id));

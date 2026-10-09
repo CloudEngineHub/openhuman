@@ -8,7 +8,7 @@ fn host(tmp: &tempfile::TempDir, max_open: usize, idle_secs: u64) -> ProfileHost
 }
 
 fn agent(name: &str) -> ProfileId {
-    ProfileId::for_user(name).unwrap()
+    ProfileId::for_user(name, crate::profiles::ProfileIdMode::Raw).unwrap()
 }
 
 #[test]

@@ -1,7 +1,7 @@
 use super::*;
 
 fn id() -> ProfileId {
-    ProfileId::for_user("layout-user").unwrap()
+    ProfileId::for_user("layout-user", crate::profiles::ProfileIdMode::Raw).unwrap()
 }
 
 #[test]
@@ -62,7 +62,7 @@ fn the_policy_is_on_and_closed() {
 
 #[test]
 fn artifacts_land_in_the_agents_sandbox() {
-    let id = ProfileId::for_user("alice").unwrap();
+    let id = ProfileId::for_user("alice", crate::profiles::ProfileIdMode::Raw).unwrap();
     let layout = ProfileLayout::new(std::path::Path::new("/srv/oh"), &id);
     let config = profile_config(&layout, &id);
     assert!(config.files_dir().starts_with(&layout.sandbox_dir));
