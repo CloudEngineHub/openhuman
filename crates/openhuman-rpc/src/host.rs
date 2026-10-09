@@ -69,7 +69,51 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
         args.first().map(String::as_str).unwrap_or("<none>"),
         args.len()
     );
-    cli_builder().run_from_args(args)
+    let mut builder = cli_builder();
+    if cli_command_uses_storage(args) {
+        // A one-shot command reads the same backend the server would: the
+        // configured storage URL, opened on the core's storage runtime so the
+        // backend outlives this call. No URL leaves the classic layout alone.
+        let provider = crate::core_host::storage::block_on_anyhow(
+            crate::session_store::provider_if_configured(),
+        )?;
+        if let Some(provider) = provider {
+            log::debug!("[rpc:host] cli: storage-backed session store installed");
+            builder = builder.session_store(provider);
+        }
+    }
+    builder.run_from_args(args)
+}
+
+/// Whether the CLI subcommand in `args` should open the configured storage
+/// backend itself. `run` / `serve` open it in their own server boot, and help,
+/// the moved TUI names and `sentry-test` never touch stored state.
+#[cfg(feature = "server")]
+fn cli_command_uses_storage(args: &[String]) -> bool {
+    let mut args = args.iter().map(String::as_str);
+    let mut command = None;
+    while let Some(arg) = args.next() {
+        match arg {
+            // Launch-wide flags with a separate value.
+            "--model" | "--model-id" | "-m" | "--provider" | "--provider-id" | "-p" => {
+                args.next();
+            }
+            _ if arg.starts_with("--model=")
+                || arg.starts_with("--model-id=")
+                || arg.starts_with("--provider=")
+                || arg.starts_with("--provider-id=") => {}
+            _ => {
+                command = Some(arg);
+                break;
+            }
+        }
+    }
+    !matches!(
+        command,
+        None | Some(
+            "run" | "serve" | "help" | "-h" | "--help" | "tui" | "chat" | "sentry-test"
+        )
+    )
 }
 
 /// What the embedded desktop server binds and how it authenticates.

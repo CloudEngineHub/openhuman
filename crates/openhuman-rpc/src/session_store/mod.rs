@@ -205,6 +205,21 @@ pub async fn provider_for_host() -> anyhow::Result<Arc<dyn SessionStoreProvider>
     provider_for_url(configured_storage_url().await?).await
 }
 
+/// The storage-backed session store, only when the host's configuration
+/// names a storage URL; `None` leaves the classic layout and any process
+/// state untouched. For one-shot CLI commands, which have no reason to
+/// install the classic store but must see the same backend the server does.
+///
+/// # Errors
+///
+/// When the URL cannot be resolved, parsed or opened.
+pub async fn provider_if_configured() -> anyhow::Result<Option<Arc<dyn SessionStoreProvider>>> {
+    match configured_storage_url().await? {
+        Some(url) => provider_for_url(Some(url)).await.map(Some),
+        None => Ok(None),
+    }
+}
+
 /// The storage URL the host asks for: `OPENHUMAN_STORAGE_URL`, else
 /// `[storage] url` from the config, else `None` (the classic layout).
 ///
