@@ -1011,6 +1011,15 @@ fn a_profile_holds_web_and_relayed_channel_threads() {
         "{event}"
     );
     assert!(event.get("agent").is_none(), "no routing stamp on the wire");
+    // The turn reached the agent: the offline backend's error, never the
+    // dispatch failing to find an `agent.run_turn` handler.
+    assert!(
+        !event["full_response"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("no native handler"),
+        "relayed turn must reach the agent: {event}"
+    );
 
     // A gateway retry of the same message runs nothing twice.
     let (_, body) = call("alice", "openhuman.channel_relay_inbound", relayed);
