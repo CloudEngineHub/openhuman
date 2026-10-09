@@ -229,8 +229,6 @@ pub async fn provider_if_configured() -> anyhow::Result<Option<Arc<dyn SessionSt
 /// the config may name a `[storage] url`, and a deployment that asked for a
 /// backend must not quietly fall back to local files.
 async fn configured_storage_url() -> anyhow::Result<Option<String>> {
-    use anyhow::Context as _;
-
     let env = std::env::var(crate::core_host::storage::STORAGE_URL_VAR).ok();
     // A URL in the environment wins and never reads the config.
     if env.as_deref().is_some_and(|url| !url.trim().is_empty()) {
@@ -238,7 +236,9 @@ async fn configured_storage_url() -> anyhow::Result<Option<String>> {
     }
     let config = crate::core_host::config::rpc::load_config_with_timeout()
         .await
-        .context("loading the config to resolve the storage url")?;
+        .map_err(|error| {
+            anyhow::anyhow!("loading the config to resolve the storage url: {error}")
+        })?;
     Ok(storage_url_from(env, &config))
 }
 
