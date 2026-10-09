@@ -143,3 +143,69 @@ fn boot_refuses_a_registry_with_workspace_definitions() {
         .to_string();
     assert!(err.contains("built-ins only"), "{err}");
 }
+
+#[test]
+fn cluster_settings_default_and_resolve() {
+    let mut config = SaasConfig::new("/srv/oh");
+    assert_eq!(config.lease_ttl_secs, 30);
+    assert_eq!(config.lease_ttl(), std::time::Duration::from_secs(30));
+    assert_eq!(config.operator_dir(), PathBuf::from("/srv/oh/operator"));
+    assert!(!config.is_clustered());
+    assert_eq!(config.storage_url_with(None), None);
+
+    config.storage_url = Some("sqlite:/srv/oh/a.db".into());
+    assert_eq!(
+        config.storage_url_with(None).as_deref(),
+        Some("sqlite:/srv/oh/a.db")
+    );
+    assert_eq!(
+        config.storage_url_with(Some("sqlite:/env.db")).as_deref(),
+        Some("sqlite:/env.db"),
+        "OPENHUMAN_STORAGE_URL wins"
+    );
+    assert_eq!(
+        config.storage_url_with(Some("  ")).as_deref(),
+        Some("sqlite:/srv/oh/a.db"),
+        "a blank environment value is unset"
+    );
+
+    assert_eq!(config.resolve_node_id(Some("node-env")), "node-env");
+    let mut fresh = SaasConfig::new("/srv/oh");
+    let random = fresh.resolve_node_id(None).to_owned();
+    assert!(random.starts_with("node-"), "{random}");
+    assert_eq!(fresh.resolve_node_id(Some("ignored")), random, "resolved once");
+    let mut configured = SaasConfig::new("/srv/oh");
+    configured.node_id = Some("node-file".into());
+    assert_eq!(configured.resolve_node_id(Some("node-env")), "node-file");
+
+    config.operator_dir = Some("/srv/oh/operators/a".into());
+    assert_eq!(config.operator_dir(), PathBuf::from("/srv/oh/operators/a"));
+    config.advertise_url = Some("http://a:7788".into());
+    assert!(config.is_clustered());
+}
+
+#[test]
+fn reads_the_cluster_settings() {
+    let tmp = tempfile::tempdir().unwrap();
+    let path = tmp.path().join("operator.toml");
+    std::fs::write(
+        &path,
+        r#"
+root = "/srv/oh"
+storage_url = "sqlite:/srv/oh/shared.db"
+node_id = "node-a"
+advertise_url = "http://10.0.0.1:7788"
+lease_ttl_secs = 5
+operator_dir = "/srv/oh/operators/node-a"
+"#,
+    )
+    .unwrap();
+    let config = SaasConfig::load(&path).unwrap();
+    assert_eq!(config.node_id.as_deref(), Some("node-a"));
+    assert_eq!(config.lease_ttl_secs, 5);
+    assert!(config.is_clustered());
+    assert_eq!(
+        config.operator_config().workspace_dir,
+        PathBuf::from("/srv/oh/operators/node-a/workspace")
+    );
+}
