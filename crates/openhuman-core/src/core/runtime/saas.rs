@@ -388,11 +388,23 @@ pub async fn build(
     // Whoever initialised first won; refuse to serve users from a registry
     // that holds anything but the built-ins.
     verify_builtin_definitions(crate::agent::harness::AgentDefinitionRegistry::global())?;
-    let host = Arc::new(crate::profiles::ProfileHost::new(
-        config,
-        runtime.context().clone(),
-    ));
+    // With a storage backend installed (the host opened the configured URL
+    // before boot), the profile registry and leases live in it and every node
+    // sharing it contends for the same profiles; without one they are files
+    // under the root.
+    let backend = crate::storage::installed();
+    if config.resolved_storage_url().is_some() && backend.is_none() {
+        anyhow::bail!(
+            "[saas] a storage URL is configured but no backend is installed; \
+             the host must open it before boot"
+        );
+    }
+    let host = Arc::new(
+        crate::profiles::ProfileHost::with_backend(config, runtime.context().clone(), backend)
+            .map_err(|e| anyhow::anyhow!("[saas] {e}"))?,
+    );
     crate::profiles::host::install(Arc::clone(&host));
+    crate::profiles::lease::heartbeat(Arc::clone(&host), runtime.context().clone());
     crate::profiles::background::spawn(host);
     Ok(runtime)
 }
