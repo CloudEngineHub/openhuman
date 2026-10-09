@@ -65,7 +65,8 @@ async fn has_live_device(channel_id: &str) -> Result<bool, String> {
 
 /// The agent `channel_id` belongs to, resolved as described above: `None`
 /// for `local`, which is also where a channel no scope knows yet (a handshake
-/// still in flight, or a revoked device) is handled.
+/// still in flight) is handled. A channel no scope holds live but whose session
+/// cipher this process still has (a device revoked elsewhere) is an error.
 ///
 /// A remembered owner is re-checked in its scope each time, so a revoked,
 /// deleted or re-paired channel is resolved afresh.
@@ -106,7 +107,24 @@ pub(super) async fn owner_of(
         );
         remember(channel_id, owner.clone());
     }
-    Ok(owner.flatten())
+    match owner {
+        Some(owner) => Ok(owner),
+        // No scope holds the device live, yet this process still has its
+        // session cipher: it was revoked or removed elsewhere (another process
+        // sharing the backend). Dropping the frame, rather than handling it as
+        // `local`, keeps the revoked device from gaining the operator's scope.
+        None if super::rpc::ACTIVE_CIPHERS
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .contains_key(channel_id) =>
+        {
+            Err(OwnerLookupFailed {
+                agent: None,
+                error: "device is revoked or no longer paired".to_string(),
+            })
+        }
+        None => Ok(None),
+    }
 }
 
 /// The owner from each scope's lookup (`crate::storage::agents::decide`).
