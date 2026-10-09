@@ -355,7 +355,10 @@ fn a_failed_resolution_is_reported_once_with_the_module_id() {
     let tags = &events[0].tags;
     assert_eq!(tags.get("domain").map(String::as_str), Some("modules"));
     assert_eq!(tags.get("operation").map(String::as_str), Some("resolve"));
-    assert_eq!(tags.get("module").map(String::as_str), Some("tinyconnectors"));
+    assert_eq!(
+        tags.get("module").map(String::as_str),
+        Some("tinyconnectors")
+    );
 
     // The same reason re-reported by a caller is demoted.
     let repeats = sentry::test::with_captured_events(|| {

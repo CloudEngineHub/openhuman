@@ -321,6 +321,10 @@ async fn resolve(config: &Config, record: &'static ModuleRecord) -> Result<(), S
 ///
 /// A panic in the loader is reported rather than propagated: it would otherwise
 /// take down whichever task happened to be awaiting the load.
+///
+/// Every loader error is terminal for the process and says so once: tinybus'
+/// release-cache path and [`load_local`] already carry the marker, the rest
+/// get it appended here.
 async fn blocking<F>(work: F) -> Result<(), String>
 where
     F: FnOnce() -> Result<(), String> + Send + 'static,
@@ -330,12 +334,16 @@ where
         .map_err(|error| format!("the module bus could not start: {error}"))?
         .blocking(work)
         .await
-        .map_err(|error| {
-            format!(
-                "{error}. {}; restart the app to try again",
-                crate::tools::status::MODULE_FAULT_MARKER
-            )
-        })
+        .map_err(mark_terminal)
+}
+
+/// Append the terminal-fault sentence to `error` unless it already has it.
+fn mark_terminal(error: String) -> String {
+    let marker = crate::tools::status::MODULE_FAULT_MARKER;
+    if error.contains(marker) {
+        return error;
+    }
+    format!("{error}. {marker}; restart the app to try again")
 }
 
 /// Load the pinned release for this host through the release cache.
