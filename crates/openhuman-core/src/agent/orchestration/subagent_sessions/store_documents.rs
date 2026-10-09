@@ -9,20 +9,25 @@
 //!
 //! | Collection | Document id | Holds |
 //! | --- | --- | --- |
-//! | `subagent_sessions` | `all` | `sessions`: the whole list the file held |
+//! | `subagent_sessions` | the session id | one [`DurableSubagentSession`] plus `created_at` for ordering |
 //!
-//! The file store loads and saves the whole list, last writer wins; this keeps
-//! that contract so the callers in `ops.rs` are unchanged.
+//! The file store loads and saves the whole list, last writer wins. `save`
+//! keeps that contract for the callers in `ops.rs`, but writes each session as
+//! its own document (and deletes the ones the list no longer holds), so a
+//! session's history stays well under any document-size limit and two
+//! processes only collide on a session they both changed.
 
 use anyhow::Result;
-use serde_json::json;
-use tinystoragedrivers::{CollectionSpec, Precondition};
+use std::collections::HashSet;
+
+use serde_json::Value;
+use tinystoragedrivers::{CollectionSpec, Precondition, Query, Sort};
 
 use super::types::DurableSubagentSession;
 use crate::storage::documents::Repo;
+use crate::storage::DocumentStoreExt;
 
 const SESSIONS: &str = "subagent_sessions";
-const LIST_ID: &str = "all";
 const DOMAIN: &str = "subagent_sessions::store";
 
 fn collections() -> Vec<CollectionSpec> {
@@ -44,23 +49,41 @@ impl Docs {
     }
 
     pub(super) fn load(&self) -> Result<Vec<DurableSubagentSession>> {
-        let stored = self
-            .0
-            .run(|docs| async move { docs.get(SESSIONS, LIST_ID).await })?;
-        let Some(stored) = stored else {
-            return Ok(Vec::new());
-        };
-        let sessions = stored.doc.get("sessions").cloned().unwrap_or_default();
-        Ok(serde_json::from_value(sessions)?)
+        let stored = self.0.run(|docs| async move {
+            docs.query_all(
+                SESSIONS,
+                &Query::all()
+                    .sort(Sort::asc("created_at"))
+                    .sort(Sort::asc("_id")),
+            )
+            .await
+        })?;
+        stored
+            .into_iter()
+            .map(|item| Ok(serde_json::from_value(item.doc)?))
+            .collect()
     }
 
     pub(super) fn save(&self, sessions: &[DurableSubagentSession]) -> Result<()> {
-        let doc = json!({ "sessions": sessions });
-        log::debug!("[subagent_sessions] document save count={}", sessions.len());
+        let mut writes = Vec::with_capacity(sessions.len());
+        for session in sessions {
+            let mut doc = serde_json::to_value(session)?;
+            doc["created_at"] = Value::from(session.created_at.as_str());
+            writes.push((session.subagent_session_id.clone(), doc));
+        }
+        log::debug!("[subagent_sessions] document save count={}", writes.len());
         self.0.run(|docs| async move {
-            docs.put(SESSIONS, LIST_ID, doc, Precondition::None)
-                .await
-                .map(|_| ())
+            let keep: HashSet<String> = writes.iter().map(|(id, _)| id.clone()).collect();
+            for (id, doc) in writes {
+                docs.put(SESSIONS, &id, doc, Precondition::None).await?;
+            }
+            for stored in docs.query_all(SESSIONS, &Query::all()).await? {
+                if !keep.contains(&stored.id) {
+                    docs.delete(SESSIONS, &stored.id, Precondition::None)
+                        .await?;
+                }
+            }
+            Ok(())
         })
     }
 }

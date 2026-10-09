@@ -180,6 +180,17 @@ pub(crate) fn list_task_records(workspace_dir: &Path) -> Vec<OrchestrationTaskRe
 /// errors (e.g. a record that raced to terminal) are logged and skipped, and a
 /// store-open failure simply reconciles nothing. Returns the count reconciled.
 pub(crate) fn reconcile_orphaned_tasks_on_boot(workspace_dir: &Path) -> usize {
+    // On a backend several cores share, a non-terminal task in the ledger may
+    // belong to another live process, not to a dead one of ours; settling it
+    // would fail work that is still running. Only a backend this process owns
+    // (files, SQLite, memory) can be swept.
+    if crate::storage::installed_is_shared() {
+        log::debug!(
+            "[running_subagents] skipping orphan reconcile: storage backend is shared workspace_dir={}",
+            workspace_dir.display()
+        );
+        return 0;
+    }
     let store = task_store_for_workspace(workspace_dir);
 
     // The sweep itself — which statuses are live, and which terminal state each

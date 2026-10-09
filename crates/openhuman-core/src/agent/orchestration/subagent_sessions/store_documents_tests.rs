@@ -48,7 +48,7 @@ fn save_replaces_the_whole_list() {
     assert_eq!(loaded.len(), 2);
     assert_eq!(loaded[0].subagent_session_id, "a");
     assert_eq!(loaded[1].status, DurableSubagentStatus::Idle);
-    docs.save(&[session("c")]).unwrap();
+    docs.save(&[session("c")]).unwrap(); // a, b are deleted
     let loaded = docs.load().unwrap();
     assert_eq!(loaded.len(), 1);
     assert_eq!(loaded[0].subagent_session_id, "c");
@@ -73,4 +73,21 @@ fn the_file_store_still_works_with_no_backend() {
         .join(".openhuman/subagent_sessions.json")
         .exists());
     assert_eq!(store.load().unwrap().len(), 1);
+}
+
+#[test]
+fn sessions_come_back_in_creation_order() {
+    let docs = docs_in(&MemoryStorage::new(), "local");
+    let mut early = session("z");
+    early.created_at = "2026-01-01T00:00:00Z".into();
+    let mut late = session("a");
+    late.created_at = "2026-02-01T00:00:00Z".into();
+    docs.save(&[late, early]).unwrap();
+    let ids: Vec<_> = docs
+        .load()
+        .unwrap()
+        .into_iter()
+        .map(|s| s.subagent_session_id)
+        .collect();
+    assert_eq!(ids, ["z", "a"]);
 }
