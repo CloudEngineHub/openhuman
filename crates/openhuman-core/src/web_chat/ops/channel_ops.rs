@@ -232,6 +232,9 @@ pub async fn channel_web_chat(
     // A SaaS user chooses the thread id; the same rules as `threads_upsert`
     // apply (no reserved prefixes, no path-like ids). No-op outside SaaS.
     crate::profiles::surface::check_thread_id(thread_id.trim())?;
+    // A profile this node no longer hosts (its lease was lost or released)
+    // starts no new turn here. No-op outside SaaS.
+    crate::profiles::host::ensure_hosted()?;
     // Mirrors the socket `chat:start` payload's `run_mode` handling
     // (`openhuman_rpc::server::socketio`): apply it before starting the turn so
     // `plan_mode_middleware` sees the requested mode from the first tool
