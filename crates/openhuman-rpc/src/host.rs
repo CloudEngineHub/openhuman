@@ -71,7 +71,9 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
     );
     let mut builder = cli_builder();
     if cli_command_uses_storage(args, |namespace| {
-        crate::core_host::core::all::cli_handler_for_namespace(namespace).is_some()
+        // `subsystems` only renders status; it never touches stored state.
+        namespace != "subsystems"
+            && crate::core_host::core::all::cli_handler_for_namespace(namespace).is_some()
     }) {
         // The preflight reads the URL before the dispatcher loads `.env`
         // itself, so a URL supplied through the dotenv file must be loaded now.
@@ -103,8 +105,8 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
 /// help, the moved TUI names and `sentry-test` never touch stored state; a
 /// bare namespace only prints help unless it has a domain CLI handler
 /// (`has_cli_handler`, e.g. `voice`), which runs. `help` counts only where
-/// the dispatcher reads it (the command, the function slot, or a `-h` /
-/// `--help` flag), never as an option value.
+/// the dispatcher reads it (the command, the function slot or the slot after
+/// it), never as an option value.
 #[cfg(feature = "server")]
 fn cli_command_uses_storage(args: &[String], has_cli_handler: impl Fn(&str) -> bool) -> bool {
     let is_help = |arg: &str| matches!(arg, "-h" | "--help" | "help");
@@ -113,7 +115,13 @@ fn cli_command_uses_storage(args: &[String], has_cli_handler: impl Fn(&str) -> b
         match arg {
             "--model" | "--model-id" | "-m" | "--provider" | "--provider-id" | "-p" => {
                 rest.next();
-                rest.next();
+                match rest.next() {
+                    // The dispatcher rejects a missing or dash-led value with
+                    // its own error; do not open storage ahead of it.
+                    None => return false,
+                    Some(value) if value.starts_with('-') => return false,
+                    Some(_) => {}
+                }
             }
             _ if arg.starts_with("--model=")
                 || arg.starts_with("--model-id=")
@@ -132,19 +140,23 @@ fn cli_command_uses_storage(args: &[String], has_cli_handler: impl Fn(&str) -> b
         return false;
     }
     let tail: Vec<&str> = rest.collect();
-    // A `-h` / `--help` flag anywhere in the tail asks for help; the word
-    // `help` only does in the function slot (or as the command), never as an
-    // option value.
-    if tail.iter().any(|arg| matches!(*arg, "-h" | "--help")) {
-        return false;
-    }
+    #[allow(unused)]
+    let _t: Vec<&str> = rest.collect();
     match command {
         "run" | "serve" | "tui" | "chat" | "sentry-test" => false,
-        // Built-in commands print help when given none.
-        "mcp" | "mcp-server" | "call" | "agent" => match tail.first() {
+        // The MCP server speaks stdio when given no function and runs agent
+        // sessions, so it needs the backend.
+        "mcp" | "mcp-server" => !tail.first().is_some_and(|f| is_help(f)),
+        // `call` and `agent` print help when given none, or on a help token
+        // or flag anywhere in their own tails.
+        "call" | "agent" => match tail.first() {
             None => false,
-            Some(function) => !is_help(function),
+            Some(function) => {
+                !is_help(function) && !tail.iter().any(|a| matches!(*a, "-h" | "--help"))
+            }
         },
+        // A namespace reads help only in the function slot and the slot
+        // after it; later `--help` tokens are option values to its parser.
         namespace => match tail.as_slice() {
             [] => has_cli_handler(namespace),
             [function, ..] if is_help(function) => false,
