@@ -275,6 +275,12 @@ pub async fn build(
         config.idle_evict_secs
     );
 
+    // Built-in agent definitions only. The registry is process-wide and the
+    // first initialiser wins, so seed it before the core builds: a lazy init
+    // during the build would otherwise load one user's workspace definitions
+    // for everyone.
+    crate::agent::harness::AgentDefinitionRegistry::init_global_builtins()?;
+
     let mut builder = CoreBuilder::new(HostKind::Saas)
         .token(TokenSource::Fixed(Arc::new(bearer)))
         .services(services)
@@ -288,16 +294,9 @@ pub async fn build(
         builder = builder.port(port);
     }
     let runtime = builder.build().await?;
-    // Built-in agent definitions only. The registry is process-wide and the
-    // first initialiser wins, so seeding it here also stops a lazy init from
-    // loading one user's workspace definitions for everyone.
-    crate::agent::harness::AgentDefinitionRegistry::init_global_builtins()?;
-    log::info!(
-        "[saas] agent definitions: {} built-in(s), no workspace or home overrides",
-        crate::agent::harness::AgentDefinitionRegistry::global()
-            .map(|r| r.len())
-            .unwrap_or(0)
-    );
+    // Whoever initialised first won; refuse to serve users from a registry
+    // that holds anything but the built-ins.
+    verify_builtin_definitions(crate::agent::harness::AgentDefinitionRegistry::global())?;
     let host = Arc::new(crate::profiles::ProfileHost::new(
         config,
         runtime.context().clone(),
@@ -305,6 +304,26 @@ pub async fn build(
     crate::profiles::host::install(Arc::clone(&host));
     crate::profiles::background::spawn(host);
     Ok(runtime)
+}
+
+/// Refuse boot unless the process-wide agent definition registry is seeded and
+/// holds the built-ins only.
+pub(crate) fn verify_builtin_definitions(
+    registry: Option<&crate::agent::harness::AgentDefinitionRegistry>,
+) -> anyhow::Result<()> {
+    let Some(registry) = registry else {
+        anyhow::bail!("[saas] the agent definition registry was not seeded");
+    };
+    if !registry.holds_builtins_only() {
+        anyhow::bail!(
+            "[saas] the agent definition registry holds workspace or home definitions; a SaaS core serves the built-ins only"
+        );
+    }
+    log::info!(
+        "[saas] agent definitions: {} built-in(s), no workspace or home overrides",
+        registry.len()
+    );
+    Ok(())
 }
 
 #[cfg(test)]
