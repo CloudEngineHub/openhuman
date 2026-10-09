@@ -54,6 +54,9 @@ pub mod core {
     pub mod bus {
         pub use openhuman_core::core::bus::{init, BUS};
     }
+    pub mod cli {
+        pub use openhuman_core::core::cli::load_dotenv_for_cli;
+    }
     pub mod dispatch {
         pub use openhuman_core::core::dispatch::{
             is_known_probe_method, unknown_method_name, UNKNOWN_METHOD_PREFIX,
@@ -278,8 +281,8 @@ pub mod platform {
 
 pub mod storage {
     pub use openhuman_core::storage::{
-        clear, configured_url, driver_is_shared, install, installed, open, StorageBackend,
-        STORAGE_URL_VAR,
+        block_on_anyhow, clear, configured_url, driver_is_shared, install, installed, open,
+        url_from, StorageBackend, STORAGE_URL_VAR,
     };
 }
 
