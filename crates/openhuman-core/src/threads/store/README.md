@@ -21,6 +21,9 @@ bus subscriber (see [`memory/`](../../memory/)).
   (`register_conversation_persistence_subscriber`) that mirrors inbound and
   processed channel turns into the store, so channel transcripts (Slack,
   Telegram, ...) persist alongside the UI's own threads.
+  A caller that persists a channel turn itself (the hosted-channel relay)
+  calls `claim_channel_turn(channel, message_id)` first; the subscriber skips
+  claimed turns rather than mirroring them under a second thread id.
 
 ## On-disk layout
 
