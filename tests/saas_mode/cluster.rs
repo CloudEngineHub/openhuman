@@ -283,7 +283,14 @@ fn one_core_at_a_time(storage_url: Option<&str>) {
     // In flight, and far enough that its snapshot is on disk.
     let turn_states = d.root.join("users/alice/workspace/memory/conversations/turn_states");
     let _ = &turn_states;
-    wait_until(&format!("alice's turn in flight on core 2 (files: {:?})", walk(&d.root.join("users/alice/workspace/memory"))), &two, Duration::from_secs(30), || {
+    let deadline = Instant::now() + Duration::from_secs(20);
+    while !(active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()) {
+        if Instant::now() > deadline {
+            panic!("files: {:?}\n{:?}", walk(&d.root), turn_state(&two, "alice", "t-kill"));
+        }
+        std::thread::sleep(Duration::from_millis(300));
+    }
+    wait_until("x", &two, Duration::from_secs(30), || {
         active(&two, "alice", "t-kill") && turn_state(&two, "alice", "t-kill").is_some()
     });
     assert_eq!(
