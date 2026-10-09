@@ -55,9 +55,10 @@ impl RelayChannel {
         self.sent.lock().unwrap_or_else(|e| e.into_inner()).clone()
     }
 
-    /// The event that carries `message` to the gateway. The routing stamp
-    /// (`agent`) is left for `publish_web_channel_event`, which takes it from
-    /// the publishing context.
+    /// The event that carries `message` to the gateway. The routing stamps
+    /// (`agent`, `profile`) are left for `publish_web_channel_event`, which
+    /// takes them from the publishing context's tenant, so `/events` hands the
+    /// reply only to the caller's own stream.
     pub fn outbound_event(&self, message: &SendMessage) -> WebChannelEvent {
         WebChannelEvent {
             event: CHANNEL_OUTBOUND_EVENT.to_string(),

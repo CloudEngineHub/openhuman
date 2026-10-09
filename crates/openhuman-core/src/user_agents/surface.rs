@@ -18,9 +18,11 @@ use crate::core::runtime::is_saas;
 /// shared between users.
 ///
 /// `threads_delete` and `threads_purge` delete only the caller's own threads
-/// (their store is the caller's workspace). Their cleanup of detached
-/// sub-agent work is safe across users once background completions and
-/// running sub-agents are keyed per tenant.
+/// (their store is the caller's workspace). Their cleanup of detached work is
+/// confined to the caller too: running sub-agents are cancelled only in the
+/// caller's workspace (`running_subagents::caller_workspace`), background
+/// completions are keyed per profile (`tenant::profile_key`) and web-channel
+/// sessions per tenant.
 pub const USER_METHODS: &[&str] = &[
     // Conversation threads: all state lives under the agent's workspace.
     "openhuman.threads_list",

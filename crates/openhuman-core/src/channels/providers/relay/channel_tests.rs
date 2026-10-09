@@ -25,6 +25,7 @@ fn the_outbound_event_names_the_chat_and_carries_the_text() {
     assert_eq!(structured["chat_id"], "-100");
     assert_eq!(structured["reply_to_message_id"], "m-1");
     assert!(event.agent.is_none(), "stamped at publish, not here");
+    assert!(event.profile.is_none(), "stamped at publish, not here");
 
     let wire = serde_json::to_value(sink().outbound_event(&SendMessage::new("x", "-100")))
         .expect("serialize");
@@ -45,7 +46,8 @@ async fn send_publishes_under_the_callers_stamp_and_records_the_text() {
                     crate::core::runtime::DomainSet::full(),
                     Default::default(),
                 )
-                .session_agent("u-relay-test"),
+                .session_agent("u-relay-test")
+                .profile("p-relay-test"),
             );
     let channel = Arc::new(RelayChannel::new(
         "telegram",
@@ -73,6 +75,9 @@ async fn send_publishes_under_the_callers_stamp_and_records_the_text() {
     assert_eq!(event.agent.as_deref(), Some("u-relay-test"));
     assert!(event.belongs_to("u-relay-test"));
     assert!(!event.belongs_to("u-someone-else"));
+    assert_eq!(event.profile.as_deref(), Some("p-relay-test"));
+    assert!(event.belongs_to_profile("p-relay-test"));
+    assert!(!event.belongs_to_profile("p-someone-else"));
     assert_eq!(channel.sent(), vec!["reply one".to_string()]);
 }
 
