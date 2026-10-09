@@ -3,21 +3,35 @@
 //! A profile is opened lazily on first use and kept until it has been idle
 //! for [`SaasConfig::idle_evict_secs`] or the host needs its slot
 //! ([`SaasConfig::max_profiles_open`]). A profile still in use — anyone holding
-//! its [`Profile`] — is never evicted.
+//! its [`Profile`], or a turn running on its context — is never evicted.
+//!
+//! Opening a profile takes its lease first ([`super::lease`]), so exactly one
+//! process hosts it: another node's live lease makes [`ProfileHost::open`]
+//! answer [`OpenError::HeldElsewhere`]. A lease taken over from a holder that
+//! never released it (`previous_unclean`) means that holder's turns may have
+//! died mid-flight; the profile's workspace is recovered before it opens.
+//! Eviction, [`ProfileHost::release`] and deprovisioning release the lease;
+//! losing it fences the profile ([`ProfileHost::fence`]).
 //!
 //! Each open profile carries its own [`CoreContext`], derived from the operator
-//! context with the profile's forced config and `session_agent` set to its id.
-//! Running work under that context is what makes the session store, the
-//! config loader and the web_chat session cache resolve that user's state.
+//! context with the profile's forced config, its own security policy, and
+//! `profile` and `session_agent` set to its id. Running work under that
+//! context is what makes the session store, the config loader and the
+//! per-thread tables resolve that user's state.
 
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use super::layout::{self, ProfileLayout};
+use super::lease::{self as profile_lease, OpenError};
+use super::registry::ProfileRegistry;
 use super::types::{ProfileId, ProfileMeta, ProfileSummary, LAYOUT_VERSION};
 use crate::config::Config;
 use crate::core::runtime::{ContextOverlay, CoreContext, DomainSet, SaasConfig};
+use crate::storage::lease::{LeaseError, LeaseGrant, LeaseStore};
+use crate::storage::StorageBackend;
 use crate::tools::toolpacks::ToolGroups;
 
 /// One open profile.
@@ -26,11 +40,15 @@ pub struct Profile {
     pub layout: ProfileLayout,
     pub config: Config,
     context: Arc<CoreContext>,
+    fenced: AtomicBool,
 }
 
 impl std::fmt::Debug for Profile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Profile").field("id", &self.id).finish()
+        f.debug_struct("Profile")
+            .field("id", &self.id)
+            .field("fenced", &self.is_fenced())
+            .finish()
     }
 }
 
@@ -39,29 +57,39 @@ impl Profile {
     pub fn context(&self) -> &Arc<CoreContext> {
         &self.context
     }
+
+    /// Whether this node lost the profile's lease: no new work may start.
+    pub fn is_fenced(&self) -> bool {
+        self.fenced.load(Ordering::SeqCst)
+    }
 }
 
 struct Slot {
     state: Arc<Profile>,
     last_used: Instant,
+    grant: LeaseGrant,
 }
 
 /// The open profiles of one SaaS process.
 pub struct ProfileHost {
     saas: SaasConfig,
     operator: Arc<CoreContext>,
+    node: String,
     open: Mutex<HashMap<ProfileId, Slot>>,
-    /// Profiles whose leftovers from a previous process were already swept
-    /// (see [`recover_workspace`]). Kept across evictions: a re-open after an
-    /// eviction must not mark a turn this process is still running as
-    /// interrupted.
-    recovered: Mutex<std::collections::HashSet<ProfileId>>,
+    /// Held across every operation that takes or gives back a lease (open,
+    /// eviction, release, deprovision), so no two of them interleave on one
+    /// profile. Lookups of an open profile never wait for it.
+    gate: tokio::sync::Mutex<()>,
+    leases: Arc<dyn LeaseStore>,
+    registry: ProfileRegistry,
 }
 
 impl std::fmt::Debug for ProfileHost {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ProfileHost")
             .field("root", &self.saas.root)
+            .field("node", &self.node)
+            .field("registry", &self.registry)
             .field("open", &self.open_count())
             .finish()
     }
@@ -79,13 +107,44 @@ pub fn user_domains() -> DomainSet {
 }
 
 impl ProfileHost {
+    /// A host with no storage backend: `profile.toml` files and file-lock
+    /// leases under `saas.root`.
     pub fn new(saas: SaasConfig, operator: Arc<CoreContext>) -> Self {
-        Self {
+        Self::with_backend(saas, operator, None).expect("file-backed profile host")
+    }
+
+    /// A host over `backend` when given (the shared registry and cluster
+    /// leases), else as [`Self::new`].
+    ///
+    /// # Errors
+    ///
+    /// When the backend refuses the cluster scope.
+    pub fn with_backend(
+        mut saas: SaasConfig,
+        operator: Arc<CoreContext>,
+        backend: Option<Arc<dyn StorageBackend>>,
+    ) -> Result<Self, String> {
+        let node = saas.resolve_node_id(None).to_owned();
+        let leases = profile_lease::store_for(
+            &saas.root,
+            backend.as_ref(),
+            &node,
+            saas.advertise_url.clone(),
+            saas.lease_ttl(),
+        )?;
+        let registry = match &backend {
+            Some(backend) => ProfileRegistry::cluster(backend.as_ref())?,
+            None => ProfileRegistry::files(&saas.root),
+        };
+        Ok(Self {
             saas,
             operator,
+            node,
             open: Mutex::new(HashMap::new()),
-            recovered: Mutex::new(std::collections::HashSet::new()),
-        }
+            gate: tokio::sync::Mutex::new(()),
+            leases,
+            registry,
+        })
     }
 
     /// The operator's settings this host runs with.
@@ -93,124 +152,160 @@ impl ProfileHost {
         &self.saas
     }
 
-    /// Where profile `id`'s state lives, provisioned or not.
-    pub fn layout_of(&self, id: &ProfileId) -> ProfileLayout {
-        self.layout(id)
+    /// This node's id in the profile leases.
+    pub fn node(&self) -> &str {
+        &self.node
     }
 
-    fn layout(&self, id: &ProfileId) -> ProfileLayout {
+    pub(crate) fn leases(&self) -> &dyn LeaseStore {
+        self.leases.as_ref()
+    }
+
+    /// Where profile `id`'s state lives, provisioned or not.
+    pub fn layout_of(&self, id: &ProfileId) -> ProfileLayout {
         ProfileLayout::new(&self.saas.root, id)
     }
 
-    /// Create profile `id`'s directories. Returns whether it was new.
-    pub fn provision(&self, id: &ProfileId) -> Result<bool, String> {
-        // Under the open-profile lock, like `deprovision`, so the two never
-        // interleave on one profile's directory.
-        let _guard = self.lock();
-        let layout = self.layout(id);
-        if layout.meta_path.exists() {
+    /// Create profile `id`'s directories and record it. Returns whether it
+    /// was new.
+    pub async fn provision(&self, id: &ProfileId) -> Result<bool, String> {
+        let _gate = self.gate.lock().await;
+        if self.registry.get(id).await?.is_some() {
             log::debug!("[profiles] provision profile={id}: already provisioned");
             return Ok(false);
         }
-        for dir in [&layout.workspace_dir, &layout.sandbox_dir] {
-            std::fs::create_dir_all(dir).map_err(|e| format!("creating {}: {e}", dir.display()))?;
-        }
+        create_dirs(&self.layout_of(id))?;
         let meta = ProfileMeta {
             profile_id: id.clone(),
             created_at: unix_now(),
             layout_version: LAYOUT_VERSION,
         };
-        let raw = toml::to_string(&meta).map_err(|e| format!("encoding profile meta: {e}"))?;
-        std::fs::write(&layout.meta_path, raw)
-            .map_err(|e| format!("writing {}: {e}", layout.meta_path.display()))?;
-        log::info!("[profiles] provisioned profile={id}");
-        Ok(true)
+        let created = self.registry.create(&meta).await?;
+        log::info!("[profiles] provisioned profile={id} created={created}");
+        Ok(created)
     }
 
     /// Close profile `id` and archive its state under `<root>/deprovisioned/`.
     /// Nothing is deleted. Returns whether there was such a profile.
     ///
-    /// The open-profile lock is held for the whole operation, so no `open` can
-    /// re-open the profile between closing it and moving its directory. An
-    /// profile still in use (a request holds its state) is not archived from
-    /// under it: deprovisioning fails and can be retried.
-    pub fn deprovision(&self, id: &ProfileId) -> Result<bool, String> {
-        let mut open = self.lock();
-        if let Some(slot) = open.get(id) {
-            if in_use(slot) {
-                return Err(format!("profile {id} is in use; try again shortly"));
+    /// A profile still in use here, or hosted by another node, is not
+    /// archived from under it: deprovisioning fails and can be retried (on
+    /// the other node, or after `profiles.release` there).
+    pub async fn deprovision(&self, id: &ProfileId) -> Result<bool, String> {
+        let _gate = self.gate.lock().await;
+        let held = {
+            let open = self.lock();
+            match open.get(id) {
+                Some(slot) if in_use(slot) => {
+                    return Err(format!("profile {id} is in use; try again shortly"))
+                }
+                Some(slot) => Some(slot.grant.clone()),
+                None => None,
             }
-        }
-        open.remove(id);
-        let layout = self.layout(id);
-        if !layout.dir.exists() {
+        };
+        let layout = self.layout_of(id);
+        let recorded = self.registry.get(id).await?.is_some();
+        if !recorded && !layout.dir.exists() {
             return Ok(false);
         }
+        let grant = match held {
+            Some(grant) => grant,
+            None => match self.leases.acquire(id.as_str(), profile_lease::now_ms()).await {
+                Ok(grant) => grant,
+                Err(LeaseError::Held(record)) => {
+                    return Err(format!(
+                        "profile {id} is hosted by node {}; release it there first",
+                        record.owner
+                    ))
+                }
+                Err(error) => return Err(format!("profile {id}: {error}")),
+            },
+        };
+        self.lock().remove(id);
         // Credential secrets live in the process keyring under the profile id,
         // not only in the profile's directory, so archiving the directory alone
         // would let a re-provisioned profile pick the old credential back up.
         if let Err(e) = super::credentials::clear(&layout::profile_config(&layout, id)) {
             log::warn!("[profiles] clearing credentials of profile={id} before archiving: {e}");
         }
-        let archive = layout::archive_dir(&self.saas.root);
-        std::fs::create_dir_all(&archive)
-            .map_err(|e| format!("creating {}: {e}", archive.display()))?;
-        // Unique even when one user is deprovisioned twice in a second.
-        let dest = archive.join(format!(
-            "{id}-{}-{}",
-            unix_now(),
-            uuid::Uuid::new_v4().simple()
-        ));
-        std::fs::rename(&layout.dir, &dest)
-            .map_err(|e| format!("archiving {}: {e}", layout.dir.display()))?;
-        drop(open);
+        if layout.dir.exists() {
+            let archive = layout::archive_dir(&self.saas.root);
+            std::fs::create_dir_all(&archive)
+                .map_err(|e| format!("creating {}: {e}", archive.display()))?;
+            // Unique even when one user is deprovisioned twice in a second.
+            let dest = archive.join(format!(
+                "{id}-{}-{}",
+                unix_now(),
+                uuid::Uuid::new_v4().simple()
+            ));
+            std::fs::rename(&layout.dir, &dest)
+                .map_err(|e| format!("archiving {}: {e}", layout.dir.display()))?;
+        }
+        self.registry.remove(id).await?;
+        profile_lease::release_all(self.leases(), vec![(id.clone(), grant)]).await;
         log::info!("[profiles] deprovisioned profile={id} (archived)");
         Ok(true)
     }
 
     /// The forced config of provisioned profile `id`, without opening it (and
-    /// so without taking a profile slot).
-    pub fn provisioned_config(&self, id: &ProfileId) -> Result<crate::config::Config, String> {
-        let layout = self.layout(id);
-        if !layout.meta_path.exists() {
+    /// so without taking a profile slot or its lease).
+    pub async fn provisioned_config(&self, id: &ProfileId) -> Result<Config, String> {
+        if self.registry.get(id).await?.is_none() {
             return Err(format!("profile {id} is not provisioned"));
         }
-        Ok(layout::profile_config(&layout, id))
+        Ok(layout::profile_config(&self.layout_of(id), id))
     }
 
-    /// Profile `id`, opening it if it is provisioned and not open yet.
-    pub fn open(&self, id: &ProfileId) -> Result<Arc<Profile>, String> {
-        let now = Instant::now();
-        let mut open = self.lock();
-        if let Some(slot) = open.get_mut(id) {
-            slot.last_used = now;
+    /// Profile `id`, opening it — and taking its lease — if it is provisioned
+    /// and not open yet.
+    pub async fn open(&self, id: &ProfileId) -> Result<Arc<Profile>, OpenError> {
+        if let Some(state) = self.touch(id) {
+            // Every open sweeps profiles idle past `idle_evict_secs`, so they
+            // close even when no new user arrives; skipped while another open
+            // holds the gate rather than waiting for it.
+            if let Ok(_gate) = self.gate.try_lock() {
+                let closed = self.sweep_idle_locked(&mut self.lock(), Instant::now());
+                profile_lease::release_all(self.leases(), closed).await;
+            }
+            return Ok(state);
         }
-        // Every open sweeps profiles idle past `idle_evict_secs`, so they close
-        // even when no new user arrives.
-        self.sweep_idle_locked(&mut open, now);
-        if let Some(slot) = open.get(id) {
-            return Ok(Arc::clone(&slot.state));
+        let _gate = self.gate.lock().await;
+        if let Some(state) = self.touch(id) {
+            return Ok(state);
+        }
+        if self
+            .registry
+            .get(id)
+            .await
+            .map_err(OpenError::Storage)?
+            .is_none()
+        {
+            return Err(OpenError::NotProvisioned(id.clone()));
+        }
+        let (closed, full) = {
+            let mut open = self.lock();
+            let closed = self.evict_locked(&mut open, Instant::now());
+            (closed, open.len() >= self.saas.max_profiles_open.max(1))
+        };
+        profile_lease::release_all(self.leases(), closed).await;
+        if full {
+            return Err(OpenError::Full {
+                max: self.saas.max_profiles_open,
+            });
         }
 
-        let layout = self.layout(id);
-        if !layout.meta_path.exists() {
-            return Err(format!("profile {id} is not provisioned"));
-        }
-        self.evict_locked(&mut open, now);
-        if open.len() >= self.saas.max_profiles_open.max(1) {
-            return Err(format!(
-                "all {} profile slots are in use; try again shortly",
-                self.saas.max_profiles_open
-            ));
-        }
-
-        let first_open = self
-            .recovered
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .insert(id.clone());
-        if first_open {
-            recover_workspace(id, &layout.workspace_dir);
+        let grant = self
+            .leases
+            .acquire(id.as_str(), profile_lease::now_ms())
+            .await
+            .map_err(|error| {
+                log::debug!("[profiles] lease of profile={id} refused: {error}");
+                OpenError::from(error)
+            })?;
+        let layout = self.layout_of(id);
+        if let Err(error) = create_dirs(&layout) {
+            profile_lease::release_all(self.leases(), vec![(id.clone(), grant)]).await;
+            return Err(OpenError::Storage(error));
         }
         let config = layout::profile_config(&layout, id);
         let context = self.operator.derive_with(
@@ -220,22 +315,45 @@ impl ProfileHost {
                 .profile(id.as_str())
                 .agent_policy(profile_policy(&config)),
         );
+        if grant.previous_unclean {
+            log::info!(
+                "[profiles] profile={id} taken over from a holder that never released it (epoch {}); recovering",
+                grant.epoch
+            );
+            recover_workspace(id, &layout.workspace_dir);
+            recover_session_store(id, &context);
+        }
         crate::platform::cost::seed_tenant_tracker(&context, &config);
         let state = Arc::new(Profile {
             id: id.clone(),
             layout,
             config,
             context,
+            fenced: AtomicBool::new(false),
         });
+        let mut open = self.lock();
         open.insert(
             id.clone(),
             Slot {
                 state: Arc::clone(&state),
-                last_used: now,
+                last_used: Instant::now(),
+                grant,
             },
         );
-        log::debug!("[profiles] opened profile={id} ({} open)", open.len());
+        log::debug!(
+            "[profiles] opened profile={id} node={} ({} open)",
+            self.node,
+            open.len()
+        );
         Ok(state)
+    }
+
+    /// The open state of `id`, its last use bumped.
+    fn touch(&self, id: &ProfileId) -> Option<Arc<Profile>> {
+        let mut open = self.lock();
+        let slot = open.get_mut(id)?;
+        slot.last_used = Instant::now();
+        Some(Arc::clone(&slot.state))
     }
 
     /// Profile `id` if it is open.
@@ -251,72 +369,166 @@ impl ProfileHost {
         self.lock().len()
     }
 
-    /// Every provisioned profile, open or not.
-    pub fn list(&self) -> Result<Vec<ProfileSummary>, String> {
-        let dir = layout::users_dir(&self.saas.root);
-        let entries = match std::fs::read_dir(&dir) {
-            Ok(entries) => entries,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(Vec::new()),
-            Err(e) => return Err(format!("reading {}: {e}", dir.display())),
-        };
-        let mut found = Vec::new();
-        for entry in entries.flatten() {
-            let Some(name) = entry.file_name().to_str().map(str::to_owned) else {
-                continue;
-            };
-            let Ok(id) = ProfileId::parse(&name) else {
-                continue;
-            };
-            // One unreadable profile must not hide the rest (or stop the
-            // background loop for everyone): log it and move on.
-            match self.summary(&id) {
-                Ok(Some(summary)) => found.push(summary),
-                Ok(None) => {}
-                Err(error) => log::warn!("[profiles] skipping profile={id} in listing: {error}"),
-            }
-        }
-        found.sort_by(|a, b| a.profile_id.cmp(&b.profile_id));
-        Ok(found)
+    /// Every provisioned profile, open here or not.
+    pub async fn list(&self) -> Result<Vec<ProfileSummary>, String> {
+        let records = self.registry.list().await?;
+        Ok(records
+            .into_iter()
+            .map(|meta| self.summarize(meta))
+            .collect())
     }
 
     /// Profile `id`, or `None` when it is not provisioned.
-    pub fn summary(&self, id: &ProfileId) -> Result<Option<ProfileSummary>, String> {
-        let layout = self.layout(id);
-        let raw = match std::fs::read_to_string(&layout.meta_path) {
-            Ok(raw) => raw,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(None),
-            Err(e) => return Err(format!("reading {}: {e}", layout.meta_path.display())),
-        };
-        let meta: ProfileMeta = toml::from_str(&raw)
-            .map_err(|e| format!("parsing {}: {e}", layout.meta_path.display()))?;
-        Ok(Some(ProfileSummary {
-            profile_id: id.clone(),
-            created_at: meta.created_at,
-            open: self.is_open(id),
-            has_credential: super::credentials::has(&layout::profile_config(&layout, id)),
-        }))
+    pub async fn summary(&self, id: &ProfileId) -> Result<Option<ProfileSummary>, String> {
+        Ok(self
+            .registry
+            .get(id)
+            .await?
+            .map(|meta| self.summarize(meta)))
     }
 
-    /// Close profiles idle past the configured limit that nobody holds.
-    pub fn evict_idle(&self) {
-        let mut open = self.lock();
-        self.evict_locked(&mut open, Instant::now());
+    fn summarize(&self, meta: ProfileMeta) -> ProfileSummary {
+        let layout = self.layout_of(&meta.profile_id);
+        ProfileSummary {
+            open: self.is_open(&meta.profile_id),
+            has_credential: super::credentials::has(&layout::profile_config(
+                &layout,
+                &meta.profile_id,
+            )),
+            profile_id: meta.profile_id,
+            created_at: meta.created_at,
+        }
+    }
+
+    /// Close profiles idle past the configured limit that nobody holds, and
+    /// release their leases.
+    pub async fn evict_idle(&self) {
+        let _gate = self.gate.lock().await;
+        let closed = self.evict_locked(&mut self.lock(), Instant::now());
+        profile_lease::release_all(self.leases(), closed).await;
+    }
+
+    /// Close profile `id` here and release its lease, so another node can
+    /// host it at once. Returns whether it was open here. A profile in use
+    /// is not released from under its work.
+    pub async fn release(&self, id: &ProfileId) -> Result<bool, String> {
+        let _gate = self.gate.lock().await;
+        let grant = {
+            let mut open = self.lock();
+            match open.get(id) {
+                None => return Ok(false),
+                Some(slot) if in_use(slot) => {
+                    return Err(format!("profile {id} is in use; try again shortly"))
+                }
+                Some(_) => open.remove(id).map(|slot| slot.grant),
+            }
+        };
+        let grant = grant.expect("checked above");
+        self.leases.release(grant).await.map_err(|error| {
+            log::warn!("[profiles] releasing profile={id} failed: {error}");
+            format!("releasing profile {id}: {error}")
+        })?;
+        log::info!("[profiles] released profile={id} node={}", self.node);
+        Ok(true)
+    }
+
+    /// Release the lease of every profile nothing is using: a clean shutdown.
+    /// A profile with work still running keeps its lease, so the next holder
+    /// treats it as an unclean hand-over and recovers its turns.
+    pub async fn release_idle_on_shutdown(&self) {
+        let _gate = self.gate.lock().await;
+        let closed: Vec<_> = {
+            let mut open = self.lock();
+            let idle: Vec<ProfileId> = open
+                .iter()
+                .filter(|(_, slot)| !in_use(slot))
+                .map(|(id, _)| id.clone())
+                .collect();
+            idle.into_iter()
+                .filter_map(|id| open.remove(&id).map(|slot| (id, slot.grant)))
+                .collect()
+        };
+        log::info!(
+            "[profiles] shutdown: releasing {} idle profile lease(s), {} still busy",
+            closed.len(),
+            self.open_count()
+        );
+        profile_lease::release_all(self.leases(), closed).await;
+    }
+
+    /// The current grant of every open profile.
+    pub(crate) fn grants(&self) -> Vec<(ProfileId, LeaseGrant)> {
+        self.lock()
+            .iter()
+            .map(|(id, slot)| (id.clone(), slot.grant.clone()))
+            .collect()
+    }
+
+    /// Replace `id`'s grant `old` with `renewed`, unless the slot moved on
+    /// (closed, or re-opened under a newer grant) meanwhile.
+    pub(crate) fn store_grant(&self, id: &ProfileId, old: &LeaseGrant, renewed: LeaseGrant) {
+        if let Some(slot) = self.lock().get_mut(id) {
+            if slot.grant == *old {
+                slot.grant = renewed;
+            }
+        }
+    }
+
+    /// This node lost profile `id`: mark it fenced so no new work starts,
+    /// close it, and stop the turns it is running. `grant` names the lease
+    /// that was lost; a slot re-opened under a newer one is left alone.
+    pub async fn fence(&self, id: &ProfileId, grant: &LeaseGrant, why: &str) {
+        let state = {
+            let mut open = self.lock();
+            match open.get(id) {
+                Some(slot) if slot.grant == *grant => open.remove(id).map(|slot| slot.state),
+                _ => None,
+            }
+        };
+        let Some(state) = state else {
+            log::debug!("[profiles] fence profile={id}: already closed or re-opened");
+            return;
+        };
+        state.fenced.store(true, Ordering::SeqCst);
+        log::warn!(
+            "[profiles] fenced profile={id} node={} ({why}); stopping its turns",
+            self.node
+        );
+        let stopped =
+            CoreContext::scope(Arc::clone(state.context()), crate::web_chat::cancel_all_turns())
+                .await;
+        log::info!("[profiles] fenced profile={id}: stopped {stopped} thread(s)");
     }
 
     /// Close profiles idle past `idle_evict_secs` that nothing is using.
-    fn sweep_idle_locked(&self, open: &mut HashMap<ProfileId, Slot>, now: Instant) {
+    /// Returns their grants for the caller to release.
+    fn sweep_idle_locked(
+        &self,
+        open: &mut HashMap<ProfileId, Slot>,
+        now: Instant,
+    ) -> Vec<(ProfileId, LeaseGrant)> {
         let idle_limit = Duration::from_secs(self.saas.idle_evict_secs);
-        open.retain(|id, slot| {
-            let keep = in_use(slot) || now.duration_since(slot.last_used) < idle_limit;
-            if !keep {
+        let idle: Vec<ProfileId> = open
+            .iter()
+            .filter(|(_, slot)| {
+                !in_use(slot) && now.duration_since(slot.last_used) >= idle_limit
+            })
+            .map(|(id, _)| id.clone())
+            .collect();
+        idle.into_iter()
+            .filter_map(|id| {
                 log::debug!("[profiles] evicted idle profile={id}");
-            }
-            keep
-        });
+                open.remove(&id).map(|slot| (id, slot.grant))
+            })
+            .collect()
     }
 
-    fn evict_locked(&self, open: &mut HashMap<ProfileId, Slot>, now: Instant) {
-        self.sweep_idle_locked(open, now);
+    fn evict_locked(
+        &self,
+        open: &mut HashMap<ProfileId, Slot>,
+        now: Instant,
+    ) -> Vec<(ProfileId, LeaseGrant)> {
+        let mut closed = self.sweep_idle_locked(open, now);
         // Still full: make room by closing the least recently used idle one.
         if open.len() >= self.saas.max_profiles_open.max(1) {
             let victim = open
@@ -325,10 +537,13 @@ impl ProfileHost {
                 .min_by_key(|(_, slot)| slot.last_used)
                 .map(|(id, _)| id.clone());
             if let Some(id) = victim {
-                open.remove(&id);
-                log::debug!("[profiles] evicted least recently used profile={id}");
+                if let Some(slot) = open.remove(&id) {
+                    log::debug!("[profiles] evicted least recently used profile={id}");
+                    closed.push((id, slot.grant));
+                }
             }
         }
+        closed
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<ProfileId, Slot>> {
@@ -341,6 +556,13 @@ impl ProfileHost {
 /// request that started it).
 fn in_use(slot: &Slot) -> bool {
     Arc::strong_count(&slot.state) > 1 || slot.state.context.tenant_in_use()
+}
+
+fn create_dirs(layout: &ProfileLayout) -> Result<(), String> {
+    for dir in [&layout.workspace_dir, &layout.sandbox_dir] {
+        std::fs::create_dir_all(dir).map_err(|e| format!("creating {}: {e}", dir.display()))?;
+    }
+    Ok(())
 }
 
 /// The security policy profile work is gated by: its own forced autonomy over
@@ -356,10 +578,11 @@ fn profile_policy(config: &Config) -> Arc<crate::security::SecurityPolicy> {
     )
 }
 
-/// Settle what a previous process left in profile `id`'s workspace: turns that
+/// Settle what a previous holder left in profile `id`'s workspace: turns that
 /// were mid-flight become interrupted and run-ledger rows left running are
-/// closed. The sweep a single-user core runs at boot, run per profile on its
-/// first open in this process. Failures are logged; the profile still opens.
+/// closed. The sweep a single-user core runs at boot, run when a profile's
+/// lease is taken over from a holder that never released it. Failures are
+/// logged; the profile still opens.
 pub(crate) fn recover_workspace(id: &ProfileId, workspace_dir: &std::path::Path) {
     let now = chrono::Utc::now().to_rfc3339();
     match tinyagents_session::turn_state::store::mark_all_interrupted(
@@ -374,6 +597,28 @@ pub(crate) fn recover_workspace(id: &ProfileId, workspace_dir: &std::path::Path)
         Ok(0) => {}
         Ok(runs) => log::info!("[profiles] profile={id} settled {runs} orphaned run(s)"),
         Err(error) => log::warn!("[profiles] profile={id} run recovery failed: {error:#}"),
+    }
+}
+
+/// [`recover_workspace`] for turn states kept in a storage-backed session
+/// store, which the workspace sweep cannot see: the profile's default
+/// session key is swept through the installed provider.
+fn recover_session_store(id: &ProfileId, context: &Arc<CoreContext>) {
+    let Some(provider) = crate::agent::session_store::installed() else {
+        return;
+    };
+    if provider.workspace_dir().is_some() {
+        // File-backed: the workspace sweep already covered it.
+        return;
+    }
+    let key = crate::core::runtime::session_key(&crate::core::runtime::Tenant::of(context));
+    let now = chrono::Utc::now().to_rfc3339();
+    match provider.for_agent(&key).turn_states.mark_all_interrupted(&now) {
+        Ok(0) => {}
+        Ok(turns) => {
+            log::info!("[profiles] profile={id} recovered {turns} interrupted stored turn(s)");
+        }
+        Err(error) => log::warn!("[profiles] profile={id} stored turn recovery failed: {error}"),
     }
 }
 
@@ -397,6 +642,31 @@ pub fn current() -> Option<Arc<Profile>> {
     let profile = crate::core::runtime::current_tenant().ok()?.profile?;
     let id = ProfileId::parse(&profile).ok()?;
     host()?.get(&id)
+}
+
+/// Refuse to start work for a profile this node no longer hosts: one whose
+/// lease was lost (fenced) or that was closed under a request still running
+/// for it. `Ok` outside SaaS, and for work that serves no profile.
+pub fn ensure_hosted() -> Result<(), String> {
+    let Some(host) = host() else {
+        return Ok(());
+    };
+    let Some(profile) = crate::core::runtime::current_tenant()
+        .ok()
+        .and_then(|tenant| tenant.profile)
+    else {
+        return Ok(());
+    };
+    let hosted = ProfileId::parse(&profile)
+        .ok()
+        .and_then(|id| host.get(&id))
+        .is_some_and(|state| !state.is_fenced());
+    if hosted {
+        Ok(())
+    } else {
+        log::warn!("[profiles] refused new work for profile={profile}: not hosted by this node");
+        Err("this profile is no longer hosted by this node; retry the request".to_string())
+    }
 }
 
 fn unix_now() -> u64 {
