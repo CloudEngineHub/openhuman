@@ -1,9 +1,12 @@
 //! Standalone server entry points, and the build-and-serve step the shared
 //! host boot ([`crate::host`]) runs.
 //!
-//! Each `run_server*` function is a thin shim over the [`RuntimeBuilder::cli`]
-//! preset: it applies the caller's services and listener, then builds the
-//! runtime and [`serve`](super::serve::serve)s it. The preset carries every
+//! `run_server` and `run_server_headless` are thin shims over the
+//! [`RuntimeBuilder::cli`] preset: each applies the caller's services and
+//! listener, then builds the runtime and [`serve`](super::serve::serve)s it.
+//! `run_server_saas` is separate: it loads a `SaasConfig` and boots through
+//! `core::runtime::saas::build` (a SaaS `CoreBuilder`, not the preset). The
+//! preset carries every
 //! domain family, the standalone `HostKind` (CLI or Docker, via
 //! `HostKind::detect_standalone`), the `OPENHUMAN_E2E` tool-group switch, and
 //! no supplied config (the core discovers the operator's install).

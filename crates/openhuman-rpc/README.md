@@ -126,7 +126,7 @@ for the hosts that still call them:
 - `server::serve(&CoreRuntime, ready_tx, shutdown)` (`server/serve.rs`):
   bind and serve an already-built runtime.
 - `server::run_server`, `run_server_headless`, `run_server_saas`
-  (`server/shims.rs`): build a runtime from the embed `cli` preset and serve it. They do not connect the
+  (`server/shims.rs`): build a runtime and serve it: `run_server` and `run_server_headless` from the embed `cli` preset, `run_server_saas` from the SaaS config through `core::runtime::saas::build`. They do not connect the
   TinyHumans backend; `host::desktop` does.
 - `server::build_core_http_router(socketio_enabled)` (`server/http/mod.rs`):
   the router on its own; root `tests/*.rs` suites use it to make real HTTP

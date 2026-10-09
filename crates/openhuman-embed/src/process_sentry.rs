@@ -79,9 +79,25 @@ pub fn first_non_blank(candidates: impl IntoIterator<Item = Option<String>>) -> 
 /// environment of the crate being compiled. `None` gives a client that sends
 /// nothing.
 pub fn core_dsn(baked_core: Option<&str>, baked_legacy: Option<&str>) -> Option<String> {
-    first_non_blank([
+    select_core_dsn(
         std::env::var("OPENHUMAN_CORE_SENTRY_DSN").ok(),
         std::env::var("OPENHUMAN_SENTRY_DSN").ok(),
+        baked_core,
+        baked_legacy,
+    )
+}
+
+/// The precedence behind [`core_dsn`], with the runtime values passed in:
+/// runtime core, runtime legacy, baked core, baked legacy; blanks skipped.
+fn select_core_dsn(
+    runtime_core: Option<String>,
+    runtime_legacy: Option<String>,
+    baked_core: Option<&str>,
+    baked_legacy: Option<&str>,
+) -> Option<String> {
+    first_non_blank([
+        runtime_core,
+        runtime_legacy,
         baked_core.map(str::to_owned),
         baked_legacy.map(str::to_owned),
     ])

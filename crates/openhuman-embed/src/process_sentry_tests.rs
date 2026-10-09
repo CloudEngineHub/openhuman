@@ -252,14 +252,23 @@ fn environment_falls_back_on_blank_or_missing() {
 }
 
 #[test]
-fn core_dsn_falls_back_to_the_baked_values_in_order() {
-    // Only meaningful when the runtime variables are unset; otherwise the
-    // runtime value wins, which `first_non_blank` already covers.
-    if std::env::var_os("OPENHUMAN_CORE_SENTRY_DSN").is_none()
-        && std::env::var_os("OPENHUMAN_SENTRY_DSN").is_none()
-    {
-        assert_eq!(core_dsn(Some(" a "), Some("b")).as_deref(), Some("a"));
-        assert_eq!(core_dsn(None, Some("b")).as_deref(), Some("b"));
-        assert_eq!(core_dsn(Some("  "), None), None);
-    }
+fn core_dsn_precedence_is_runtime_then_baked_and_skips_blanks() {
+    let some = |v: &str| Some(v.to_string());
+    assert_eq!(
+        select_core_dsn(some("rc"), some("rl"), Some("bc"), Some("bl")).as_deref(),
+        Some("rc")
+    );
+    assert_eq!(
+        select_core_dsn(some("  "), some("rl"), Some("bc"), Some("bl")).as_deref(),
+        Some("rl")
+    );
+    assert_eq!(
+        select_core_dsn(None, None, Some(" bc "), Some("bl")).as_deref(),
+        Some("bc")
+    );
+    assert_eq!(
+        select_core_dsn(None, None, Some(""), Some("bl")).as_deref(),
+        Some("bl")
+    );
+    assert_eq!(select_core_dsn(None, None, None, Some("  ")), None);
 }
