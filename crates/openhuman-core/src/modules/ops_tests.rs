@@ -312,6 +312,40 @@ fn load_errors_render_for_callers_that_cannot_wait_again() {
     assert!(message.contains("still loading"), "{message}");
 }
 
+/// The Sentry payload of TAURI-RUST-117K: a load refused at admission, with the
+/// terminal marker the loader adds.
+const REFUSED_LOAD: &str = "module 'tinyconnectors' could not be loaded from the installer \
+     bundle: module `windows-2022-x86_64` refused: module directory is writable by another \
+     user. Restart the app after repairing the installation. This is terminal for the running \
+     process; restart the app to try again";
+
+#[cfg(feature = "crash-reporting")]
+#[test]
+fn a_failed_resolution_is_reported_once_with_the_module_id() {
+    // The resolution runs once per process and caches its failure, so this
+    // report is the one Sentry event per broken install. Every later caller's
+    // re-report is demoted as `ModuleUnavailable`; this one must not be.
+    let events = sentry::test::with_captured_events(|| {
+        ops::report_resolution_failure("tinyconnectors", REFUSED_LOAD);
+    });
+    assert_eq!(events.len(), 1, "{events:?}");
+    let tags = &events[0].tags;
+    assert_eq!(tags.get("domain").map(String::as_str), Some("modules"));
+    assert_eq!(tags.get("operation").map(String::as_str), Some("resolve"));
+    assert_eq!(tags.get("module").map(String::as_str), Some("tinyconnectors"));
+
+    // The same reason re-reported by a caller is demoted.
+    let repeats = sentry::test::with_captured_events(|| {
+        crate::core::observability::report_error_or_expected(
+            REFUSED_LOAD,
+            "composio",
+            "list_connections",
+            &[],
+        );
+    });
+    assert!(repeats.is_empty(), "{repeats:?}");
+}
+
 #[test]
 fn bundled_dir_prefers_registered_then_env_then_exe_sibling() {
     let root = tempfile::tempdir().unwrap();

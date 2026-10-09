@@ -221,6 +221,8 @@ async fn start_resolution(
     }
 }
 
+pub(super) fn report_resolution_failure(_id: &str, _reason: &str) {}
+
 /// Do the actual work of getting `record` serving.
 async fn resolve(config: &Config, record: &'static ModuleRecord) -> Result<(), String> {
     let runtime = host::runtime().await.map_err(|_| {
