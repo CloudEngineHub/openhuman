@@ -131,7 +131,7 @@ impl RuntimeBuilder {
 }
 
 impl CliGlobals {
-    fn install(self) -> Result<(), String> {
+    fn install(mut self) -> Result<(), String> {
         if let Some(transport) = self.transport {
             openhuman_core::backend::install_backend_transport(transport);
             log::debug!("[embed][cli] backend transport installed (process global)");
@@ -143,6 +143,7 @@ impl CliGlobals {
             let _previous = openhuman_core::agent::session_store::install(provider);
             log::debug!("[embed][cli] session store installed (process lifetime)");
         }
+        self.seams.open_storage_blocking()?;
         let seams = self.seams.install()?;
         seams.persist();
         Ok(())
