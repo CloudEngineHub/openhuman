@@ -18,7 +18,7 @@ struct UserParams {
 }
 
 #[derive(Debug, Deserialize)]
-struct AgentParams {
+struct ProfileParams {
     profile_id: String,
 }
 
@@ -78,21 +78,21 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
         "provision" => ControllerSchema {
             namespace: "profiles",
             function: "provision",
-            description: "Create the agent that serves a gateway user, if it does not exist.",
+            description: "Create the profile that serves a gateway user, if it does not exist.",
             inputs: vec![string_field("user_id", "The gateway's id for the user.")],
             outputs: vec![
-                string_field("profile_id", "The user's agent id, derived from the user id."),
-                bool_field("created", "False when the agent already existed."),
+                string_field("profile_id", "The user's profile id: the user id itself when it fits the raw charset (raw mode), else h-<sha256 prefix>."),
+                bool_field("created", "False when the profile already existed."),
             ],
         },
         "deprovision" => ControllerSchema {
             namespace: "profiles",
             function: "deprovision",
             description: "Close a profile and archive its state. Nothing is deleted.",
-            inputs: vec![string_field("profile_id", "The agent to deprovision.")],
+            inputs: vec![string_field("profile_id", "The profile to deprovision.")],
             outputs: vec![
-                string_field("profile_id", "The agent."),
-                bool_field("removed", "False when there was no such agent."),
+                string_field("profile_id", "The profile."),
+                bool_field("removed", "False when there was no such profile."),
             ],
         },
         "list" => ControllerSchema {
@@ -103,7 +103,7 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
             outputs: vec![FieldSchema {
                 name: "profiles",
                 ty: TypeSchema::Array(Box::new(TypeSchema::Json)),
-                comment: "profile_id, created_at and whether it is open.",
+                comment: "profile_id, created_at, whether it is open and whether it holds a credential.",
                 required: true,
             }],
         },
@@ -111,9 +111,9 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
             namespace: "profiles",
             function: "status",
             description: "Report one provisioned profile.",
-            inputs: vec![string_field("profile_id", "The agent to report.")],
+            inputs: vec![string_field("profile_id", "The profile to report.")],
             outputs: vec![
-                string_field("profile_id", "The agent."),
+                string_field("profile_id", "The profile."),
                 FieldSchema {
                     name: "created_at",
                     ty: TypeSchema::U64,
@@ -128,9 +128,9 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
             namespace: "profiles",
             function: "set_credential",
             description: "Install the TinyHumans credential the gateway holds for a profile. \
-                          The core stores it beside the agent's state and never validates or echoes it.",
+                          The core stores it beside the profile's state and never validates or echoes it.",
             inputs: vec![
-                string_field("profile_id", "The agent the credential belongs to."),
+                string_field("profile_id", "The profile the credential belongs to."),
                 FieldSchema {
                     name: "kind",
                     ty: TypeSchema::Enum {
@@ -148,7 +148,7 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
                 },
             ],
             outputs: vec![
-                string_field("profile_id", "The agent."),
+                string_field("profile_id", "The profile."),
                 bool_field("has_credential", "Always true on success."),
             ],
         },
@@ -156,9 +156,9 @@ pub fn profiles_schemas(function: &str) -> ControllerSchema {
             namespace: "profiles",
             function: "clear_credential",
             description: "Remove every credential a profile holds.",
-            inputs: vec![string_field("profile_id", "The agent.")],
+            inputs: vec![string_field("profile_id", "The profile.")],
             outputs: vec![
-                string_field("profile_id", "The agent."),
+                string_field("profile_id", "The profile."),
                 bool_field("has_credential", "Always false on success."),
             ],
         },
@@ -181,7 +181,7 @@ fn handle_provision(params: Map<String, Value>) -> ControllerFuture {
 
 fn handle_deprovision(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
-        let payload = deserialize_params::<AgentParams>(params)?;
+        let payload = deserialize_params::<ProfileParams>(params)?;
         to_json(super::ops::deprovision(&payload.profile_id)?)
     })
 }
@@ -192,7 +192,7 @@ fn handle_list(_params: Map<String, Value>) -> ControllerFuture {
 
 fn handle_status(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
-        let payload = deserialize_params::<AgentParams>(params)?;
+        let payload = deserialize_params::<ProfileParams>(params)?;
         to_json(super::ops::status(&payload.profile_id)?)
     })
 }
@@ -211,7 +211,7 @@ fn handle_set_credential(params: Map<String, Value>) -> ControllerFuture {
 
 fn handle_clear_credential(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
-        let payload = deserialize_params::<AgentParams>(params)?;
+        let payload = deserialize_params::<ProfileParams>(params)?;
         to_json(super::ops::clear_credential(&payload.profile_id)?)
     })
 }
