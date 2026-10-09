@@ -1948,7 +1948,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': '接続しました。準備完了です。',
   'bootCheck.authFailed': 'トークンが認証されませんでした。確認してから、もう一度お試しください。',
   'bootCheck.unreachablePrefix': '接続できませんでした:',
-  'bootCheck.socketDisabled': '接続できましたが、このコアではリアルタイム機能がオフです。--jsonrpc-only で起動されています。チャットとライブ更新を使うには、このフラグなしで再起動してください。',
+  'bootCheck.socketDisabled':
+    '接続できましたが、このコアではリアルタイム機能がオフです。--jsonrpc-only で起動されています。チャットとライブ更新を使うには、このフラグなしで再起動してください。',
   'bootCheck.checkingCore': 'ランタイムを起動しています…',
   'bootCheck.cannotReach': 'ランタイムに接続できません',
   'bootCheck.cannotReachDesc': 'ランタイムに接続できませんでした。別のランタイムを試しますか？',

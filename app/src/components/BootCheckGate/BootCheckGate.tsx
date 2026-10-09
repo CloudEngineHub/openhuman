@@ -201,7 +201,9 @@ function ModePicker({ onConfirm }: PickerProps) {
       } catch {
         // Non-JSON body is unusual but doesn't disprove reachability.
       }
-      const realtime = await probeCoreRealtime(validated.url, { signal: AbortSignal.timeout(10_000) });
+      const realtime = await probeCoreRealtime(validated.url, {
+        signal: AbortSignal.timeout(10_000),
+      });
       if (realtime === 'disabled') {
         log('[boot-check] picker — RPC ok but realtime (Socket.IO) is disabled on the core');
         setTestStatus({ kind: 'socketDisabled' });

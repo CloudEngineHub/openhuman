@@ -1700,7 +1700,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'कनेक्ट हो गया। आप तैयार हैं।',
   'bootCheck.authFailed': 'वह टोकन काम नहीं किया। दोबारा चेक करके कोशिश करें।',
   'bootCheck.unreachablePrefix': 'नहीं पहुँच पाए:',
-  'bootCheck.socketDisabled': 'कनेक्ट हो गया, लेकिन इस कोर पर रीयलटाइम बंद है। इसे --jsonrpc-only के साथ शुरू किया गया था; चैट और लाइव अपडेट के लिए इसे इस फ़्लैग के बिना दोबारा शुरू करें।',
+  'bootCheck.socketDisabled':
+    'कनेक्ट हो गया, लेकिन इस कोर पर रीयलटाइम बंद है। इसे --jsonrpc-only के साथ शुरू किया गया था; चैट और लाइव अपडेट के लिए इसे इस फ़्लैग के बिना दोबारा शुरू करें।',
   'bootCheck.checkingCore': 'OpenHuman शुरू हो रहा है…',
   'bootCheck.cannotReach': 'पहुँच नहीं पा रहे',
   'bootCheck.cannotReachDesc': 'हम कनेक्ट नहीं कर सके। क्या कहीं और कोशिश करना चाहेंगे?',
