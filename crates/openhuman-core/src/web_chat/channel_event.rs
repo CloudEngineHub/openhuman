@@ -248,6 +248,21 @@ impl WebChannelEvent {
     pub fn belongs_to_profile(&self, profile: &str) -> bool {
         self.profile.as_deref() == Some(profile)
     }
+
+    /// Stamp the tenant whose work produced this event where the publisher
+    /// left it unset. A SaaS task with no scope (`None`) stamps nothing, so
+    /// the event reaches no user's stream.
+    pub fn stamp_tenant(&mut self, tenant: Option<crate::core::runtime::Tenant>) {
+        let Some(tenant) = tenant else {
+            return;
+        };
+        if self.agent.is_none() {
+            self.agent = tenant.agent;
+        }
+        if self.profile.is_none() {
+            self.profile = tenant.profile;
+        }
+    }
 }
 
 /// Time-to-first-visible timing summary for a completed turn. See
