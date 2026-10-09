@@ -204,7 +204,7 @@ async fn start_resolution(
                 Resolution::Ready
             }
             Err(reason) => {
-                log::warn!("[modules] '{id}' did not load: {reason}");
+                report_resolution_failure(id, &reason);
                 Resolution::Failed(reason)
             }
         };
@@ -221,7 +221,19 @@ async fn start_resolution(
     }
 }
 
-pub(super) fn report_resolution_failure(_id: &str, _reason: &str) {}
+/// Report a module that did not load — once per process.
+///
+/// A resolution runs once and its failure is cached for every later caller
+/// (see the module docs), so this is the single Sentry event a broken install
+/// produces. Those callers re-raise the cached reason, and those re-reports
+/// classify as `ExpectedErrorKind::ModuleUnavailable` and are demoted; this
+/// one goes through [`report_error`] directly so the classifier cannot swallow
+/// it too.
+///
+/// [`report_error`]: crate::core::observability::report_error
+pub(super) fn report_resolution_failure(id: &str, reason: &str) {
+    crate::core::observability::report_error(reason, "modules", "resolve", &[("module", id)]);
+}
 
 /// Do the actual work of getting `record` serving.
 async fn resolve(config: &Config, record: &'static ModuleRecord) -> Result<(), String> {
