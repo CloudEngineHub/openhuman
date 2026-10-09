@@ -539,7 +539,10 @@ fn saas_claims_nothing() {
         "no subscriber reads a claim in SaaS, so none is kept to collide across profiles"
     );
     claim_channel_turn_in(false, "relay-saas-channel", "saas-claim-2");
-    assert!(is_claimed_channel_turn("relay-saas-channel", "saas-claim-2"));
+    assert!(is_claimed_channel_turn(
+        "relay-saas-channel",
+        "saas-claim-2"
+    ));
 }
 
 #[test]
