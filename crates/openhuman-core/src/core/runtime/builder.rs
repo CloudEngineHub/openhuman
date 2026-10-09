@@ -33,7 +33,8 @@ pub use super::domain_set::DomainSet;
 /// Selects which background services and transports a [`CoreRuntime`] runs.
 ///
 /// Each flag is independent. Presets cover the common hosts:
-/// [`ServiceSet::desktop`] (everything — the Tauri shell / standalone CLI),
+/// [`ServiceSet::desktop`] (everything but the core self-update poller — the
+/// Tauri shell / standalone CLI),
 /// [`ServiceSet::headless_api`] (HTTP JSON-RPC only — single-core cloud), and
 /// [`ServiceSet::none`] (no transport, no background work — library / harness).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -65,7 +66,12 @@ pub struct ServiceSet {
 }
 
 impl ServiceSet {
-    /// Everything on — the desktop shell and the standalone `openhuman-core run`.
+    /// Everything on — the desktop shell and the standalone `openhuman-core run` —
+    /// except the core self-update poller. The shell updates through the Tauri
+    /// updater, and releases publish core archives for Linux only, so on macOS
+    /// and Windows the poller could only ever report a missing asset
+    /// (Sentry TAURI-RUST-122R/122S). Hosts that self-update the core binary
+    /// opt in by setting `update_scheduler`.
     pub fn desktop() -> Self {
         Self {
             rpc_http: true,
@@ -73,7 +79,7 @@ impl ServiceSet {
             cron: true,
             channels: true,
             login_gated: true,
-            update_scheduler: true,
+            update_scheduler: false,
             memory_queue: true,
             harness_init: true,
             skill_catalog_refresh: true,

@@ -35,7 +35,7 @@ Each flag is independent. Presets:
 
 | Preset | Shape |
 | --- | --- |
-| `ServiceSet::desktop()` | Everything on: the Tauri shell and standalone `openhuman-core run`. |
+| `ServiceSet::desktop()` | Everything on except `update_scheduler`: the Tauri shell and standalone `openhuman-core run`. The shell updates through the Tauri updater and releases publish core archives for Linux only, so the core self-update poller is opt-in. |
 | `ServiceSet::headless_api()` | HTTP JSON-RPC only (`rpc_http`): no Socket.IO, cron, channels, or login-gated services; a single-core cloud/server deployment. |
 | `ServiceSet::none()` | No transport, no background services: a library/harness embedder driving only `CoreRuntime::invoke`. |
 | `ServiceSet::embedded()` | No transport (`rpc_http: false`), but the background work a long-lived embedded session expects: cron, login-gated services, memory queue, harness init, skill catalog refresh, memory sync. `socketio`/`channels` stay off because such a host reads state through the facade and owns its own networking. |
