@@ -199,7 +199,7 @@ pub fn is_host_network(network: &str) -> bool {
 }
 
 /// The container policy for a user's shell command. `action_dir` must be a
-/// user's `sandbox/` directory under `<root>/agents/`, or the command is
+/// user's `sandbox/` directory under `<root>/users/<profile-id>/`, or the command is
 /// refused.
 pub fn sandbox_policy_with(
     saas_root: &Path,
@@ -207,9 +207,9 @@ pub fn sandbox_policy_with(
     action_dir: &Path,
     state_dir: &Path,
 ) -> Result<SandboxPolicy, String> {
-    let agents = super::layout::users_dir(saas_root);
-    let agent_dir = action_dir.parent();
-    let is_user_sandbox = agent_dir.and_then(Path::parent) == Some(agents.as_path())
+    let users = super::layout::users_dir(saas_root);
+    let profile_dir = action_dir.parent();
+    let is_user_sandbox = profile_dir.and_then(Path::parent) == Some(users.as_path())
         && agent_dir
             .and_then(Path::file_name)
             .and_then(|name| name.to_str())
@@ -226,10 +226,10 @@ pub fn sandbox_policy_with(
     let resolved = action_dir
         .canonicalize()
         .map_err(|e| format!("{}: {e}", action_dir.display()))?;
-    let expected = agents
+    let expected = users
         .canonicalize()
-        .map_err(|e| format!("{}: {e}", agents.display()))?
-        .join(agent_dir.and_then(Path::file_name).unwrap_or_default())
+        .map_err(|e| format!("{}: {e}", users.display()))?
+        .join(profile_dir.and_then(Path::file_name).unwrap_or_default())
         .join("sandbox");
     if resolved != expected {
         return Err(format!(
@@ -262,7 +262,7 @@ pub fn sandbox_policy_with(
 
 /// [`sandbox_policy_with`] for the running deployment.
 pub fn sandbox_policy(action_dir: &Path, state_dir: &Path) -> Result<SandboxPolicy, String> {
-    let host = super::host::host().ok_or("no agent host is installed")?;
+    let host = super::host::host().ok_or("no profile host is installed")?;
     let saas = host.saas();
     sandbox_policy_with(&saas.root, &saas.sandbox, action_dir, state_dir)
 }
