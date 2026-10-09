@@ -264,7 +264,7 @@ test('the CLI exits 1 and names the edge when a host reaches past rpc', () => {
       join(dir, 'crates/openhuman-cli/src/main.rs'),
       'fn main() { openhuman_core::run(); }\n'
     );
-    for (const layer of ['openhuman-tinyhumans', 'openhuman-rpc']) {
+    for (const layer of ['openhuman-embed', 'openhuman-tinyhumans', 'openhuman-rpc']) {
       mkdirSync(join(dir, 'crates', layer, 'src'), { recursive: true });
     }
     writeFileSync(
