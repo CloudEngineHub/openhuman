@@ -30,7 +30,7 @@ async fn only_provisioned_profiles_open() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 60);
     let err = host.open(&profile("nobody")).await.unwrap_err();
-    assert!(err.contains("not provisioned"), "{err}");
+    assert_eq!(err, OpenError::NotProvisioned(profile("nobody")));
 }
 
 #[tokio::test]
@@ -84,7 +84,7 @@ async fn an_profile_in_use_is_never_evicted() {
     host.evict_idle().await;
     assert!(host.is_open(&a), "held agents survive an idle sweep");
     let err = host.open(&b).await.unwrap_err();
-    assert!(err.contains("slots are in use"), "{err}");
+    assert!(matches!(err, OpenError::Full { max: 1 }), "{err}");
     drop(held);
     host.open(&b).await.unwrap();
 }
@@ -162,19 +162,53 @@ async fn a_reprovisioned_profile_does_not_inherit_the_old_credential() {
 }
 
 #[tokio::test]
-async fn the_first_open_settles_a_previous_process_once() {
+async fn a_clean_reopen_does_not_recover_but_a_takeover_does() {
     let tmp = tempfile::tempdir().unwrap();
     let host = host(&tmp, 4, 0);
     let id = profile(&format!("recover-{}", uuid::Uuid::new_v4()));
     host.provision(&id).await.unwrap();
+    let workspace = host.layout_of(&id).workspace_dir;
+    let in_flight = |thread: &str| {
+        let state = tinyagents_session::turn_state::TurnState::new(
+            thread.to_string(),
+            "req".to_string(),
+            "2026-10-09T00:00:00Z".to_string(),
+        );
+        tinyagents_session::turn_state::TurnStateStore::new(workspace.clone())
+            .put(&state)
+            .unwrap();
+    };
+    let lifecycle = |thread: &str| {
+        tinyagents_session::turn_state::TurnStateStore::new(workspace.clone())
+            .get(thread)
+            .unwrap()
+            .unwrap()
+            .lifecycle
+    };
+
+    // The first holder ever: nothing to recover.
     drop(host.open(&id).await.unwrap());
-    assert!(host.recovered.lock().unwrap().contains(&id));
+    in_flight("t1");
+    // An eviction releases the lease cleanly; re-opening must not mark a
+    // turn this process may still own as interrupted.
     host.evict_idle().await;
     drop(host.open(&id).await.unwrap());
     assert_eq!(
-        host.recovered.lock().unwrap().len(),
-        1,
-        "a re-open after eviction does not sweep again"
+        lifecycle("t1"),
+        tinyagents_session::turn_state::TurnLifecycle::Running
+    );
+
+    // A second host on the same root (a restarted process) finds the lease
+    // never released once the first is gone, and recovers.
+    let holder = host;
+    let second = self::host(&tmp, 4, 0);
+    let refused = second.open(&id).await.unwrap_err();
+    assert!(matches!(refused, OpenError::HeldElsewhere(_)), "{refused}");
+    drop(holder);
+    drop(second.open(&id).await.unwrap());
+    assert_eq!(
+        lifecycle("t1"),
+        tinyagents_session::turn_state::TurnLifecycle::Interrupted
     );
 }
 
@@ -303,7 +337,7 @@ async fn a_profile_with_a_live_turn_is_not_evicted() {
     host.evict_idle().await;
     assert!(host.is_open(&a), "a live turn keeps its profile open");
     let err = host.open(&b).await.unwrap_err();
-    assert!(err.contains("slots are in use"), "{err}");
+    assert!(matches!(err, OpenError::Full { max: 1 }), "{err}");
     assert!(host.deprovision(&a).await.unwrap_err().contains("in use"));
 
     release.send(()).unwrap();
