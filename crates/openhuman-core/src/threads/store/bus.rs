@@ -135,7 +135,23 @@ fn claimed_turns() -> std::sync::MutexGuard<'static, ClaimedTurns> {
 /// Mark the channel message `(channel, message_id)` as persisted by its
 /// caller, so this subscriber does not mirror it a second time under the
 /// listener-derived thread id.
+///
+/// A no-op in SaaS: the subscriber is never registered there, so nothing
+/// would read the claim, and its `(channel, message_id)` key carries no
+/// tenant — one profile's claim would otherwise shadow another profile's
+/// message with the same platform id. Outside SaaS there is one user, and the
+/// subscriber (which runs off the bus, with no caller scope to key on) reads
+/// the bare key.
 pub(crate) fn claim_channel_turn(channel: &str, message_id: &str) {
+    claim_channel_turn_in(crate::core::runtime::is_saas(), channel, message_id);
+}
+
+/// [`claim_channel_turn`] as a function of the mode.
+pub(crate) fn claim_channel_turn_in(saas: bool, channel: &str, message_id: &str) {
+    if saas {
+        log::trace!("{LOG_PREFIX} SaaS: channel turn claim skipped channel={channel}");
+        return;
+    }
     claimed_turns().claim(channel, message_id);
 }
 

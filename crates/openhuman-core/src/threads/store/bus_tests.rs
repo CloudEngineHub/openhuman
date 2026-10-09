@@ -532,6 +532,17 @@ async fn claimed_channel_turns_are_left_to_their_caller() {
 }
 
 #[test]
+fn saas_claims_nothing() {
+    claim_channel_turn_in(true, "relay-saas-channel", "saas-claim-1");
+    assert!(
+        !is_claimed_channel_turn("relay-saas-channel", "saas-claim-1"),
+        "no subscriber reads a claim in SaaS, so none is kept to collide across profiles"
+    );
+    claim_channel_turn_in(false, "relay-saas-channel", "saas-claim-2");
+    assert!(is_claimed_channel_turn("relay-saas-channel", "saas-claim-2"));
+}
+
+#[test]
 fn the_claim_list_is_bounded() {
     let mut claimed = ClaimedTurns::new(3);
     for i in 0..5 {
