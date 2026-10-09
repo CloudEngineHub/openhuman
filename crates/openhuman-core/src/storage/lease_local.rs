@@ -43,6 +43,7 @@ struct Holding {
 pub struct LocalLeases {
     root: PathBuf,
     node: String,
+    endpoint: Option<String>,
     held: Mutex<HashMap<String, Holding>>,
 }
 
@@ -70,8 +71,17 @@ impl LocalLeases {
         Self {
             root: root.into(),
             node: node.into(),
+            endpoint: None,
             held: Mutex::new(HashMap::new()),
         }
+    }
+
+    /// Names `endpoint` in the records this instance writes, so a refused
+    /// caller can be pointed at the holder.
+    #[must_use]
+    pub fn with_endpoint(mut self, endpoint: Option<String>) -> Self {
+        self.endpoint = endpoint;
+        self
     }
 
     fn held(&self) -> std::sync::MutexGuard<'_, HashMap<String, Holding>> {
@@ -186,7 +196,7 @@ impl LeaseStore for LocalLeases {
         let epoch = previous.map_or(1, |record| record.epoch.saturating_add(1));
         let record = LeaseRecord {
             owner: self.node.clone(),
-            endpoint: None,
+            endpoint: self.endpoint.clone(),
             epoch,
             expires_at_ms: u64::MAX,
             released: false,
