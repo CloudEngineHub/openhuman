@@ -185,7 +185,7 @@ test('embed may not re-export the core wholesale, and grouped wholesale forms ar
   const grouped = text =>
     findPatternHits(text, 'lib.rs', WHOLESALE_REEXPORT_PATTERNS).map(h => h.line);
   assert.deepEqual(grouped('pub use openhuman_embed::{self as embed};\n'), [1]);
-  assert.deepEqual(grouped('pub use openhuman_tinyhumans::{embed, SessionManager};\n'), []);
+  assert.deepEqual(grouped('pub use openhuman_tinyhumans::{SessionManager, CoreLink};\n'), []);
 });
 
 test('rpc may not re-export the internal list on a public path', () => {
