@@ -164,7 +164,7 @@ proptest! {
     #[test]
     fn verify_only_accepts_a_full_tag_for_this_user(user in user_header(), header in any::<String>()) {
         if verify(SECRET, &user, &header, NOW).is_ok() {
-            let ts = header.split(',').filter_map(|p| p.trim().strip_prefix("t=")).last();
+            let ts = header.split(',').filter_map(|p| p.trim().strip_prefix("t=")).next_back();
             let ts: u64 = ts.and_then(|t| t.parse().ok()).expect("accepted without a t");
             prop_assert!(ts.abs_diff(NOW) <= SIGNATURE_WINDOW_SECS);
             prop_assert!(header.to_ascii_lowercase().contains(sign(SECRET, &user, ts).split_once("v1=").unwrap().1));
