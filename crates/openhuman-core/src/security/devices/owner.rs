@@ -86,14 +86,18 @@ pub(super) async fn owner_of(
             .await
         {
             Some(Ok(true)) => return Ok(owner),
-            Some(Err(error)) => return Err(OwnerLookupFailed { agent: owner, error }),
+            Some(Err(error)) => {
+                return Err(OwnerLookupFailed {
+                    agent: owner,
+                    error,
+                })
+            }
             Some(Ok(false)) | None => forget(channel_id),
         }
     }
-    let lookups = crate::storage::agents::for_each_scope("device owner", || {
-        has_live_device(channel_id)
-    })
-    .await;
+    let lookups =
+        crate::storage::agents::for_each_scope("device owner", || has_live_device(channel_id))
+            .await;
     let owner = decide(lookups)?;
     if let Some(owner) = &owner {
         log::debug!(
