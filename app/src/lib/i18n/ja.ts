@@ -371,6 +371,8 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.dailySummaryFlow':
     '毎日の要約をメールで送るワークフローを作成してください。',
   'chat.typeMessage': 'メッセージを送信...',
+  'chat.regenerate.unavailable': 'この返信は再生成できません。代わりに最新の返信を再生成してください。',
+  'chat.regenerate.failed': '返信を再生成できませんでした。もう一度お試しください。',
   'chat.send': 'メッセージを送信',
   'chat.stopGeneration': '生成を停止',
   'chat.followupHint':

@@ -516,6 +516,8 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.dailySummaryFlow':
     'Создай поток, который будет присылать мне ежедневную сводку на почту.',
   'chat.typeMessage': 'Отправьте сообщение...',
+  'chat.regenerate.unavailable': 'Этот ответ нельзя сгенерировать заново. Попробуйте заново сгенерировать последний ответ.',
+  'chat.regenerate.failed': 'Не удалось заново сгенерировать ответ. Попробуйте ещё раз.',
   'chat.send': 'Отправить сообщение',
   'chat.stopGeneration': 'Остановить генерацию',
   'chat.followupHint':

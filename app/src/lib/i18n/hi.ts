@@ -510,6 +510,8 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.connectIntegration': 'एक नया इंटीग्रेशन कनेक्ट करो।',
   'chat.welcomeSuggestion.dailySummaryFlow': 'एक ऐसा फ़्लो बनाओ जो मुझे रोज़ाना सारांश ईमेल करे।',
   'chat.typeMessage': 'कोई संदेश भेजें...',
+  'chat.regenerate.unavailable': 'यह जवाब दोबारा नहीं बनाया जा सकता। इसके बजाय नवीनतम जवाब दोबारा बनाकर देखें।',
+  'chat.regenerate.failed': 'जवाब दोबारा नहीं बनाया जा सका। कृपया फिर से कोशिश करें।',
   'chat.send': 'मैसेज भेजें',
   'chat.stopGeneration': 'जेनरेशन रोकें',
   'chat.followupHint':

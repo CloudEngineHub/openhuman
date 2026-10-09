@@ -494,6 +494,8 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.connectIntegration': 'اربط تكاملًا جديدًا.',
   'chat.welcomeSuggestion.dailySummaryFlow': 'أنشئ تدفقًا يرسل لي ملخصًا يوميًا بالبريد.',
   'chat.typeMessage': 'أرسل رسالة...',
+  'chat.regenerate.unavailable': 'لا يمكن إعادة إنشاء هذا الرد. جرّب إعادة إنشاء أحدث رد بدلًا من ذلك.',
+  'chat.regenerate.failed': 'تعذّرت إعادة إنشاء الرد. يُرجى المحاولة مرة أخرى.',
   'chat.send': 'إرسال الرسالة',
   'chat.stopGeneration': 'إيقاف التوليد',
   'chat.followupHint': 'أضِف متابعة إلى القائمة: تُرسَل بعد هذا الرد · ⌘/Ctrl+Enter لفرع متوازٍ',
