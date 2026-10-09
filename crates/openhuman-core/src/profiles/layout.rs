@@ -1,17 +1,19 @@
-//! Where one user agent's state lives, and the config it always runs with.
+//! Where one profile's state lives, and the config it always runs with.
 //!
 //! ```text
-//! <root>/agents/<agent-id>/
-//!   agent.toml        ProfileMeta
-//!   config.toml       the agent's config_path
+//! <root>/users/<profile-id>/
+//!   profile.toml      ProfileMeta
+//!   config.toml       the profile's config_path
 //!   workspace/        sessions, memory, threads, cron, cost — internal state
-//!   sandbox/          the agent's action_dir: the only place it may act
-//! <root>/deprovisioned/<agent-id>-<unix-secs>/   an archived agent
+//!   sandbox/          the profile's action_dir: the only place it may act
+//! <root>/deprovisioned/<profile-id>-<unix-secs>-<uuid>/   an archived profile
 //! ```
 //!
-//! Every per-agent path sits under its own directory, so each store keyed by
-//! workspace (cron, approvals, threads, the cost ledger, the session store) is
-//! already separate per user without that store knowing about users.
+//! The `users/<id>` shape is the desktop's user directory; both build it
+//! through the shared [`ProfileLayout`]. Every per-profile path sits under its
+//! own directory, so each store keyed by workspace (cron, approvals, threads,
+//! the cost ledger, the session store) is already separate per user without
+//! that store knowing about users.
 
 use std::path::{Path, PathBuf};
 
@@ -19,32 +21,11 @@ use super::types::ProfileId;
 use crate::config::Config;
 use crate::security::AutonomyLevel;
 
-/// Resolved paths of one user agent.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ProfileLayout {
-    pub dir: PathBuf,
-    pub meta_path: PathBuf,
-    pub config_path: PathBuf,
-    pub workspace_dir: PathBuf,
-    pub sandbox_dir: PathBuf,
-}
+pub use crate::config::schema::profile_layout::{users_dir, ProfileLayout};
 
-impl ProfileLayout {
-    pub fn new(saas_root: &Path, id: &ProfileId) -> Self {
-        let dir = agents_dir(saas_root).join(id.as_str());
-        Self {
-            meta_path: dir.join("agent.toml"),
-            config_path: dir.join("config.toml"),
-            workspace_dir: dir.join("workspace"),
-            sandbox_dir: dir.join("sandbox"),
-            dir,
-        }
-    }
-}
-
-/// `<root>/agents`.
-pub fn agents_dir(saas_root: &Path) -> PathBuf {
-    saas_root.join("agents")
+/// The layout of profile `id` under the SaaS root.
+pub fn profile_layout(saas_root: &Path, id: &ProfileId) -> ProfileLayout {
+    ProfileLayout::new(saas_root, id)
 }
 
 /// `<root>/deprovisioned`.
@@ -52,7 +33,7 @@ pub fn archive_dir(saas_root: &Path) -> PathBuf {
     saas_root.join("deprovisioned")
 }
 
-/// The memory namespace root of agent `id`.
+/// The memory namespace root of profile `id`.
 pub fn memory_root(id: &ProfileId) -> String {
     format!("user:{id}")
 }
