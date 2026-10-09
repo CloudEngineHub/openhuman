@@ -49,7 +49,7 @@ case "$1 $2" in
   "release download")
     while [ $# -gt 0 ]; do [ "$1" = "--pattern" ] && pat="$2"; [ "$1" = "--dir" ] && out="$2"; shift; done
     printf 'sig-for-%s\\n' "$pat" > "$out/$pat" ;;
-  "release upload") cp "$3" "${dir}/uploaded.json" ;;
+  "release upload") cp "$4" "${dir}/uploaded.json" ;;
 esac
 `,
     );
