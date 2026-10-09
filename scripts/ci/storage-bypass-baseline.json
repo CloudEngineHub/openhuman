@@ -155,69 +155,6 @@
   },
   {
     "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/common.rs",
-    "line": 70,
-    "text": "std::fs::write(tmp.path().join(\"SOUL.md\"), \"# Soul\\nBe helpful.\").unwrap();",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/common.rs",
-    "line": 71,
-    "text": "std::fs::write(",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/prompt.rs",
-    "line": 89,
-    "text": "std::fs::write(tmp.path().join(\"SOUL.md\"), \"# Soul\").unwrap();",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/prompt.rs",
-    "line": 90,
-    "text": "std::fs::write(tmp.path().join(\"IDENTITY.md\"), \"# Identity\").unwrap();",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/prompt.rs",
-    "line": 91,
-    "text": "std::fs::write(tmp.path().join(\"PROFILE.md\"), \"# User Profile\").unwrap();",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/prompt.rs",
-    "line": 92,
-    "text": "std::fs::write(tmp.path().join(\"MEMORY.md\"), \"# Memory\\nLearned bits.\").unwrap();",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/prompt.rs",
-    "line": 106,
-    "text": "std::fs::write(",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/prompt.rs",
-    "line": 176,
-    "text": "std::fs::write(ws.path().join(\"SOUL.md\"), &big_content).unwrap();",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/channels/tests/prompt.rs",
-    "line": 193,
-    "text": "std::fs::write(ws.path().join(\"PROFILE.md\"), \"\").unwrap();",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
     "path": "crates/openhuman-core/src/config/migrations/phase_out_profile_md.rs",
     "line": 192,
     "text": "match fs::write(&md_path, cleaned.as_bytes()) {",

@@ -78,6 +78,7 @@ export function allowed(rel, rule) {
 function isTestFile(rel) {
   return (
     rel.startsWith("crates/openhuman-core/src/storage/") ||
+    rel.includes("/tests/") ||
     rel.endsWith("_tests.rs") ||
     rel.includes(`${sep}test_support${sep}`) ||
     rel.includes("/test_support/")
