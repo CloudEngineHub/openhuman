@@ -92,13 +92,6 @@
   },
   {
     "rule": "json-write",
-    "path": "crates/openhuman-core/src/agent/orchestration/subagent_sessions/store.rs",
-    "line": 43,
-    "text": "fs::write(&tmp_path, raw)",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
     "path": "crates/openhuman-core/src/agent/progress_tracing/export.rs",
     "line": 33,
     "text": "let opened = std::fs::OpenOptions::new()",
@@ -246,20 +239,6 @@
   },
   {
     "rule": "json-write",
-    "path": "crates/openhuman-core/src/inference/tokenjuice/savings.rs",
-    "line": 162,
-    "text": "if let Err(e) = std::fs::write(path, json) {",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
-    "path": "crates/openhuman-core/src/integrations/composio/file_store.rs",
-    "line": 85,
-    "text": "tokio::fs::write(&tmp, &bytes)",
-    "occurrence": 1
-  },
-  {
-    "rule": "json-write",
     "path": "crates/openhuman-core/src/integrations/file_storage/tools/download.rs",
     "line": 84,
     "text": "if let Err(e) = tokio::fs::write(&path, &body).await {",
@@ -270,6 +249,20 @@
     "path": "crates/openhuman-core/src/memory/files.rs",
     "line": 61,
     "text": "let mut options = std::fs::OpenOptions::new();",
+    "occurrence": 1
+  },
+  {
+    "rule": "json-write",
+    "path": "crates/openhuman-core/src/memory/layout_migration/claim.rs",
+    "line": 103,
+    "text": "let temp = tempfile::NamedTempFile::new_in(key.marker.parent().unwrap_or(Path::new(\".\")))?;",
+    "occurrence": 1
+  },
+  {
+    "rule": "json-write",
+    "path": "crates/openhuman-core/src/memory/local_root.rs",
+    "line": 168,
+    "text": "let temp = tempfile::NamedTempFile::new_in(dir)?;",
     "occurrence": 1
   },
   {

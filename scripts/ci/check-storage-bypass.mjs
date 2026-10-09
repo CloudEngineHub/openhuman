@@ -11,7 +11,7 @@
 //
 // Rules (non-test Rust under crates/openhuman-core/src, outside storage/):
 //   sqlite-open  rusqlite `Connection::open(` - use the document port
-//   json-write   fs::write / File::create / OpenOptions::new() - a raw file
+//   json-write   fs::write / File::create / OpenOptions::new() / NamedTempFile - a raw file
 //                store; use the document, stream or secret port
 //
 // A file may keep a rule when it is the legacy fallback of a store that already
@@ -44,7 +44,7 @@ export const RULES = [
   },
   {
     rule: "json-write",
-    pattern: /\b(?:fs::write|File::create|OpenOptions::new)\s*\(/,
+    pattern: /\b(?:fs::write|File::create|OpenOptions::new|NamedTempFile::new_in)\s*\(/,
     hint: "persist through the storage port, or allowlist it with a reason in ALLOW",
   },
 ];
@@ -68,6 +68,40 @@ export const ALLOW = new Map([
     },
   ],
   [`${SRC}platform/cost/tracker.rs`, { rules: ["json-write"], reason: FALLBACK }],
+  [`${SRC}agent/orchestration/subagent_sessions/store.rs`, { rules: ["json-write"], reason: FALLBACK }],
+  [`${SRC}integrations/composio/file_store.rs`, { rules: ["json-write"], reason: FALLBACK }],
+  [
+    `${SRC}desktop/control/ops.rs`,
+    {
+      rules: ["json-write"],
+      reason:
+        "this machine's own consent to drive its desktop: per-machine, and it must fail closed rather than follow a shared backend to another host",
+    },
+  ],
+  [
+    `${SRC}desktop/app_state/ops/state_file.rs`,
+    {
+      rules: ["json-write"],
+      reason:
+        "holds the local encryption key and keyring consent, which are needed before any storage backend is open (bootstrap state is never read from storage)",
+    },
+  ],
+  [
+    `${SRC}web3/wallet/ops/state.rs`,
+    {
+      rules: ["json-write"],
+      reason:
+        "paired with the OS keychain mnemonic (and holds it when there is no keychain): moves with the secrets work, not as a plain document",
+    },
+  ],
+  [
+    `${SRC}inference/tokenjuice/savings.rs`,
+    {
+      rules: ["json-write"],
+      reason:
+        "one process-global savings counter snapshot, cheap to lose; not per-user data a scope would mean anything for",
+    },
+  ],
 ]);
 
 /** Whether `rule` is allowed in `rel`. */
