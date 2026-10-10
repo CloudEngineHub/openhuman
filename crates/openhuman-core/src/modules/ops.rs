@@ -338,7 +338,7 @@ where
 }
 
 /// Append the terminal-fault sentence to `error` unless it already has it.
-fn mark_terminal(error: String) -> String {
+pub(super) fn mark_terminal(error: String) -> String {
     let marker = crate::tools::status::MODULE_FAULT_MARKER;
     if error.contains(marker) {
         return error;
