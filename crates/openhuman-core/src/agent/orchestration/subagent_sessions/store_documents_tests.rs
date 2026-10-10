@@ -42,17 +42,22 @@ fn a_missing_list_loads_empty() {
 }
 
 #[test]
-fn save_replaces_the_whole_list() {
+fn save_upserts_sessions_and_keeps_the_others() {
     let docs = docs_in(&MemoryStorage::new(), "local");
     docs.save(&[session("a"), session("b")]).unwrap();
     let loaded = docs.load().unwrap();
     assert_eq!(loaded.len(), 2);
     assert_eq!(loaded[0].subagent_session_id, "a");
     assert_eq!(loaded[1].status, DurableSubagentStatus::Idle);
-    docs.save(&[session("c")]).unwrap(); // a, b are deleted
-    let loaded = docs.load().unwrap();
-    assert_eq!(loaded.len(), 1);
-    assert_eq!(loaded[0].subagent_session_id, "c");
+    // A save from a stale snapshot never removes a session it does not know.
+    docs.save(&[session("c")]).unwrap();
+    let ids: Vec<_> = docs
+        .load()
+        .unwrap()
+        .into_iter()
+        .map(|s| s.subagent_session_id)
+        .collect();
+    assert_eq!(ids, ["a", "b", "c"]);
 }
 
 #[test]

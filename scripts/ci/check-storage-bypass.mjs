@@ -181,11 +181,16 @@ export function codeOf(line) {
 export function scan(rel, source) {
   const found = [];
   const occurrences = new Map();
-  for (const [index, raw] of source.split(/\r?\n/).entries()) {
+  const lines = source.split(/\r?\n/);
+  for (const [index, raw] of lines.entries()) {
     const code = codeOf(raw);
     if (!code.trim()) continue;
+    // A call may break between the path and its `(`: look one line ahead, and
+    // count a match only when it starts on this line.
+    const searchable = `${code}\n${codeOf(lines[index + 1] ?? "")}`;
     for (const { rule, pattern } of RULES) {
-      if (!pattern.test(code)) continue;
+      const hit = pattern.exec(searchable);
+      if (!hit || hit.index >= code.length) continue;
       const text = raw.trim();
       const key = `${rule}\0${text}`;
       const occurrence = (occurrences.get(key) ?? 0) + 1;

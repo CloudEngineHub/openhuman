@@ -13,13 +13,13 @@
 //!
 //! The file store loads and saves the whole list, last writer wins. `save`
 //! keeps that contract for the callers in `ops.rs`, but writes each session as
-//! its own document (and deletes the ones the list no longer holds), so a
-//! session's history stays well under any document-size limit and two
-//! processes only collide on a session they both changed.
+//! its own document, so a session's history stays well under any document-size
+//! limit and two processes only collide on a session they both changed. `save`
+//! never deletes: `ops.rs` only replaces a session (remove then re-add the same
+//! id) and never drops one, and a delete sweep over a stale snapshot would
+//! remove sessions another process added meanwhile.
 
 use anyhow::Result;
-use std::collections::HashSet;
-
 use serde_json::Value;
 use tinystoragedrivers::{CollectionSpec, Precondition, Query, Sort};
 
@@ -93,15 +93,8 @@ impl Docs {
         }
         log::debug!("[subagent_sessions] document save count={}", writes.len());
         self.0.run(|docs| async move {
-            let keep: HashSet<String> = writes.iter().map(|(id, _)| id.clone()).collect();
             for (id, doc) in writes {
                 docs.put(SESSIONS, &id, doc, Precondition::None).await?;
-            }
-            for stored in docs.query_all(SESSIONS, &Query::all()).await? {
-                if !keep.contains(&stored.id) {
-                    docs.delete(SESSIONS, &stored.id, Precondition::None)
-                        .await?;
-                }
             }
             Ok(())
         })
