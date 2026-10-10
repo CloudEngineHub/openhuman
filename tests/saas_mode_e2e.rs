@@ -437,7 +437,7 @@ fn gateway_requests_run_under_the_named_users_profile() {
     assert_eq!(status, 403, "bob is not provisioned: {body}");
     // A repeated signature header is refused, not resolved to the first value.
     {
-        use openhuman_core::user_agents::gateway::{sign, USER_HEADER, USER_SIG_HEADER};
+        use openhuman_core::profiles::gateway::{sign, USER_HEADER, USER_SIG_HEADER};
         let response = client
             .post(format!("{base}/rpc"))
             .bearer_auth(BEARER)
