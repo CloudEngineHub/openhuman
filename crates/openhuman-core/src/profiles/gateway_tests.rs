@@ -68,8 +68,7 @@ fn a_profile_held_elsewhere_is_a_409_naming_the_holder() {
         expires_at_ms: 10_000,
         released: false,
     };
-    let refusal =
-        GatewayRefusal::from_open_error(&id("alice"), OpenError::HeldElsewhere(record), 4_000);
+    let refusal = GatewayRefusal::from_open_error(OpenError::HeldElsewhere(record), 4_000);
     assert_eq!(refusal.status, 409);
     assert_eq!(refusal.message, PROFILE_HELD);
     assert_eq!(
@@ -85,10 +84,10 @@ fn a_profile_held_elsewhere_is_a_409_naming_the_holder() {
 #[test]
 fn other_open_errors_keep_their_statuses() {
     let alice = id("alice");
-    let status = |error| GatewayRefusal::from_open_error(&alice, error, 0).status;
+    let status = |error| GatewayRefusal::from_open_error(error, 0).status;
     assert_eq!(status(OpenError::NotProvisioned(alice.clone())), 403);
     assert_eq!(status(OpenError::Full { max: 2 }), 503);
     assert_eq!(status(OpenError::Storage("down".into())), 503);
-    let refusal = GatewayRefusal::from_open_error(&alice, OpenError::Full { max: 2 }, 0);
+    let refusal = GatewayRefusal::from_open_error(OpenError::Full { max: 2 }, 0);
     assert!(refusal.held_by.is_none());
 }

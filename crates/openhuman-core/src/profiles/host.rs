@@ -235,7 +235,12 @@ impl ProfileHost {
         })
         .await;
         if let Err(e) = cleared {
-            log::warn!("[profiles] clearing credentials of profile={id} before archiving: {e}");
+            log::warn!("[profiles] clearing credentials before archiving failed: {e}");
+            // Keep the profile so cleanup can be retried; archiving now would
+            // leave the secret for a re-provisioned profile to inherit. It is
+            // closed here, so give its lease back for the retry to take.
+            profile_lease::release_all(self.leases(), vec![(id.clone(), grant)]).await;
+            return Err(format!("clearing credentials before archiving: {e}"));
         }
         if layout.dir.exists() {
             let archive = layout::archive_dir(&self.saas.root);

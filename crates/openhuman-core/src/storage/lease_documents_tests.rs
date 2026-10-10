@@ -1,6 +1,7 @@
+use super::*;
+
 use std::time::Duration;
 
-use super::*;
 use crate::storage::MemoryStorage;
 
 const TTL: Duration = Duration::from_millis(1_000);
@@ -176,4 +177,40 @@ fn sqlite_threads_racing_for_a_key_have_one_winner() {
         );
         race_on(url, 8);
     }
+}
+
+#[tokio::test]
+async fn renew_after_expiry_is_lost_even_without_takeover() {
+    let storage = MemoryStorage::new();
+    let a = node(&storage, "a");
+    let grant = a.acquire("k", 0).await.unwrap();
+    assert!(matches!(
+        a.renew(&grant, 2_000).await,
+        Err(LeaseError::Lost)
+    ));
+    assert!(a.renew(&grant, 999).await.is_ok());
+}
+
+#[tokio::test]
+async fn another_instances_grant_cannot_renew_or_release() {
+    let storage = MemoryStorage::new();
+    let (a, b) = (node(&storage, "a"), node(&storage, "b"));
+    let grant = a.acquire("k", 0).await.unwrap();
+    assert!(matches!(b.renew(&grant, 10).await, Err(LeaseError::Lost)));
+    assert!(matches!(
+        b.release(grant.clone()).await,
+        Err(LeaseError::Lost)
+    ));
+    assert_eq!(a.holder("k").await.unwrap().unwrap().owner, "a");
+    assert!(a.renew(&grant, 10).await.is_ok());
+}
+
+#[tokio::test]
+async fn sub_millisecond_ttl_does_not_expire_at_acquisition() {
+    let storage = MemoryStorage::new();
+    let a = DocumentLeases::cluster(&storage, "a", None, Duration::ZERO).unwrap();
+    let b = node(&storage, "b");
+    let grant = a.acquire("k", 5).await.unwrap();
+    assert!(grant.expires_at_ms > 5);
+    assert!(matches!(b.acquire("k", 5).await, Err(LeaseError::Held(_))));
 }

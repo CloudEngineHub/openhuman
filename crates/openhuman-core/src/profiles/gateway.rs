@@ -110,14 +110,14 @@ impl GatewayRefusal {
         }
     }
 
-    /// The refusal for profile `id`'s [`OpenError`] at `now_ms`.
-    pub fn from_open_error(id: &ProfileId, error: OpenError, now_ms: u64) -> Self {
+    /// The refusal for a profile's [`OpenError`] at `now_ms`.
+    pub fn from_open_error(error: OpenError, now_ms: u64) -> Self {
         match error {
             OpenError::NotProvisioned(_) => Self::new(403, error.to_string()),
             OpenError::Full { .. } | OpenError::Storage(_) => Self::new(503, error.to_string()),
             OpenError::HeldElsewhere(record) => {
                 log::debug!(
-                    "[profiles][gateway] profile={id} is held by node={} epoch={}",
+                    "[profiles][gateway] the profile is held by node={} epoch={}",
                     record.owner,
                     record.epoch
                 );
@@ -163,17 +163,16 @@ pub async fn resolve_scope(
         let signature = signature
             .ok_or_else(|| GatewayRefusal::new(401, format!("missing {USER_SIG_HEADER}")))?;
         verify(secret, user_id, signature, now).map_err(|e| {
-            log::warn!("[profiles][gateway] refused profile={profile}: {e}");
+            log::warn!("[profiles][gateway] refused a scoped request: {e}");
             GatewayRefusal::new(401, e)
         })?;
     }
     match host.open(&profile).await {
         Ok(state) => {
-            log::debug!("[profiles][gateway] scoped request to profile={profile}");
+            log::debug!("[profiles][gateway] scoped request to an open profile");
             Ok(GatewayScope::User(state))
         }
         Err(error) => Err(GatewayRefusal::from_open_error(
-            &profile,
             error,
             super::lease::now_ms(),
         )),

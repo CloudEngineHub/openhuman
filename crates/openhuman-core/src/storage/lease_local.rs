@@ -193,7 +193,19 @@ impl LeaseStore for LocalLeases {
         }
         let previous = self.read_record(key);
         let unclean = previous.as_ref().is_some_and(|record| !record.released);
-        let epoch = previous.map_or(1, |record| record.epoch.saturating_add(1));
+        let epoch = match previous {
+            None => 1,
+            Some(record) => match record.epoch.checked_add(1) {
+                Some(next) => next,
+                None => {
+                    let _ = FileExt::unlock(&file);
+                    return Err(StorageError::conflict(format!(
+                        "lease {key} epoch space exhausted"
+                    ))
+                    .into());
+                }
+            },
+        };
         let record = LeaseRecord {
             owner: self.node.clone(),
             endpoint: self.endpoint.clone(),

@@ -61,7 +61,9 @@ impl DocumentLeases {
             docs,
             node: node.into(),
             endpoint,
-            ttl_ms: u64::try_from(ttl.as_millis()).unwrap_or(u64::MAX),
+            // A sub-millisecond TTL rounds up so a grant never expires at
+            // the instant it is issued.
+            ttl_ms: u64::try_from(ttl.as_millis()).unwrap_or(u64::MAX).max(1),
             held: Mutex::new(HashMap::new()),
             declared: tokio::sync::OnceCell::new(),
         }
@@ -122,6 +124,18 @@ impl DocumentLeases {
         };
     }
 
+    /// Drops the held entry only while it still names `epoch`, so a release
+    /// finishing late cannot erase a newer acquisition's state.
+    fn clear_held_if(&self, key: &str, epoch: u64) {
+        let mut held = self
+            .held
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if held.get(key) == Some(&epoch) {
+            held.remove(key);
+        }
+    }
+
     fn record(&self, epoch: u64, expires_at_ms: u64, released: bool) -> LeaseRecord {
         LeaseRecord {
             owner: self.node.clone(),
@@ -163,6 +177,16 @@ impl DocumentLeases {
         released: bool,
     ) -> Result<Version, LeaseError> {
         validate_key(&grant.key)?;
+        if self.held_epoch(&grant.key) != Some(grant.epoch) {
+            tracing::info!(
+                target: "openhuman::storage::lease",
+                key = %grant.key,
+                node = %self.node,
+                epoch = grant.epoch,
+                "[lease] grant lost: not held by this instance"
+            );
+            return Err(LeaseError::Lost);
+        }
         self.declare().await?;
         let record = self.record(grant.epoch, expires_at_ms, released);
         match self
@@ -202,6 +226,12 @@ impl LeaseStore for DocumentLeases {
                 now_ms,
             ) {
                 Takeover::Take { epoch, unclean } => (epoch, unclean),
+                Takeover::Exhausted => {
+                    return Err(StorageError::conflict(format!(
+                        "lease {key} epoch space exhausted"
+                    ))
+                    .into());
+                }
                 Takeover::Refuse => {
                     let (_, record) = found.expect("refuse implies a record");
                     tracing::debug!(
@@ -257,6 +287,16 @@ impl LeaseStore for DocumentLeases {
     }
 
     async fn renew(&self, grant: &LeaseGrant, now_ms: u64) -> Result<LeaseGrant, LeaseError> {
+        if now_ms >= grant.expires_at_ms {
+            tracing::info!(
+                target: "openhuman::storage::lease",
+                key = %grant.key,
+                node = %self.node,
+                epoch = grant.epoch,
+                "[lease] renew refused: grant already expired"
+            );
+            return Err(LeaseError::Lost);
+        }
         let expires_at_ms = now_ms.saturating_add(self.ttl_ms);
         let version = self.rewrite(grant, expires_at_ms, false).await?;
         tracing::trace!(
@@ -275,7 +315,7 @@ impl LeaseStore for DocumentLeases {
 
     async fn release(&self, grant: LeaseGrant) -> Result<(), LeaseError> {
         self.rewrite(&grant, grant.expires_at_ms, true).await?;
-        self.set_held(&grant.key, None);
+        self.clear_held_if(&grant.key, grant.epoch);
         tracing::debug!(
             target: "openhuman::storage::lease",
             key = %grant.key,

@@ -112,3 +112,35 @@ fn lease_errors_name_the_holder() {
     assert_eq!(error.to_string(), "lease held by n2 (epoch 3)");
     assert_eq!(LeaseError::Lost.to_string(), "lease lost");
 }
+
+#[test]
+fn expired_reentrant_record_advances_the_epoch() {
+    let found = record("n1", 4, 100, false);
+    assert_eq!(
+        decide(Some(&found), "n1", Some(4), 99),
+        Takeover::Take {
+            epoch: 4,
+            unclean: false
+        }
+    );
+    assert_eq!(
+        decide(Some(&found), "n1", Some(4), 100),
+        Takeover::Take {
+            epoch: 5,
+            unclean: true
+        }
+    );
+}
+
+#[test]
+fn exhausted_epoch_is_refused_not_reused() {
+    let found = record("n2", u64::MAX, 100, false);
+    assert_eq!(decide(Some(&found), "n1", None, 100), Takeover::Exhausted);
+}
+
+#[test]
+fn local_dirs_do_not_alias_by_case() {
+    let root = std::path::Path::new("/r");
+    assert_ne!(local_dir(root, "alice"), local_dir(root, "ALICE"));
+    assert_eq!(local_dir(root, "alice"), local_dir(root, "alice"));
+}

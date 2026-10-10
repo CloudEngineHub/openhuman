@@ -213,3 +213,11 @@ operator_dir = "/srv/oh/operators/node-a"
         PathBuf::from("/srv/oh/operators/node-a/workspace")
     );
 }
+
+#[test]
+fn the_pre_rename_max_agents_open_key_still_sets_the_limit() {
+    let tmp = tempfile::tempdir().unwrap();
+    let path = tmp.path().join("operator.toml");
+    std::fs::write(&path, "root = \"/srv/openhuman\"\nmax_agents_open = 7\n").unwrap();
+    assert_eq!(SaasConfig::load(&path).unwrap().max_profiles_open, 7);
+}
