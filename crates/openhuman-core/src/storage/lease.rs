@@ -21,7 +21,13 @@
 //!   Otherwise it fails with [`LeaseError::Held`] carrying the live record.
 //!   A fresh key starts at epoch 1; every acquisition other than a
 //!   re-entrant one (this same store instance already holds that epoch)
-//!   writes `epoch + 1`, so epochs only grow and fence stale holders.
+//!   writes `epoch + 1`, so epochs only grow. An expired takeover does not
+//!   stop the previous holder: resources a lease protects must reject writes
+//!   carrying an epoch below the current one, and a holder must stop work
+//!   before `expires_at_ms` minus the maximum clock skew between nodes (each
+//!   node supplies its own `now_ms`). Nothing in this module checks epochs at
+//!   the protected resource. An epoch at `u64::MAX` cannot be advanced, so a
+//!   takeover of it fails with a storage error instead of repeating it.
 //! - **renew** extends a grant by compare-and-swap on the version it holds.
 //!   Any write since (a takeover, a release) makes it [`LeaseError::Lost`].
 //! - **release** marks the record `released = true` under the same CAS and
@@ -198,6 +204,8 @@ pub(crate) enum Takeover {
     Take { epoch: u64, unclean: bool },
     /// Someone else's live record stands.
     Refuse,
+    /// The record's epoch cannot be advanced.
+    Exhausted,
 }
 
 /// The acquire rule both stores share. `held_epoch` is the epoch this store
@@ -214,7 +222,19 @@ pub(crate) fn decide(
             unclean: false,
         };
     };
-    let next = record.epoch.saturating_add(1);
+    let live_reentrant = record.owner == node
+        && held_epoch == Some(record.epoch)
+        && !record.released
+        && now_ms < record.expires_at_ms;
+    if live_reentrant {
+        return Takeover::Take {
+            epoch: record.epoch,
+            unclean: false,
+        };
+    }
+    let Some(next) = record.epoch.checked_add(1) else {
+        return Takeover::Exhausted;
+    };
     if record.released {
         return Takeover::Take {
             epoch: next,
@@ -222,12 +242,6 @@ pub(crate) fn decide(
         };
     }
     if record.owner == node {
-        if held_epoch == Some(record.epoch) {
-            return Takeover::Take {
-                epoch: record.epoch,
-                unclean: false,
-            };
-        }
         return Takeover::Take {
             epoch: next,
             unclean: true,
@@ -243,8 +257,13 @@ pub(crate) fn decide(
 }
 
 /// The directory a [`LocalLeases`] keeps `key`'s lock and record in.
+///
+/// The directory name is the SHA-256 of the key, so keys that differ only by
+/// case, trailing dots or reserved device names never alias on
+/// case-insensitive or Windows filesystems.
 pub(crate) fn local_dir(root: &std::path::Path, key: &str) -> PathBuf {
-    root.join(key)
+    use sha2::{Digest, Sha256};
+    root.join(hex::encode(Sha256::digest(key.as_bytes())))
 }
 
 #[cfg(test)]
