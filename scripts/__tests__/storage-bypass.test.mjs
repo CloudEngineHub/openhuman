@@ -188,11 +188,20 @@ test("an allowlisted file may hold only its pinned site", () => {
     ],
   );
   // The pinned line moving elsewhere in the file is still allowed; a new write is not.
-  assert.equal(withoutAllowed(file, scan(file, "x();\nlet mut file = OpenOptions::new()\n")).length, 0);
+  assert.equal(
+    withoutAllowed(
+      file,
+      scan(file, "x();\nlet mut file = OpenOptions::new()\n"),
+    ).length,
+    0,
+  );
 });
 
 test("a call split across lines is still found", () => {
-  const found = scan("x.rs", "let c = Connection::open\n    (&path)?;\nstd::fs::write\n(p, b)?;\n");
+  const found = scan(
+    "x.rs",
+    "let c = Connection::open\n    (&path)?;\nstd::fs::write\n(p, b)?;\n",
+  );
   assert.deepEqual(
     found.map((f) => [f.rule, f.line]),
     [

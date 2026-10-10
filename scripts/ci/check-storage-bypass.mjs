@@ -54,7 +54,8 @@ export const RULES = [
 ];
 
 const SRC = "crates/openhuman-core/src/";
-const FALLBACK = "legacy fallback of a store that already runs on the storage port";
+const FALLBACK =
+  "legacy fallback of a store that already runs on the storage port";
 
 /**
  * path -> { rule, site, reason }: the one site (its trimmed source line) a rule
@@ -64,20 +65,60 @@ const FALLBACK = "legacy fallback of a store that already runs on the storage po
  */
 export const ALLOW = new Map(
   [
-    ["security/approval/store.rs", "sqlite-open", "let conn = Connection::open(&db_path).with_context(|| {", FALLBACK],
-    ["security/devices/store.rs", "sqlite-open", "let conn = Connection::open(&db_path)", FALLBACK],
-    ["desktop/notifications/store.rs", "sqlite-open", "let conn = Connection::open(&db_path).with_context(|| {", FALLBACK],
-    ["integrations/task_sources/store.rs", "sqlite-open", "let mut conn = Connection::open(&db_path)", FALLBACK],
-    ["cron/policy.rs", "sqlite-open", "let conn = Connection::open(&path)", FALLBACK],
+    [
+      "security/approval/store.rs",
+      "sqlite-open",
+      "let conn = Connection::open(&db_path).with_context(|| {",
+      FALLBACK,
+    ],
+    [
+      "security/devices/store.rs",
+      "sqlite-open",
+      "let conn = Connection::open(&db_path)",
+      FALLBACK,
+    ],
+    [
+      "desktop/notifications/store.rs",
+      "sqlite-open",
+      "let conn = Connection::open(&db_path).with_context(|| {",
+      FALLBACK,
+    ],
+    [
+      "integrations/task_sources/store.rs",
+      "sqlite-open",
+      "let mut conn = Connection::open(&db_path)",
+      FALLBACK,
+    ],
+    [
+      "cron/policy.rs",
+      "sqlite-open",
+      "let conn = Connection::open(&path)",
+      FALLBACK,
+    ],
     [
       "config/workspace/state.rs",
       "sqlite-open",
       "let conn = Connection::open(db_path)?;",
       "vault watcher state is absolute local paths and their mtimes: per-machine filesystem state that is meaningless on, and must not be shared through, another host's database",
     ],
-    ["platform/cost/tracker.rs", "json-write", "let mut file = OpenOptions::new()", FALLBACK],
-    ["agent/orchestration/subagent_sessions/store.rs", "json-write", "fs::write(&tmp_path, raw)", FALLBACK],
-    ["integrations/composio/file_store.rs", "json-write", "tokio::fs::write(&tmp, &bytes)", FALLBACK],
+    [
+      "platform/cost/tracker.rs",
+      "json-write",
+      "let mut file = OpenOptions::new()",
+      FALLBACK,
+    ],
+    [
+      "agent/orchestration/subagent_sessions/store.rs",
+      "json-write",
+      "fs::write(&tmp_path, raw)",
+      FALLBACK,
+    ],
+    [
+      "integrations/composio/file_store.rs",
+      "json-write",
+      "tokio::fs::write(&tmp, &bytes)",
+      FALLBACK,
+    ],
     [
       "desktop/control/ops.rs",
       "json-write",
@@ -102,7 +143,10 @@ export const ALLOW = new Map(
       "if let Err(e) = std::fs::write(path, json) {",
       "one process-global savings counter snapshot, cheap to lose; not per-user data a scope would mean anything for",
     ],
-  ].map(([path, rule, site, reason]) => [`${SRC}${path}`, { rule, site, reason }]),
+  ].map(([path, rule, site, reason]) => [
+    `${SRC}${path}`,
+    { rule, site, reason },
+  ]),
 );
 
 /** Whether `finding` is the allowlisted site of its file. */
