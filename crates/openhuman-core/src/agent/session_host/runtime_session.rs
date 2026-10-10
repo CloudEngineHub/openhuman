@@ -1414,9 +1414,8 @@ impl OpenHumanSessionHost {
         }
         self.session_history_locator_memo
             .get_or_init(|| {
-                let session_agent_id = crate::core::runtime::CoreContext::current()
-                    .and_then(|context| context.session_agent().map(str::to_owned))
-                    .unwrap_or_else(|| self.agent_definition_id.clone());
+                let session_agent_id =
+                    crate::agent::session_store::current_agent_key_or(&self.agent_definition_id);
                 transcripts_or_files(&session_agent_id, &self.workspace_dir)
             })
             .clone()
