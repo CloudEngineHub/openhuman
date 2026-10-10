@@ -13,6 +13,18 @@ use crate::profiles::ProfileIdMode;
 use proptest::prelude::*;
 use std::sync::OnceLock;
 
+/// Runs an async host call to completion from a (synchronous) property body.
+fn block<T>(future: impl std::future::Future<Output = T>) -> T {
+    static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
+    RT.get_or_init(|| {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+    })
+    .block_on(future)
+}
+
 const SECRET: &str = "gateway-secret-0123456789abcdef0123456789";
 const NOW: u64 = 1_700_000_000;
 
@@ -37,8 +49,7 @@ fn host(mode: ProfileIdMode) -> &'static ProfileHost {
             saas.max_profiles_open = 16;
             let host = ProfileHost::new(saas, CoreContext::for_test(DomainSet::full(), None));
             for user in PROVISIONED {
-                host.provision(&ProfileId::for_user(user, mode).unwrap())
-                    .unwrap();
+                block(host.provision(&ProfileId::for_user(user, mode).unwrap())).unwrap();
             }
             (tmp, host)
         })
@@ -204,7 +215,7 @@ proptest! {
     ) {
         let host = host(mode);
         let header = build_sig(&sig, &user);
-        match resolve_user_on(host, &user, header.as_deref(), SECRET, NOW) {
+        match block(resolve_user_on(host, &user, header.as_deref(), SECRET, NOW)) {
             Ok(profile) => {
                 let expected = ProfileId::for_user(&user, mode).unwrap();
                 prop_assert_eq!(&profile.id, &expected, "{:?} landed on another profile", user);
@@ -234,8 +245,8 @@ proptest! {
         {
             return Ok(());
         }
-        let a = resolve_user_on(host, known, known_header.as_deref(), SECRET, NOW).unwrap_err();
-        let b = resolve_user_on(host, unknown, unknown_header.as_deref(), SECRET, NOW).unwrap_err();
+        let a = block(resolve_user_on(host, known, known_header.as_deref(), SECRET, NOW)).unwrap_err();
+        let b = block(resolve_user_on(host, unknown, unknown_header.as_deref(), SECRET, NOW)).unwrap_err();
         prop_assert_eq!(a.status, 401);
         prop_assert_eq!(a, b);
     }

@@ -81,9 +81,9 @@ pub(crate) fn profiles_of(id: &str) -> Vec<String> {
 /// The context to act for `profile` under, off-task: the SaaS agent host's
 /// agent for it, reopened if it was evicted. `None` outside SaaS or for a
 /// profile the host does not know.
-pub(crate) fn context_for_profile(profile: &str) -> Option<Arc<CoreContext>> {
+pub(crate) async fn context_for_profile(profile: &str) -> Option<Arc<CoreContext>> {
     let id = crate::profiles::ProfileId::parse(profile).ok()?;
-    match crate::profiles::host::host()?.open(&id) {
+    match crate::profiles::host::host()?.open(&id).await {
         Ok(state) => Some(Arc::clone(state.context())),
         Err(error) => {
             log::warn!("[completion_owners] cannot open the owning agent: {error}");

@@ -102,8 +102,9 @@ pub(super) async fn as_owner<F: std::future::Future<Output = ()>>(
 /// policy, memory and action directory — else `registered`, the one the
 /// subscriber was registered with.
 pub(super) fn config_for_scope(registered: &std::sync::Arc<Config>) -> std::sync::Arc<Config> {
-    let acting = crate::core::runtime::CoreContext::current()
-        .is_some_and(|context| context.session_agent().is_some());
+    // A SaaS profile acts as its own tenant even with no agent inside it.
+    let acting = crate::core::runtime::current_tenant()
+        .is_ok_and(|tenant| tenant.agent.is_some() || tenant.profile.is_some());
     match acting.then(crate::core::runtime::CoreContext::current_embedder_config) {
         Some(Some(config)) => std::sync::Arc::new(config),
         _ => std::sync::Arc::clone(registered),

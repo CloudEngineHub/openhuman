@@ -290,8 +290,12 @@ pub mod storage {
 pub mod profiles {
     pub mod gateway {
         pub use openhuman_core::profiles::gateway::{
-            resolve_scope, sign, verify, GatewayRefusal, GatewayScope, USER_HEADER, USER_SIG_HEADER,
+            resolve_scope, sign, verify, GatewayRefusal, GatewayScope, HeldBy, PROFILE_HELD,
+            PROFILE_OWNER_HEADER, USER_HEADER, USER_SIG_HEADER,
         };
+    }
+    pub mod host {
+        pub use openhuman_core::profiles::host::host;
     }
 }
 

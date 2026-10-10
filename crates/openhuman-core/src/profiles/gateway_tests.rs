@@ -47,10 +47,47 @@ fn a_tampered_tag_is_refused() {
         .contains("does not match"));
 }
 
-#[test]
-fn no_user_header_is_the_operator_plane() {
+#[tokio::test]
+async fn no_user_header_is_the_operator_plane() {
     assert!(matches!(
-        resolve_scope(None, None, SECRET, 0),
+        resolve_scope(None, None, SECRET, 0).await,
         Ok(GatewayScope::Operator)
     ));
+}
+
+fn id(name: &str) -> ProfileId {
+    ProfileId::parse(name).unwrap()
+}
+
+#[test]
+fn a_profile_held_elsewhere_is_a_409_naming_the_holder() {
+    let record = crate::storage::lease::LeaseRecord {
+        owner: "node-a".into(),
+        endpoint: Some("http://10.0.0.1:7788".into()),
+        epoch: 3,
+        expires_at_ms: 10_000,
+        released: false,
+    };
+    let refusal = GatewayRefusal::from_open_error(OpenError::HeldElsewhere(record), 4_000);
+    assert_eq!(refusal.status, 409);
+    assert_eq!(refusal.message, PROFILE_HELD);
+    assert_eq!(
+        refusal.held_by,
+        Some(HeldBy {
+            owner: "node-a".into(),
+            endpoint: Some("http://10.0.0.1:7788".into()),
+            retry_after_ms: 6_000,
+        })
+    );
+}
+
+#[test]
+fn other_open_errors_keep_their_statuses() {
+    let alice = id("alice");
+    let status = |error| GatewayRefusal::from_open_error(error, 0).status;
+    assert_eq!(status(OpenError::NotProvisioned(alice.clone())), 403);
+    assert_eq!(status(OpenError::Full { max: 2 }), 503);
+    assert_eq!(status(OpenError::Storage("down".into())), 503);
+    let refusal = GatewayRefusal::from_open_error(OpenError::Full { max: 2 }, 0);
+    assert!(refusal.held_by.is_none());
 }

@@ -2,50 +2,22 @@
 //! signature headers are attacker-shaped, so for any combination of them:
 //!
 //! - without the service bearer, every probe with one readable user header
-//!   gets the same `401`, whether that user is provisioned or not, and the
-//!   resolver is never consulted;
-//! - with it, the answer is a 400/401/403 refusal, or the resolver receives
-//!   exactly the one user header and the one signature the request carried.
+//!   gets the same `401`, whether that user is provisioned or not;
+//! - with it, the answer is a 400/401 refusal, or the one user header and the
+//!   one signature the request carried are handed on to be resolved.
 //!
 //! Case counts follow `PROPTEST_CASES` (default 256); CI pins the seed with
 //! `PROPTEST_RNG_SEED`.
 
 use super::*;
-use crate::core_host::profiles::gateway::{sign, verify};
+use crate::core_host::profiles::gateway::sign;
 use axum::body::Body;
 use axum::http::HeaderValue;
 use proptest::prelude::*;
-use std::cell::RefCell;
 
 const SECRET: &str = "service-token";
 const NOW: u64 = 1_700_000_000;
-const PROVISIONED: &str = "alice";
-
-/// What reached the resolver, if anything.
-type Seen = RefCell<Option<(Option<String>, Option<String>)>>;
-
-/// Stands in for `resolve_scope`: records its inputs, then admits only a
-/// correctly signed `alice` (the operator scope stands in for "her profile").
-fn resolve_recording<'a>(
-    seen: &'a Seen,
-) -> impl FnOnce(Option<&str>, Option<&str>, &str, u64) -> Result<GatewayScope, GatewayRefusal> + 'a
-{
-    move |user, sig, secret, now| {
-        *seen.borrow_mut() = Some((user.map(String::from), sig.map(String::from)));
-        let refuse = |status, message: &str| GatewayRefusal {
-            status,
-            message: message.to_string(),
-        };
-        let user = user.ok_or_else(|| refuse(500, "resolver called without a user"))?;
-        let sig = sig.ok_or_else(|| refuse(401, "missing signature"))?;
-        verify(secret, user, sig, now).map_err(|e| refuse(401, &e))?;
-        if user == PROVISIONED {
-            Ok(GatewayScope::Operator)
-        } else {
-            Err(refuse(403, "not provisioned"))
-        }
-    }
-}
+const KNOWN: &str = "alice";
 
 /// Raw header bytes: real users, near-misses, signatures and noise. Values
 /// `HeaderValue` cannot hold are dropped by the request builder below.
@@ -114,7 +86,7 @@ fn request(auth: Option<&[u8]>, users: &[Vec<u8>], sigs: &[Vec<u8>]) -> Request 
 }
 
 /// A refusal's status and message, for comparing two of them exactly.
-fn parts(refusal: GatewayRefusal) -> (u16, String) {
+fn parts(refusal: Refused) -> (u16, &'static str) {
     (refusal.status, refusal.message)
 }
 
@@ -130,9 +102,8 @@ fn readable_single(values: &[Vec<u8>]) -> Option<String> {
 }
 
 proptest! {
-    /// Without the service bearer, a probe for a provisioned user and one for
-    /// an unknown user get identical `401`s, and the resolver (which
-    /// knows who is provisioned) is never reached.
+    /// Without the service bearer, a probe for a known user and one for an
+    /// unknown user get identical `401`s.
     #[test]
     fn unauthenticated_probes_cannot_tell_users_apart(
         auth in authorization(),
@@ -141,28 +112,22 @@ proptest! {
     ) {
         prop_assert!(readable_single(std::slice::from_ref(&unknown)).is_some());
         let probe = |user: &[u8]| {
-            let seen = Seen::default();
             let req = request(auth.as_deref(), &[user.to_vec()], &sigs);
-            let outcome = decide(&req, Some(SECRET), NOW, resolve_recording(&seen));
-            (outcome, seen.into_inner())
+            decide(&req, Some(SECRET))
         };
-        let (known, known_seen) = probe(PROVISIONED.as_bytes());
-        let (other, other_seen) = probe(&unknown);
-        let (Err(known), Err(other)) = (known, other) else {
+        let (Err(known), Err(other)) = (probe(KNOWN.as_bytes()), probe(&unknown)) else {
             return Err(TestCaseError::fail("an unauthenticated user request was admitted"));
         };
-        prop_assert!(known_seen.is_none() && other_seen.is_none(), "resolver reached without the bearer");
         let known = parts(known);
         prop_assert_eq!(known.0, 401);
         prop_assert_eq!(known, parts(other));
     }
 
     /// With the bearer, any header combination is refused with a client
-    /// status or reaches the resolver carrying exactly the request's single
-    /// user header and single signature, and only a correctly signed
-    /// provisioned user is admitted.
+    /// status or admitted carrying exactly the request's single user header
+    /// and single signature.
     #[test]
-    fn authenticated_requests_resolve_only_what_they_carry(
+    fn authenticated_requests_carry_only_what_they_sent(
         users in prop::collection::vec(user_value(), 0..3),
         sigs in prop::collection::vec(sig_value(), 0..3),
     ) {
@@ -170,30 +135,22 @@ proptest! {
         let req = request(Some(&bearer), &users, &sigs);
         let user_count = req.headers().get_all(USER_HEADER).iter().count();
         let sig_count = req.headers().get_all(USER_SIG_HEADER).iter().count();
-        let seen = Seen::default();
-        let outcome = decide(&req, Some(SECRET), NOW, resolve_recording(&seen));
-        let seen = seen.into_inner();
-        if user_count == 0 {
-            prop_assert!(matches!(outcome, Ok(GatewayScope::Operator)));
-            prop_assert!(seen.is_none());
-            return Ok(());
-        }
-        match outcome {
-            Ok(_) => {
-                let (user, sig) = seen.expect("admitted without resolving");
+        match decide(&req, Some(SECRET)) {
+            Ok(Admitted::Operator) => prop_assert_eq!(user_count, 0),
+            Ok(Admitted::User { user, signature }) => {
                 prop_assert_eq!(user_count, 1);
                 prop_assert!(sig_count <= 1);
-                prop_assert_eq!(user.as_deref(), Some(PROVISIONED));
-                prop_assert_eq!(user, readable_single(&users));
-                let sig = sig.expect("admitted without a signature");
-                prop_assert!(verify(SECRET, PROVISIONED, &sig, NOW).is_ok());
+                prop_assert_eq!(Some(user), readable_single(&users));
+                if sig_count == 1 {
+                    prop_assert!(signature.is_none() || signature == readable_single(&sigs));
+                } else {
+                    prop_assert!(signature.is_none());
+                }
             }
             Err(refusal) => {
-                let status = refusal.status;
-                prop_assert!(matches!(status, 400 | 401 | 403), "status {}", status);
+                prop_assert!(matches!(refusal.status, 400 | 401), "status {}", refusal.status);
                 if user_count > 1 || sig_count > 1 {
-                    prop_assert_eq!(status, 400);
-                    prop_assert!(seen.is_none(), "resolver reached with duplicate headers");
+                    prop_assert_eq!(refusal.status, 400);
                 }
             }
         }

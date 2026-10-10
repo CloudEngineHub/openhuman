@@ -16,6 +16,10 @@
 //! headers by mistake cannot be talked into acting as another user.
 //!
 //! The core never verifies the user's own credential; the gateway did that.
+//!
+//! A profile another node hosts (its lease is live there) is refused with
+//! `409`: the refusal carries the holder ([`HeldBy`]) so the gateway can
+//! route the user there, or retry after the lease runs out.
 
 use std::sync::Arc;
 
@@ -23,6 +27,7 @@ use hmac::{Hmac, KeyInit, Mac};
 use sha2_011::Sha256;
 
 use super::host::{self, Profile, ProfileHost};
+use super::lease::OpenError;
 use super::types::ProfileId;
 
 /// The gateway's user header.
@@ -69,19 +74,63 @@ pub fn verify(secret: &str, user_id: &str, header: &str, now: u64) -> Result<(),
         .map_err(|_| "user signature does not match".to_string())
 }
 
+/// The `error` code of a refusal for a profile another node hosts.
+pub const PROFILE_HELD: &str = "profile_held";
+
+/// The response header naming the node that hosts a refused profile.
+pub const PROFILE_OWNER_HEADER: &str = "x-openhuman-profile-owner";
+
+/// The node that hosts a profile this one was asked for.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct HeldBy {
+    /// The holder's node id.
+    pub owner: String,
+    /// Where the holder can be reached, when it advertises an endpoint.
+    pub endpoint: Option<String>,
+    /// Milliseconds until its lease lapses unless renewed.
+    pub retry_after_ms: u64,
+}
+
 /// Why a gateway request was refused.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GatewayRefusal {
     /// The HTTP status to answer with.
     pub status: u16,
     pub message: String,
+    /// Set on a `409`: who hosts the profile instead.
+    pub held_by: Option<HeldBy>,
 }
 
 impl GatewayRefusal {
-    fn new(status: u16, message: impl Into<String>) -> Self {
+    pub fn new(status: u16, message: impl Into<String>) -> Self {
         Self {
             status,
             message: message.into(),
+            held_by: None,
+        }
+    }
+
+    /// The refusal for a profile's [`OpenError`] at `now_ms`.
+    pub fn from_open_error(error: OpenError, now_ms: u64) -> Self {
+        match error {
+            OpenError::NotProvisioned(_) => Self::new(403, error.to_string()),
+            OpenError::Full { .. } | OpenError::Storage(_) => Self::new(503, error.to_string()),
+            OpenError::HeldElsewhere(record) => {
+                log::debug!(
+                    "[profiles][gateway] the profile is held by node={} epoch={}",
+                    record.owner,
+                    record.epoch
+                );
+                Self {
+                    status: 409,
+                    message: PROFILE_HELD.to_string(),
+                    held_by: Some(HeldBy {
+                        retry_after_ms: record.retry_after_ms(now_ms),
+                        owner: record.owner,
+                        endpoint: record.endpoint,
+                    }),
+                }
+            }
         }
     }
 }
@@ -98,7 +147,7 @@ pub enum GatewayScope {
 /// Pick the scope for a request that already presented the service bearer.
 ///
 /// `secret` is the service bearer; `now` is unix seconds.
-pub fn resolve_scope(
+pub async fn resolve_scope(
     user_id: Option<&str>,
     signature: Option<&str>,
     secret: &str,
@@ -108,13 +157,15 @@ pub fn resolve_scope(
         return Ok(GatewayScope::Operator);
     };
     let host = host::host().ok_or_else(|| GatewayRefusal::new(503, "this core serves no users"))?;
-    resolve_user_on(&host, user_id, signature, secret, now).map(GatewayScope::User)
+    resolve_user_on(&host, user_id, signature, secret, now)
+        .await
+        .map(GatewayScope::User)
 }
 
 /// [`resolve_scope`] for a request that names `user_id`, on an explicit
 /// `host` rather than the process's: the profile that serves that user, or
 /// the refusal.
-pub fn resolve_user_on(
+pub async fn resolve_user_on(
     host: &ProfileHost,
     user_id: &str,
     signature: Option<&str>,
@@ -131,13 +182,15 @@ pub fn resolve_user_on(
             GatewayRefusal::new(401, e)
         })?;
     }
-    match host.open(&profile) {
+    match host.open(&profile).await {
         Ok(state) => {
             log::debug!("[profiles][gateway] scoped request to an open profile");
             Ok(state)
         }
-        Err(e) if e.contains("not provisioned") => Err(GatewayRefusal::new(403, e)),
-        Err(e) => Err(GatewayRefusal::new(503, e)),
+        Err(error) => Err(GatewayRefusal::from_open_error(
+            error,
+            super::lease::now_ms(),
+        )),
     }
 }
 

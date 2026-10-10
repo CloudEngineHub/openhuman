@@ -9,7 +9,7 @@
 use super::credentials::{self, UserCredentialKind};
 use super::host::{self, ProfileHost};
 use super::types::{
-    CredentialResult, DeprovisionResult, ProfileId, ProfileSummary, ProvisionResult,
+    CredentialResult, DeprovisionResult, ProfileId, ProfileSummary, ProvisionResult, ReleaseResult,
 };
 use crate::core::Outcome;
 
@@ -18,16 +18,26 @@ fn require_host() -> Result<std::sync::Arc<ProfileHost>, String> {
 }
 
 /// Create the profile for gateway user `user_id`, if it does not exist yet.
-pub fn provision(user_id: &str) -> Result<Outcome<ProvisionResult>, String> {
-    provision_on(&*require_host()?, user_id)
+pub async fn provision(user_id: &str) -> Result<Outcome<ProvisionResult>, String> {
+    provision_on(&*require_host()?, user_id).await
 }
 
-pub(crate) fn provision_on(
+pub(crate) async fn provision_on(
     host: &ProfileHost,
     user_id: &str,
 ) -> Result<Outcome<ProvisionResult>, String> {
     let profile_id = ProfileId::for_user(user_id, host.saas().profile_ids)?;
-    let created = host.provision(&profile_id)?;
+    if names_operator_state(&profile_id, &host.saas().operator_dir()) {
+        log::warn!(
+            "[profiles] refusing to provision a profile named like the operator's state dir"
+        );
+        return Err(
+            "profile id is reserved on this deployment: it is the name of the \
+                    operator's state directory"
+                .to_string(),
+        );
+    }
+    let created = host.provision(&profile_id).await?;
     let log = if created {
         "profile provisioned"
     } else {
@@ -42,17 +52,29 @@ pub(crate) fn provision_on(
     ))
 }
 
-/// Close profile `profile_id` and archive its state.
-pub fn deprovision(profile_id: &str) -> Result<Outcome<DeprovisionResult>, String> {
-    deprovision_on(&*require_host()?, profile_id)
+/// Whether `id` is the file name of the operator's state directory.
+///
+/// Credential secrets are namespaced in the process keyring by the name of
+/// the directory their store sits in: `users/<id>` for a profile, the
+/// operator directory for the operator. A profile named like the operator
+/// directory (`operator` is reserved for the default; a configured
+/// `operator_dir` can be any name) would read and overwrite the operator's
+/// own secrets.
+fn names_operator_state(id: &ProfileId, operator_dir: &std::path::Path) -> bool {
+    operator_dir.file_name().and_then(|name| name.to_str()) == Some(id.as_str())
 }
 
-pub(crate) fn deprovision_on(
+/// Close profile `profile_id` and archive its state.
+pub async fn deprovision(profile_id: &str) -> Result<Outcome<DeprovisionResult>, String> {
+    deprovision_on(&*require_host()?, profile_id).await
+}
+
+pub(crate) async fn deprovision_on(
     host: &ProfileHost,
     profile_id: &str,
 ) -> Result<Outcome<DeprovisionResult>, String> {
     let profile_id = ProfileId::parse(profile_id)?;
-    let removed = host.deprovision(&profile_id)?;
+    let removed = host.deprovision(&profile_id).await?;
     let log = if removed {
         "profile archived"
     } else {
@@ -68,39 +90,40 @@ pub(crate) fn deprovision_on(
 }
 
 /// Every provisioned profile.
-pub fn list() -> Result<Outcome<Vec<ProfileSummary>>, String> {
-    let profiles = require_host()?.list()?;
+pub async fn list() -> Result<Outcome<Vec<ProfileSummary>>, String> {
+    let profiles = require_host()?.list().await?;
     let log = format!("{} profile(s)", profiles.len());
     Ok(Outcome::single_log(profiles, log))
 }
 
 /// One profile, or an error when it is not provisioned.
-pub fn status(profile_id: &str) -> Result<Outcome<ProfileSummary>, String> {
-    status_on(&*require_host()?, profile_id)
+pub async fn status(profile_id: &str) -> Result<Outcome<ProfileSummary>, String> {
+    status_on(&*require_host()?, profile_id).await
 }
 
-pub(crate) fn status_on(
+pub(crate) async fn status_on(
     host: &ProfileHost,
     profile_id: &str,
 ) -> Result<Outcome<ProfileSummary>, String> {
     let profile_id = ProfileId::parse(profile_id)?;
     let summary = host
-        .summary(&profile_id)?
+        .summary(&profile_id)
+        .await?
         .ok_or_else(|| "profile is not provisioned".to_string())?;
     Ok(Outcome::single_log(summary, "profile status read"))
 }
 
 /// Install the backend credential the gateway holds for profile `profile_id`.
-pub fn set_credential(
+pub async fn set_credential(
     profile_id: &str,
     kind: UserCredentialKind,
     token: &str,
     expires_at: Option<&str>,
 ) -> Result<Outcome<CredentialResult>, String> {
-    set_credential_on(&*require_host()?, profile_id, kind, token, expires_at)
+    set_credential_on(&*require_host()?, profile_id, kind, token, expires_at).await
 }
 
-pub(crate) fn set_credential_on(
+pub(crate) async fn set_credential_on(
     host: &ProfileHost,
     profile_id: &str,
     kind: UserCredentialKind,
@@ -110,8 +133,13 @@ pub(crate) fn set_credential_on(
     let profile_id = ProfileId::parse(profile_id)?;
     // From the layout, not `open`: installing or revoking a credential must
     // work even when every profile slot is busy.
-    let config = host.provisioned_config(&profile_id)?;
-    credentials::store(&config, kind, token, expires_at)?;
+    let config = host.provisioned_config(&profile_id).await?;
+    // Under the profile's own scope, so a storage-backed secret store files
+    // the credential under that profile.
+    crate::core::runtime::CoreContext::scope(host.records_context(&profile_id), async {
+        credentials::store(&config, kind, token, expires_at)
+    })
+    .await?;
     log::info!("[profiles] credential installed kind={kind:?}");
     Ok(Outcome::single_log(
         CredentialResult {
@@ -123,17 +151,21 @@ pub(crate) fn set_credential_on(
 }
 
 /// Remove every credential profile `profile_id` holds.
-pub fn clear_credential(profile_id: &str) -> Result<Outcome<CredentialResult>, String> {
-    clear_credential_on(&*require_host()?, profile_id)
+pub async fn clear_credential(profile_id: &str) -> Result<Outcome<CredentialResult>, String> {
+    clear_credential_on(&*require_host()?, profile_id).await
 }
 
-pub(crate) fn clear_credential_on(
+pub(crate) async fn clear_credential_on(
     host: &ProfileHost,
     profile_id: &str,
 ) -> Result<Outcome<CredentialResult>, String> {
     let profile_id = ProfileId::parse(profile_id)?;
-    let config = host.provisioned_config(&profile_id)?;
-    let removed = credentials::clear(&config)?;
+    let config = host.provisioned_config(&profile_id).await?;
+    let removed =
+        crate::core::runtime::CoreContext::scope(host.records_context(&profile_id), async {
+            credentials::clear(&config)
+        })
+        .await?;
     log::info!("[profiles] credential cleared removed={removed}");
     let log = if removed {
         "credential cleared"
@@ -144,6 +176,32 @@ pub(crate) fn clear_credential_on(
         CredentialResult {
             profile_id,
             has_credential: false,
+        },
+        log,
+    ))
+}
+
+/// Close profile `profile_id` on this node and release its lease, so another
+/// node can host it at once.
+pub async fn release(profile_id: &str) -> Result<Outcome<ReleaseResult>, String> {
+    release_on(&*require_host()?, profile_id).await
+}
+
+pub(crate) async fn release_on(
+    host: &ProfileHost,
+    profile_id: &str,
+) -> Result<Outcome<ReleaseResult>, String> {
+    let profile_id = ProfileId::parse(profile_id)?;
+    let released = host.release(&profile_id).await?;
+    let log = if released {
+        "profile released"
+    } else {
+        "profile was not open on this node"
+    };
+    Ok(Outcome::single_log(
+        ReleaseResult {
+            profile_id,
+            released,
         },
         log,
     ))

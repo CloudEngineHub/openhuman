@@ -41,6 +41,29 @@ pub async fn cancel_chat_scoped(
         .request_id)
 }
 
+/// Stop every turn running in the calling context — what a profile whose
+/// lease was lost does before it closes. Each thread is torn down as an
+/// unscoped stop would (primary, parallel turns and detached sub-agents).
+/// Returns how many threads had something to stop.
+pub async fn cancel_all_turns() -> usize {
+    let threads = super::state::live_thread_ids().await;
+    let mut stopped = 0;
+    for thread_id in &threads {
+        match cancel_chat_inner("profile-fence", thread_id, None).await {
+            Ok(outcome) if outcome.request_id.is_some() => stopped += 1,
+            Ok(_) => {}
+            Err(error) => {
+                log::warn!("[web-channel] stopping thread_id={thread_id} failed: {error}");
+            }
+        }
+    }
+    log::info!(
+        "[web-channel] cancel_all_turns threads={} stopped={stopped}",
+        threads.len()
+    );
+    stopped
+}
+
 /// What one cancel tore down.
 struct CancelOutcome {
     /// The primary or parallel turn that was cancelled, if any.

@@ -72,14 +72,14 @@
   {
     "rule": "bare-spawn",
     "path": "crates/openhuman-core/src/agent/session_host/runtime_session.rs",
-    "line": 724,
+    "line": 723,
     "text": "tokio::spawn(async move {",
     "occurrence": 1
   },
   {
     "rule": "bare-spawn",
     "path": "crates/openhuman-core/src/agent/session_host/runtime_session.rs",
-    "line": 726,
+    "line": 725,
     "text": "let transcript = tokio::task::spawn_blocking(move || {",
     "occurrence": 1
   },
@@ -387,7 +387,7 @@
   {
     "rule": "home-dir",
     "path": "crates/openhuman-core/src/core/runtime/saas.rs",
-    "line": 238,
+    "line": 331,
     "text": "home: dirs::home_dir(),",
     "occurrence": 1
   },
@@ -490,20 +490,6 @@
     "occurrence": 1
   },
   {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/cron/completion_owner.rs",
-    "line": 25,
-    "text": "let Some(agent) = crate::core::runtime::CoreContext::current()",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/cron/completion_owner.rs",
-    "line": 26,
-    "text": ".and_then(|context| context.session_agent().map(str::to_string))",
-    "occurrence": 1
-  },
-  {
     "rule": "bare-spawn",
     "path": "crates/openhuman-core/src/cron/ops.rs",
     "line": 264,
@@ -536,20 +522,6 @@
     "path": "crates/openhuman-core/src/desktop/app_state/ops/snapshot.rs",
     "line": 67,
     "text": "tokio::task::spawn_blocking(move || load_app_session_profile(&config_for_profile))",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/flows/bus/owner.rs",
-    "line": 105,
-    "text": "let acting = crate::core::runtime::CoreContext::current()",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/flows/bus/owner.rs",
-    "line": 106,
-    "text": ".is_some_and(|context| context.session_agent().is_some());",
     "occurrence": 1
   },
   {
@@ -732,20 +704,6 @@
     "path": "crates/openhuman-core/src/integrations/composio/ops/connections.rs",
     "line": 99,
     "text": "tokio::spawn(async move {",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/integrations/task_sources/periodic.rs",
-    "line": 49,
-    "text": "let agent = crate::core::runtime::CoreContext::current()",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/integrations/task_sources/periodic.rs",
-    "line": 50,
-    "text": ".and_then(|context| context.session_agent().map(str::to_string));",
     "occurrence": 1
   },
   {
@@ -943,34 +901,6 @@
     "line": 156,
     "text": "tokio::spawn(async move {",
     "occurrence": 4
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/security/devices/bus.rs",
-    "line": 396,
-    "text": "crate::core::runtime::CoreContext::current()",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/security/devices/bus.rs",
-    "line": 397,
-    "text": ".and_then(|context| context.session_agent().map(str::to_string)),",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/security/devices/rpc.rs",
-    "line": 140,
-    "text": "agent: crate::core::runtime::CoreContext::current()",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/security/devices/rpc.rs",
-    "line": 141,
-    "text": ".and_then(|context| context.session_agent().map(str::to_string)),",
-    "occurrence": 1
   },
   {
     "rule": "home-dir",
@@ -1346,14 +1276,14 @@
   {
     "rule": "bare-spawn",
     "path": "crates/openhuman-core/src/web_chat/ops/start_chat.rs",
-    "line": 482,
+    "line": 485,
     "text": "let handle = tokio::spawn(crate::core::runtime::context::CoreContext::propagate(",
     "occurrence": 1
   },
   {
     "rule": "bare-spawn",
     "path": "crates/openhuman-core/src/web_chat/ops/start_chat.rs",
-    "line": 703,
+    "line": 706,
     "text": "tokio::spawn(crate::core::runtime::context::CoreContext::propagate(",
     "occurrence": 1
   },

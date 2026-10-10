@@ -29,7 +29,7 @@ async fn nothing_to_do_does_nothing() {
         crate::profiles::ProfileIdMode::Raw,
     )
     .unwrap();
-    host.provision(&id).unwrap();
+    host.provision(&id).await.unwrap();
     assert_eq!(tick(&host).await, TickReport::default());
     assert!(
         !host.is_open(&id),
@@ -51,8 +51,8 @@ async fn only_profiles_with_queued_memory_jobs_are_run() {
         crate::profiles::ProfileIdMode::Raw,
     )
     .unwrap();
-    host.provision(&busy).unwrap();
-    host.provision(&quiet).unwrap();
+    host.provision(&busy).await.unwrap();
+    host.provision(&quiet).await.unwrap();
 
     let config = profile_config(&host.layout_of(&busy), &busy);
     crate::memory::test_fixtures::bind_reference(&config);
@@ -77,8 +77,8 @@ async fn a_tick_sweeps_idle_profiles() {
         crate::profiles::ProfileIdMode::Raw,
     )
     .unwrap();
-    host.provision(&id).unwrap();
-    drop(host.open(&id).unwrap());
+    host.provision(&id).await.unwrap();
+    drop(host.open(&id).await.unwrap());
     assert!(host.is_open(&id));
     tick(&host).await;
     assert!(!host.is_open(&id));

@@ -36,9 +36,12 @@ on `storage-mongodb`.
   that driver is atomic across processes (MongoDB, SQLite), which a
   clustered node's leases need. Memory and file drivers coordinate only
   within one process.
-- `current_scope()` / `current_scoped()`: the acting agent's scope (`local`
-  on a single-user host; an error in SaaS mode with no acting agent) and the
-  installed backend under it.
+- `scope_for_profile(profile_id)`: the scope a SaaS profile's records live
+  under (`profile:<id>`, hashed when that is not a valid scope).
+- `current_scope()` / `current_scoped()`: the tenant's scope — its profile's
+  when it serves one, else the acting agent's, else `local` on a single-user
+  host; an error in SaaS mode without a profile — and the installed backend
+  under it.
 - `block_on(future)`: runs a storage future from synchronous store code on
   one shared runtime thread.
 - `documents::Repo` and `documents::compare_and_swap`: the base the domain
@@ -91,6 +94,12 @@ reference model.
 
 ## Consumers
 
+- The SaaS profile host (`profiles::lease`, `profiles::registry`): one
+  lease per profile (`DocumentLeases` over the installed backend, else
+  `LocalLeases` under `<root>/users`) and the profile registry, collection
+  `profiles` in the same `cluster` scope. A lease taken over unclean runs
+  the profile's workspace recovery; a lost one fences the profile. See
+  `profiles/README.md`.
 - The session store: `openhuman_rpc::session_store::install_for_host` opens
   the configured backend before boot and installs `DriverSessionStores`
   over it. See that module's README.

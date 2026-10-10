@@ -10,6 +10,9 @@ use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
 
+#[path = "saas_mode/cluster.rs"]
+mod cluster;
+
 const BEARER: &str = "saas-e2e-gateway-bearer-0123456789abcdef";
 
 /// Environment a developer machine may carry that would point the child at a
@@ -23,6 +26,8 @@ const SCRUBBED_ENV: &[&str] = &[
     "OPENHUMAN_APPROVAL_GATE",
     "OPENHUMAN_SANDBOX",
     "OPENHUMAN_MODE",
+    "OPENHUMAN_STORAGE_URL",
+    "OPENHUMAN_NODE_ID",
 ];
 
 struct Deployment {
