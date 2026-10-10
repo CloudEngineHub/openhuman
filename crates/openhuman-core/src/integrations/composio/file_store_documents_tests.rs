@@ -47,6 +47,24 @@ fn scopes_do_not_see_each_others_state() {
 }
 
 #[tokio::test]
+async fn the_file_store_dispatches_to_documents_when_a_backend_is_pinned() {
+    let storage = MemoryStorage::new();
+    let docs = docs_in(&storage, "local");
+    let dir = tempfile::tempdir().unwrap();
+    let file = dir.path().join("composio_identities.json");
+    let mut value = BTreeMap::new();
+    value.insert("gmail".to_string(), 7u32);
+    with_override(docs.clone(), || ());
+    // Pin on this thread for the awaits below (a current-thread runtime).
+    super::TEST_OVERRIDE.with(|slot| *slot.borrow_mut() = Some(docs.clone()));
+    super::super::file_store::save(&file, &value).await.unwrap();
+    let loaded: BTreeMap<String, u32> = super::super::file_store::load(&file).await.unwrap();
+    super::TEST_OVERRIDE.with(|slot| *slot.borrow_mut() = None);
+    assert_eq!(loaded, value);
+    assert!(!file.exists());
+}
+
+#[tokio::test]
 async fn the_file_path_still_works_with_no_backend() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("state.json");

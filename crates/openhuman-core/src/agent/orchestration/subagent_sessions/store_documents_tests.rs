@@ -92,3 +92,18 @@ fn sessions_come_back_in_creation_order() {
         .collect();
     assert_eq!(ids, ["z", "a"]);
 }
+
+#[test]
+fn the_store_dispatches_to_documents_when_a_backend_is_pinned() {
+    let storage = MemoryStorage::new();
+    let dir = tempfile::tempdir().unwrap();
+    let store = SubagentSessionStore::new(dir.path().to_path_buf());
+    let docs = docs_in(&storage, "local");
+    with_override(docs.clone(), || {
+        assert!(store.load().unwrap().is_empty());
+        store.save(&[session("a")]).unwrap();
+        assert_eq!(store.load().unwrap().len(), 1);
+    });
+    assert_eq!(docs.load().unwrap().len(), 1);
+    assert!(!dir.path().join(".openhuman/subagent_sessions.json").exists());
+}
