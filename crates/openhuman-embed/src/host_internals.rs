@@ -26,9 +26,10 @@ pub mod core {
     pub mod all {
         // tinyhumans: hosted controller extension; rpc: http_host + `/health`.
         pub use openhuman_core::core::all::{
-            all_controller_schemas, all_http_method_schemas, namespace_description,
-            register_controller_extension, rpc_method_from_parts, schema_for_rpc_method,
-            ControllerExtension, ControllerFuture, DomainGroup, RegisteredController,
+            all_controller_schemas, all_http_method_schemas, cli_handler_for_namespace,
+            namespace_description, register_controller_extension, rpc_method_from_parts,
+            schema_for_rpc_method, ControllerExtension, ControllerFuture, DomainGroup,
+            RegisteredController,
         };
     }
 
