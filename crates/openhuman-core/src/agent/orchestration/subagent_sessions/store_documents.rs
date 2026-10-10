@@ -36,7 +36,32 @@ fn collections() -> Vec<CollectionSpec> {
 
 /// The document store for this call, when the host configured one.
 pub(super) fn current() -> Result<Option<Docs>> {
+    #[cfg(test)]
+    if let Some(docs) = TEST_OVERRIDE.with(|slot| slot.borrow().clone()) {
+        return Ok(Some(docs));
+    }
     Ok(Repo::current(DOMAIN, collections)?.map(Docs))
+}
+
+/// Whether a test pinned a document store for this thread.
+#[cfg(test)]
+pub(super) fn overridden() -> bool {
+    TEST_OVERRIDE.with(|slot| slot.borrow().is_some())
+}
+
+/// Runs `f` with `docs` standing in for the installed backend, on this thread
+/// only, so tests exercise the dispatch without the process-wide slot.
+#[cfg(test)]
+pub(super) fn with_override<T>(docs: Docs, f: impl FnOnce() -> T) -> T {
+    TEST_OVERRIDE.with(|slot| *slot.borrow_mut() = Some(docs));
+    let out = f();
+    TEST_OVERRIDE.with(|slot| *slot.borrow_mut() = None);
+    out
+}
+
+#[cfg(test)]
+thread_local! {
+    static TEST_OVERRIDE: std::cell::RefCell<Option<Docs>> = const { std::cell::RefCell::new(None) };
 }
 
 /// The session list over one scoped document handle.
