@@ -215,3 +215,7 @@ pub(crate) fn decide(req: &Request, secret: Option<&str>) -> Result<Admitted, Re
 #[cfg(test)]
 #[path = "saas_gateway_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "saas_gateway_proptest_tests.rs"]
+mod proptest_tests;
