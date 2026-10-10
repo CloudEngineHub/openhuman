@@ -631,7 +631,15 @@ export function useOpenHumanExternalStore(
         log('reload skipped: no thread selected');
         return;
       }
-      const sourceId = config?.sourceId ?? null;
+      // assistant-ui always sends the reply as `sourceId`; if only the user
+      // prompt (`parentId`) arrives, the reply is the first agent row after it.
+      let sourceId = config?.sourceId ?? null;
+      if (!sourceId && parentId) {
+        const parentIndex = messages.findIndex(m => m.id === parentId);
+        if (parentIndex >= 0) {
+          sourceId = messages.slice(parentIndex + 1).find(m => m.sender === 'agent')?.id ?? null;
+        }
+      }
       const target = resolveRegenerateTarget(runtimeMessages, sourceId);
       if (!target) {
         log('reload refused: reply has no regenerable id thread=%s', threadId);
