@@ -241,7 +241,7 @@ pub fn check(inputs: &BootInputs<'_>) -> Result<(), BootGuardError> {
         }
     }
 
-    let unknown = crate::user_agents::tools::unknown_entries(&inputs.config.tool_allowlist);
+    let unknown = crate::profiles::tools::unknown_entries(&inputs.config.tool_allowlist);
     if !unknown.is_empty() {
         violations.push(Violation::ToolAllowlist(unknown));
     }
@@ -285,7 +285,7 @@ fn sandbox_problems(inputs: &BootInputs<'_>) -> Vec<String> {
     if !inputs.sandbox_available {
         problems.push("host_shell is allowlisted but Docker is not available".to_string());
     }
-    if crate::user_agents::tools::is_host_network(&sandbox.network) {
+    if crate::profiles::tools::is_host_network(&sandbox.network) {
         problems.push("network `host` defeats the sandbox".to_string());
     }
     if sandbox.image.trim().is_empty() {
@@ -299,7 +299,7 @@ fn sandbox_problems(inputs: &BootInputs<'_>) -> Vec<String> {
 
 /// Whether `config` allowlists a group that needs the container sandbox.
 pub fn needs_sandbox(config: &SaasConfig) -> bool {
-    crate::user_agents::tools::parse_allowlist(&config.tool_allowlist)
+    crate::profiles::tools::parse_allowlist(&config.tool_allowlist)
         .iter()
         .any(|group| group.needs_sandbox())
 }

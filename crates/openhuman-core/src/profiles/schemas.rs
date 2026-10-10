@@ -1,4 +1,4 @@
-//! `user_agents.*` controllers: the SaaS operator plane.
+//! `profiles.*` controllers: the SaaS operator plane.
 //!
 //! Tagged [`DomainGroup::Operator`](crate::core::all::DomainGroup::Operator),
 //! which only `DomainSet::saas()` enables, so a single-user core never serves
@@ -18,13 +18,13 @@ struct UserParams {
 }
 
 #[derive(Debug, Deserialize)]
-struct AgentParams {
-    agent_id: String,
+struct ProfileParams {
+    profile_id: String,
 }
 
 #[derive(Deserialize)]
 struct CredentialParams {
-    agent_id: String,
+    profile_id: String,
     kind: super::credentials::UserCredentialKind,
     token: String,
     #[serde(default)]
@@ -40,80 +40,80 @@ const FUNCTIONS: [&str; 6] = [
     "clear_credential",
 ];
 
-pub fn all_user_agents_controller_schemas() -> Vec<ControllerSchema> {
-    FUNCTIONS.iter().map(|f| user_agents_schemas(f)).collect()
+pub fn all_profiles_controller_schemas() -> Vec<ControllerSchema> {
+    FUNCTIONS.iter().map(|f| profiles_schemas(f)).collect()
 }
 
-pub fn all_user_agents_registered_controllers() -> Vec<RegisteredController> {
+pub fn all_profiles_registered_controllers() -> Vec<RegisteredController> {
     vec![
         RegisteredController {
-            schema: user_agents_schemas("provision"),
+            schema: profiles_schemas("provision"),
             handler: handle_provision,
         },
         RegisteredController {
-            schema: user_agents_schemas("deprovision"),
+            schema: profiles_schemas("deprovision"),
             handler: handle_deprovision,
         },
         RegisteredController {
-            schema: user_agents_schemas("list"),
+            schema: profiles_schemas("list"),
             handler: handle_list,
         },
         RegisteredController {
-            schema: user_agents_schemas("status"),
+            schema: profiles_schemas("status"),
             handler: handle_status,
         },
         RegisteredController {
-            schema: user_agents_schemas("set_credential"),
+            schema: profiles_schemas("set_credential"),
             handler: handle_set_credential,
         },
         RegisteredController {
-            schema: user_agents_schemas("clear_credential"),
+            schema: profiles_schemas("clear_credential"),
             handler: handle_clear_credential,
         },
     ]
 }
 
-pub fn user_agents_schemas(function: &str) -> ControllerSchema {
+pub fn profiles_schemas(function: &str) -> ControllerSchema {
     match function {
         "provision" => ControllerSchema {
-            namespace: "user_agents",
+            namespace: "profiles",
             function: "provision",
-            description: "Create the agent that serves a gateway user, if it does not exist.",
+            description: "Create the profile that serves a gateway user, if it does not exist.",
             inputs: vec![string_field("user_id", "The gateway's id for the user.")],
             outputs: vec![
-                string_field("agent_id", "The user's agent id, derived from the user id."),
-                bool_field("created", "False when the agent already existed."),
+                string_field("profile_id", "The user's profile id: the user id itself when it fits the raw charset (raw mode), else h-<sha256 prefix>."),
+                bool_field("created", "False when the profile already existed."),
             ],
         },
         "deprovision" => ControllerSchema {
-            namespace: "user_agents",
+            namespace: "profiles",
             function: "deprovision",
-            description: "Close a user agent and archive its state. Nothing is deleted.",
-            inputs: vec![string_field("agent_id", "The agent to deprovision.")],
+            description: "Close a profile and archive its state. Nothing is deleted.",
+            inputs: vec![string_field("profile_id", "The profile to deprovision.")],
             outputs: vec![
-                string_field("agent_id", "The agent."),
-                bool_field("removed", "False when there was no such agent."),
+                string_field("profile_id", "The profile."),
+                bool_field("removed", "False when there was no such profile."),
             ],
         },
         "list" => ControllerSchema {
-            namespace: "user_agents",
+            namespace: "profiles",
             function: "list",
-            description: "List every provisioned user agent.",
+            description: "List every provisioned profile.",
             inputs: vec![],
             outputs: vec![FieldSchema {
-                name: "agents",
+                name: "profiles",
                 ty: TypeSchema::Array(Box::new(TypeSchema::Json)),
-                comment: "agent_id, created_at and whether it is open.",
+                comment: "profile_id, created_at, whether it is open and whether it holds a credential.",
                 required: true,
             }],
         },
         "status" => ControllerSchema {
-            namespace: "user_agents",
+            namespace: "profiles",
             function: "status",
-            description: "Report one provisioned user agent.",
-            inputs: vec![string_field("agent_id", "The agent to report.")],
+            description: "Report one provisioned profile.",
+            inputs: vec![string_field("profile_id", "The profile to report.")],
             outputs: vec![
-                string_field("agent_id", "The agent."),
+                string_field("profile_id", "The profile."),
                 FieldSchema {
                     name: "created_at",
                     ty: TypeSchema::U64,
@@ -125,12 +125,12 @@ pub fn user_agents_schemas(function: &str) -> ControllerSchema {
             ],
         },
         "set_credential" => ControllerSchema {
-            namespace: "user_agents",
+            namespace: "profiles",
             function: "set_credential",
-            description: "Install the TinyHumans credential the gateway holds for a user agent. \
-                          The core stores it beside the agent's state and never validates or echoes it.",
+            description: "Install the TinyHumans credential the gateway holds for a profile. \
+                          The core stores it beside the profile's state and never validates or echoes it.",
             inputs: vec![
-                string_field("agent_id", "The agent the credential belongs to."),
+                string_field("profile_id", "The profile the credential belongs to."),
                 FieldSchema {
                     name: "kind",
                     ty: TypeSchema::Enum {
@@ -148,24 +148,24 @@ pub fn user_agents_schemas(function: &str) -> ControllerSchema {
                 },
             ],
             outputs: vec![
-                string_field("agent_id", "The agent."),
+                string_field("profile_id", "The profile."),
                 bool_field("has_credential", "Always true on success."),
             ],
         },
         "clear_credential" => ControllerSchema {
-            namespace: "user_agents",
+            namespace: "profiles",
             function: "clear_credential",
-            description: "Remove every credential a user agent holds.",
-            inputs: vec![string_field("agent_id", "The agent.")],
+            description: "Remove every credential a profile holds.",
+            inputs: vec![string_field("profile_id", "The profile.")],
             outputs: vec![
-                string_field("agent_id", "The agent."),
+                string_field("profile_id", "The profile."),
                 bool_field("has_credential", "Always false on success."),
             ],
         },
         _ => ControllerSchema {
-            namespace: "user_agents",
+            namespace: "profiles",
             function: "unknown",
-            description: "Unknown user_agents controller.",
+            description: "Unknown profiles controller.",
             inputs: vec![],
             outputs: vec![string_field("error", "Lookup error details.")],
         },
@@ -181,8 +181,8 @@ fn handle_provision(params: Map<String, Value>) -> ControllerFuture {
 
 fn handle_deprovision(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
-        let payload = deserialize_params::<AgentParams>(params)?;
-        to_json(super::ops::deprovision(&payload.agent_id)?)
+        let payload = deserialize_params::<ProfileParams>(params)?;
+        to_json(super::ops::deprovision(&payload.profile_id)?)
     })
 }
 
@@ -192,8 +192,8 @@ fn handle_list(_params: Map<String, Value>) -> ControllerFuture {
 
 fn handle_status(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
-        let payload = deserialize_params::<AgentParams>(params)?;
-        to_json(super::ops::status(&payload.agent_id)?)
+        let payload = deserialize_params::<ProfileParams>(params)?;
+        to_json(super::ops::status(&payload.profile_id)?)
     })
 }
 
@@ -201,7 +201,7 @@ fn handle_set_credential(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
         let payload = deserialize_params::<CredentialParams>(params)?;
         to_json(super::ops::set_credential(
-            &payload.agent_id,
+            &payload.profile_id,
             payload.kind,
             &payload.token,
             payload.expires_at.as_deref(),
@@ -211,8 +211,8 @@ fn handle_set_credential(params: Map<String, Value>) -> ControllerFuture {
 
 fn handle_clear_credential(params: Map<String, Value>) -> ControllerFuture {
     Box::pin(async move {
-        let payload = deserialize_params::<AgentParams>(params)?;
-        to_json(super::ops::clear_credential(&payload.agent_id)?)
+        let payload = deserialize_params::<ProfileParams>(params)?;
+        to_json(super::ops::clear_credential(&payload.profile_id)?)
     })
 }
 

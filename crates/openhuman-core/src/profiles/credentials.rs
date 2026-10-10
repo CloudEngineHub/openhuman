@@ -1,10 +1,10 @@
-//! A user agent's backend credential.
+//! A profile's backend credential.
 //!
 //! The gateway hands the core each user's TinyHumans credential — a session
 //! JWT or an API key — through the operator plane. It is stored where every
-//! backend caller already looks: the auth-profile store beside the agent's
-//! `config_path` (`<root>/agents/<id>/`). Work running under that agent's
-//! context loads the agent's config, so `resolve_backend_credential` finds
+//! backend caller already looks: the auth-profile store beside the profile's
+//! `config_path` (`<root>/users/<id>/`). Work running under that profile's
+//! context loads the profile's config, so `resolve_backend_credential` finds
 //! that user's credential and no other.
 //!
 //! Unlike `auth.set_credential`, this changes nothing process-wide: no
@@ -34,7 +34,7 @@ pub enum UserCredentialKind {
     ApiKey,
 }
 
-/// Store `token` as agent `config`'s credential of `kind`, replacing any
+/// Store `token` as profile `config`'s credential of `kind`, replacing any
 /// credential of the other kind.
 ///
 /// `expires_at` (RFC 3339) lets the core reject an expired session locally
@@ -74,20 +74,22 @@ pub fn store(
     }
     // Then drop the other kind, which would otherwise keep winning (an API
     // key is resolved before a session). The new credential is written first,
-    // so a failure here never leaves the agent with none; it is reported so
+    // so a failure here never leaves the profile with none; it is reported so
     // the gateway can retry.
     let replaced = match kind {
         UserCredentialKind::Session => remove_provider(config, api_key::API_KEY_PROVIDER),
         UserCredentialKind::ApiKey => remove_provider(config, APP_SESSION_PROVIDER),
     };
     if let Err(error) = replaced {
-        log::warn!("[user_agents][credentials] stored {kind:?} but could not remove the other kind: {error}");
+        log::warn!(
+            "[profiles][credentials] stored {kind:?} but could not remove the other kind: {error}"
+        );
         return Err(format!(
             "stored the new credential but could not remove the previous one: {error}"
         ));
     }
     log::debug!(
-        "[user_agents][credentials] stored {kind:?} credential in {}",
+        "[profiles][credentials] stored {kind:?} credential in {}",
         config
             .config_path
             .parent()
@@ -97,7 +99,7 @@ pub fn store(
     Ok(())
 }
 
-/// Remove every credential agent `config` holds, under any profile name.
+/// Remove every credential profile `config` holds, under any profile name.
 /// Returns whether there was one.
 pub fn clear(config: &Config) -> Result<bool, String> {
     let _serial = replacing();
@@ -107,7 +109,7 @@ pub fn clear(config: &Config) -> Result<bool, String> {
 }
 
 /// Serialises credential changes, so two replacements of different kinds
-/// cannot interleave their write and their removal and leave the agent with
+/// cannot interleave their write and their removal and leave the profile with
 /// neither. Operator credential changes are rare; one process-wide lock is
 /// enough.
 fn replacing() -> std::sync::MutexGuard<'static, ()> {
@@ -116,7 +118,7 @@ fn replacing() -> std::sync::MutexGuard<'static, ()> {
         .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
-/// Remove every profile of `provider` in agent `config`'s store, not just the
+/// Remove every profile of `provider` in profile `config`'s store, not just the
 /// default one: the resolver would pick up any active profile left behind.
 fn remove_provider(config: &Config, provider: &str) -> Result<bool, String> {
     let auth = AuthService::from_config(config);
@@ -143,7 +145,7 @@ fn remove_provider(config: &Config, provider: &str) -> Result<bool, String> {
     Ok(removed)
 }
 
-/// Whether agent `config` holds a credential.
+/// Whether profile `config` holds a credential.
 pub fn has(config: &Config) -> bool {
     has_backend_credential(config)
 }

@@ -1,18 +1,18 @@
 //! Booting a core in [`Mode::Saas`](super::mode::Mode::Saas).
 //!
-//! A SaaS core serves many users from one process, each as their own agent,
+//! A SaaS core serves many users from one process, each as their own profile,
 //! behind a trusted gateway that authenticates them. This module holds the
 //! **operator** side of that: [`SaasConfig`] (read from the operator's file,
 //! never from any user's `config.toml`), the SaaS presets for the three
 //! narrowing axes, and [`build`], which refuses to boot unless
 //! [`boot_guard`](super::boot_guard) finds nothing unsafe.
 //!
-//! [`DomainSet::saas`] enables the operator plane (`user_agents.*`) and the
+//! [`DomainSet::saas`] enables the operator plane (`profiles.*`) and the
 //! user families whose per-user isolation has landed (threads, channels for
 //! web chat, memory). The operator scope reaches only its own plane, and a
-//! user only the reviewed `user_agents::surface::USER_METHODS`. [`build`]
+//! user only the reviewed `profiles::surface::USER_METHODS`. [`build`]
 //! seeds the built-in agent definitions and installs the process's
-//! [`AgentHost`](crate::user_agents::AgentHost).
+//! [`ProfileHost`](crate::profiles::ProfileHost).
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -37,7 +37,7 @@ pub struct SaasConfig {
     #[serde(default)]
     pub service_token_file: Option<PathBuf>,
     /// Host tool groups the operator opts users into
-    /// (`user_agents::tools::SaasToolGroup`: `host_files`, `host_shell`).
+    /// (`profiles::tools::SaasToolGroup`: `host_files`, `host_shell`).
     /// Empty by default: users get no tool that reaches the host.
     #[serde(default)]
     pub tool_allowlist: Vec<String>,
@@ -45,13 +45,19 @@ pub struct SaasConfig {
     #[serde(default)]
     pub sandbox: SaasSandboxConfig,
     /// Extra RPC methods the operator exposes. Refused by the boot guard: the
-    /// per-user RPC surface is the reviewed `user_agents::surface` list.
+    /// per-user RPC surface is the reviewed `profiles::surface` list.
     #[serde(default)]
     pub rpc_allowlist_extra: Vec<String>,
-    /// Most user agents kept open at once.
-    #[serde(default = "default_max_agents_open")]
-    pub max_agents_open: usize,
-    /// Seconds an idle user agent stays open.
+    /// Most profiles kept open at once.
+    #[serde(default = "default_max_profiles_open", alias = "max_agents_open")]
+    pub max_profiles_open: usize,
+    /// How a gateway user id becomes a profile id: `"raw"` (the default) keeps
+    /// an id that already fits `^[a-z0-9][a-z0-9_-]{0,63}$` and is not
+    /// reserved, hashing anything else; `"hashed"` hashes every id
+    /// (`profiles::ProfileIdMode`). Changing it may re-map users onto different profiles.
+    #[serde(default)]
+    pub profile_ids: crate::profiles::ProfileIdMode,
+    /// Seconds an idle profile stays open.
     #[serde(default = "default_idle_evict_secs")]
     pub idle_evict_secs: u64,
     /// Let every user ride the operator's backend API key.
@@ -61,7 +67,7 @@ pub struct SaasConfig {
     #[serde(default)]
     pub custom_definitions: bool,
     /// Require `X-OpenHuman-User-Sig` on every request made for a user
-    /// (see `user_agents::gateway`).
+    /// (see `profiles::gateway`).
     #[serde(default = "default_true")]
     pub require_user_signature: bool,
 }
@@ -116,7 +122,7 @@ fn default_true() -> bool {
     true
 }
 
-fn default_max_agents_open() -> usize {
+fn default_max_profiles_open() -> usize {
     256
 }
 
@@ -133,7 +139,8 @@ impl SaasConfig {
             tool_allowlist: Vec::new(),
             sandbox: SaasSandboxConfig::default(),
             rpc_allowlist_extra: Vec::new(),
-            max_agents_open: default_max_agents_open(),
+            max_profiles_open: default_max_profiles_open(),
+            profile_ids: crate::profiles::ProfileIdMode::default(),
             idle_evict_secs: default_idle_evict_secs(),
             shared_backend_api_key: false,
             custom_definitions: false,
@@ -191,8 +198,8 @@ impl ServiceSet {
 
 impl DomainSet {
     /// The domain families a SaaS core registers: the operator plane and the
-    /// user families whose per-user isolation has landed. User agents derive
-    /// their contexts from these; `user_agents::surface` keeps the operator
+    /// user families whose per-user isolation has landed. Profiles derive
+    /// their contexts from these; `profiles::surface` keeps the operator
     /// scope on its own plane and each user on the user allowlist.
     pub fn saas() -> Self {
         Self {
@@ -261,9 +268,10 @@ pub async fn build(
         );
     }
     log::info!(
-        "[saas] booting operator plane root={} max_agents_open={} idle_evict_secs={}",
+        "[saas] booting operator plane root={} max_profiles_open={} profile_ids={:?} idle_evict_secs={}",
         config.root.display(),
-        config.max_agents_open,
+        config.max_profiles_open,
+        config.profile_ids,
         config.idle_evict_secs
     );
 
@@ -289,12 +297,12 @@ pub async fn build(
     // Whoever initialised first won; refuse to serve users from a registry
     // that holds anything but the built-ins.
     verify_builtin_definitions(crate::agent::harness::AgentDefinitionRegistry::global())?;
-    let host = Arc::new(crate::user_agents::AgentHost::new(
+    let host = Arc::new(crate::profiles::ProfileHost::new(
         config,
         runtime.context().clone(),
     ));
-    crate::user_agents::host::install(Arc::clone(&host));
-    crate::user_agents::background::spawn(host);
+    crate::profiles::host::install(Arc::clone(&host));
+    crate::profiles::background::spawn(host);
     Ok(runtime)
 }
 

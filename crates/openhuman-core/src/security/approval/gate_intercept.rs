@@ -655,7 +655,7 @@ pub(crate) fn saas_outcome_with(saas: bool, tool_name: &str) -> Option<GateOutco
     if !saas {
         return None;
     }
-    Some(saas_outcome(crate::user_agents::tools::gate_verdict(
+    Some(saas_outcome(crate::profiles::tools::gate_verdict(
         tool_name,
     )))
 }
