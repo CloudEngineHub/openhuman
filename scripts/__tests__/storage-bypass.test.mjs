@@ -173,11 +173,11 @@ test("--write-baseline records the current sites", () => {
   assert.equal(after[0].rule, "json-write");
 });
 
-test("an allowlisted file may hold only its known site", () => {
+test("an allowlisted file may hold only its pinned site", () => {
   const file = `${SRC}/platform/cost/tracker.rs`;
   const found = scan(
     file,
-    "std::fs::write(a, b);\nstd::fs::write(c, d);\nConnection::open(p);\n",
+    "let mut file = OpenOptions::new()\nstd::fs::write(c, d);\nConnection::open(p);\n",
   );
   const kept = withoutAllowed(file, found);
   assert.deepEqual(
@@ -185,6 +185,19 @@ test("an allowlisted file may hold only its known site", () => {
     [
       ["json-write", 2],
       ["sqlite-open", 3],
+    ],
+  );
+  // The pinned line moving elsewhere in the file is still allowed; a new write is not.
+  assert.equal(withoutAllowed(file, scan(file, "x();\nlet mut file = OpenOptions::new()\n")).length, 0);
+});
+
+test("a call split across lines is still found", () => {
+  const found = scan("x.rs", "let c = Connection::open\n    (&path)?;\nstd::fs::write\n(p, b)?;\n");
+  assert.deepEqual(
+    found.map((f) => [f.rule, f.line]),
+    [
+      ["sqlite-open", 1],
+      ["json-write", 3],
     ],
   );
 });

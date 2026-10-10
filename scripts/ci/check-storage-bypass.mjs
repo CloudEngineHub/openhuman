@@ -54,104 +54,66 @@ export const RULES = [
 ];
 
 const SRC = "crates/openhuman-core/src/";
-const FALLBACK =
-  "legacy fallback of a store that already runs on the storage port";
-
-/** path -> { rules, reason }: sites a rule does not apply to. */
-export const ALLOW = new Map([
-  [
-    `${SRC}security/approval/store.rs`,
-    { rules: ["sqlite-open"], reason: FALLBACK },
-  ],
-  [
-    `${SRC}security/devices/store.rs`,
-    { rules: ["sqlite-open"], reason: FALLBACK },
-  ],
-  [
-    `${SRC}desktop/notifications/store.rs`,
-    { rules: ["sqlite-open"], reason: FALLBACK },
-  ],
-  [
-    `${SRC}integrations/task_sources/store.rs`,
-    { rules: ["sqlite-open"], reason: FALLBACK },
-  ],
-  [`${SRC}cron/policy.rs`, { rules: ["sqlite-open"], reason: FALLBACK }],
-  [
-    `${SRC}config/workspace/state.rs`,
-    {
-      rules: ["sqlite-open"],
-      reason:
-        "vault watcher state is absolute local paths and their mtimes: per-machine filesystem state that is meaningless on, and must not be shared through, another host's database",
-    },
-  ],
-  [
-    `${SRC}platform/cost/tracker.rs`,
-    { rules: ["json-write"], reason: FALLBACK },
-  ],
-  [
-    `${SRC}agent/orchestration/subagent_sessions/store.rs`,
-    { rules: ["json-write"], reason: FALLBACK },
-  ],
-  [
-    `${SRC}integrations/composio/file_store.rs`,
-    { rules: ["json-write"], reason: FALLBACK },
-  ],
-  [
-    `${SRC}desktop/control/ops.rs`,
-    {
-      rules: ["json-write"],
-      reason:
-        "this machine's own consent to drive its desktop: per-machine, and it must fail closed rather than follow a shared backend to another host",
-    },
-  ],
-  [
-    `${SRC}desktop/app_state/ops/state_file.rs`,
-    {
-      rules: ["json-write"],
-      reason:
-        "holds the local encryption key and keyring consent, which are needed before any storage backend is open (bootstrap state is never read from storage)",
-    },
-  ],
-  [
-    `${SRC}web3/wallet/ops/state.rs`,
-    {
-      rules: ["json-write"],
-      reason:
-        "paired with the OS keychain mnemonic (and holds it when there is no keychain): moves with the secrets work, not as a plain document",
-    },
-  ],
-  [
-    `${SRC}inference/tokenjuice/savings.rs`,
-    {
-      rules: ["json-write"],
-      reason:
-        "one process-global savings counter snapshot, cheap to lose; not per-user data a scope would mean anything for",
-    },
-  ],
-]);
-
-/** Whether `rule` is allowed in `rel`. */
-export function allowed(rel, rule) {
-  return ALLOW.get(rel)?.rules.includes(rule) ?? false;
-}
-
-/** Sites an allowlisted file may hold per rule: the ones it has today. */
-export const ALLOWED_SITES_PER_RULE = 1;
+const FALLBACK = "legacy fallback of a store that already runs on the storage port";
 
 /**
- * Drops the first [`ALLOWED_SITES_PER_RULE`] allowlisted sites of each rule in
- * `rel`. A further site in the same file is a new one: it is reported (or must
- * be baselined), so the allowance covers the known fallback or local-only
- * write and nothing added beside it.
+ * path -> { rule, site, reason }: the one site (its trimmed source line) a rule
+ * does not apply to. Pinning the line means a new write in the same file is
+ * still a finding, and removing the allowed line does not free a quota for
+ * another.
  */
+export const ALLOW = new Map(
+  [
+    ["security/approval/store.rs", "sqlite-open", "let conn = Connection::open(&db_path).with_context(|| {", FALLBACK],
+    ["security/devices/store.rs", "sqlite-open", "let conn = Connection::open(&db_path)", FALLBACK],
+    ["desktop/notifications/store.rs", "sqlite-open", "let conn = Connection::open(&db_path).with_context(|| {", FALLBACK],
+    ["integrations/task_sources/store.rs", "sqlite-open", "let mut conn = Connection::open(&db_path)", FALLBACK],
+    ["cron/policy.rs", "sqlite-open", "let conn = Connection::open(&path)", FALLBACK],
+    [
+      "config/workspace/state.rs",
+      "sqlite-open",
+      "let conn = Connection::open(db_path)?;",
+      "vault watcher state is absolute local paths and their mtimes: per-machine filesystem state that is meaningless on, and must not be shared through, another host's database",
+    ],
+    ["platform/cost/tracker.rs", "json-write", "let mut file = OpenOptions::new()", FALLBACK],
+    ["agent/orchestration/subagent_sessions/store.rs", "json-write", "fs::write(&tmp_path, raw)", FALLBACK],
+    ["integrations/composio/file_store.rs", "json-write", "tokio::fs::write(&tmp, &bytes)", FALLBACK],
+    [
+      "desktop/control/ops.rs",
+      "json-write",
+      "let mut temporary = tempfile::NamedTempFile::new_in(parent)",
+      "this machine's own consent to drive its desktop: per-machine, and it must fail closed rather than follow a shared backend to another host",
+    ],
+    [
+      "desktop/app_state/ops/state_file.rs",
+      "json-write",
+      "let mut temp_file = NamedTempFile::new_in(parent)",
+      "holds the local encryption key and keyring consent, which are needed before any storage backend is open (bootstrap state is never read from storage)",
+    ],
+    [
+      "web3/wallet/ops/state.rs",
+      "json-write",
+      "let mut temp_file = NamedTempFile::new_in(parent)",
+      "paired with the OS keychain mnemonic (and holds it when there is no keychain): moves with the secrets work, not as a plain document",
+    ],
+    [
+      "inference/tokenjuice/savings.rs",
+      "json-write",
+      "if let Err(e) = std::fs::write(path, json) {",
+      "one process-global savings counter snapshot, cheap to lose; not per-user data a scope would mean anything for",
+    ],
+  ].map(([path, rule, site, reason]) => [`${SRC}${path}`, { rule, site, reason }]),
+);
+
+/** Whether `finding` is the allowlisted site of its file. */
+export function allowed(rel, finding) {
+  const entry = ALLOW.get(rel);
+  return entry?.rule === finding.rule && entry.site === finding.text;
+}
+
+/** Drops the allowlisted site from `rel`'s findings; anything else stays. */
 export function withoutAllowed(rel, found) {
-  const kept = new Map();
-  return found.filter((f) => {
-    if (!allowed(rel, f.rule)) return true;
-    const used = kept.get(f.rule) ?? 0;
-    kept.set(f.rule, used + 1);
-    return used >= ALLOWED_SITES_PER_RULE;
-  });
+  return found.filter((f) => !allowed(rel, f));
 }
 
 function isTestFile(rel) {
