@@ -153,6 +153,19 @@ fn profiles_prefix_their_keys() {
 }
 
 #[test]
+fn an_unprofiled_agent_never_collides_with_a_profiled_one() {
+    assert_ne!(
+        session_key(&tenant(None, Some("a~b"))),
+        session_key(&tenant(Some("a"), Some("b")))
+    );
+    assert_eq!(session_key(&tenant(None, Some("plain"))), "plain");
+    assert_ne!(
+        session_key(&tenant(None, Some("a~b"))),
+        session_key(&tenant(None, Some("a%7Eb")))
+    );
+}
+
+#[test]
 fn keys_split_back_into_their_parts() {
     for (t, id) in [
         (tenant(None, None), "t1"),
