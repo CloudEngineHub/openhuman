@@ -93,7 +93,11 @@ impl Model {
         let (epoch, unclean) = match &self.rec {
             None => (1, false),
             Some(r) if r.released => (r.epoch + 1, false),
-            Some(r) if r.owner == n && self.held[n] == Some(r.epoch) => (r.epoch, false),
+            Some(r)
+                if r.owner == n && self.held[n] == Some(r.epoch) && self.now < r.expires_at_ms =>
+            {
+                (r.epoch, false)
+            }
             Some(r) if r.owner == n => (r.epoch + 1, true),
             Some(r) if self.now >= r.expires_at_ms => (r.epoch + 1, true),
             Some(r) => return Expect::Held { owner: r.owner },
@@ -113,6 +117,15 @@ impl Model {
         match self.current(n) {
             None => Expect::Skip,
             Some(false) => {
+                self.grant[n] = None;
+                Expect::Lost
+            }
+            Some(true)
+                if self
+                    .rec
+                    .as_ref()
+                    .is_some_and(|r| self.now >= r.expires_at_ms) =>
+            {
                 self.grant[n] = None;
                 Expect::Lost
             }
@@ -204,9 +217,9 @@ async fn run(nodes: usize, steps: Vec<Op>) -> Result<(), TestCaseError> {
                             epoch: grant.epoch,
                             unclean: grant.previous_unclean,
                         };
-                        let reentrant = before
-                            .as_ref()
-                            .is_some_and(|r| !r.released && r.epoch == grant.epoch);
+                        let reentrant = before.as_ref().is_some_and(|r| {
+                            !r.released && r.epoch == grant.epoch && now < r.expires_at_ms
+                        });
                         if reentrant {
                             prop_assert_eq!(grant.epoch, max_epoch, "step {}", step);
                         } else {
