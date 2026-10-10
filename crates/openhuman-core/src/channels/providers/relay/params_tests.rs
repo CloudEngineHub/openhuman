@@ -37,7 +37,7 @@ fn the_thread_id_is_a_reserved_channel_id() {
         "the backend-relayed inbound path's derivation"
     );
     assert!(
-        crate::user_agents::surface::validate_user_thread_id(&id).is_err(),
+        crate::profiles::surface::validate_user_thread_id(&id).is_err(),
         "a user cannot choose it"
     );
 }

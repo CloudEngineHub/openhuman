@@ -74,6 +74,7 @@ pub mod memory;
 #[cfg(feature = "modules")]
 pub mod modules;
 pub mod platform;
+pub mod profiles;
 pub mod runtime;
 pub mod sandbox;
 pub mod search;
@@ -86,7 +87,6 @@ pub mod threads;
 #[cfg(feature = "tinymemes")]
 pub mod tinymemes;
 pub mod tools;
-pub mod user_agents;
 pub mod util;
 pub mod voice;
 pub mod web3;

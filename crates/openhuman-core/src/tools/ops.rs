@@ -921,15 +921,13 @@ pub fn all_tools_with_runtime(
     //    ambient CoreContext; no context, or `DomainSet::full()`, keeps every
     //    tool. Under `harness()` only the memory + threads families survive
     //    (see `tool_group` and its Platform-default caveat). In SaaS,
-    //    `user_agents::tools::admits` also applies the operator's host groups.
+    //    `profiles::tools::admits` also applies the operator's host groups.
     let before = tools.len();
     let domains = crate::core::runtime::context::CoreContext::current().map(|c| c.domains());
     let mut tools: Vec<Box<dyn Tool>> = if let Some(set) = domains {
         tools
             .into_iter()
-            .filter(|t| {
-                crate::user_agents::tools::admits(t.name(), set.allows(tool_group(t.name())))
-            })
+            .filter(|t| crate::profiles::tools::admits(t.name(), set.allows(tool_group(t.name()))))
             .collect()
     } else {
         // No ambient context (unit tests / pre-boot) ⇒ no domain filtering.

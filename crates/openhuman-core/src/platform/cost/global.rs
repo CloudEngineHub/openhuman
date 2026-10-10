@@ -92,6 +92,12 @@ pub fn init_global(config: CostConfig, workspace_dir: &Path) {
 /// figures start over with the new tracker. A failed construction keeps the
 /// previous tracker rather than leaving the process with none.
 pub fn rebind_global(config: CostConfig, workspace_dir: &Path) {
+    // In SaaS every profile owns its tracker (see `seed_tenant_tracker`); the
+    // process-wide slot is never read, so rebinding it would only mislead.
+    if crate::core::runtime::is_saas() {
+        log::debug!("[cost] rebind_global ignored in SaaS mode");
+        return;
+    }
     if let Some(current) = try_global() {
         if current.workspace_dir() == workspace_dir {
             log::debug!(
@@ -158,10 +164,14 @@ pub fn seed_tenant_tracker(
                 config.workspace_dir.display()
             );
         }
-        Err(err) => log::warn!(
-            "[cost] could not seed the tenant tracker at {}: {err}",
-            config.workspace_dir.display()
-        ),
+        Err(err) => {
+            // Never keep a tracker over a previous workspace.
+            *ctx.agent_state().slot::<TenantTracker>().0.write() = None;
+            log::warn!(
+                "[cost] could not seed the tenant tracker at {}: {err}",
+                config.workspace_dir.display()
+            );
+        }
     }
 }
 

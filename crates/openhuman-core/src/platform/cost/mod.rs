@@ -8,6 +8,7 @@ mod schemas;
 pub mod scope;
 pub mod tools;
 pub mod tracker;
+mod tracker_documents;
 pub mod types;
 
 pub use global::{

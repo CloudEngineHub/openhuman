@@ -6,7 +6,7 @@ In SaaS the cloud gateway owns the hosted Telegram, iMessage and Discord webhook
 
 ## Contract
 
-`openhuman.channel_relay_inbound` (namespace `channel`, beside `channel_web_chat`), on the SaaS user surface (`user_agents::surface::USER_METHODS`):
+`openhuman.channel_relay_inbound` (namespace `channel`, beside `channel_web_chat`), on the SaaS user surface (`profiles::surface::USER_METHODS`):
 
 | Param | Rule |
 | --- | --- |
