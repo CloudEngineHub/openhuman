@@ -116,3 +116,32 @@ fn tui_builder_runs_every_domain_without_services_on_the_disk_store() {
     assert!(summary.has_session_store);
     assert!(!summary.has_server_launcher, "the TUI binds no server");
 }
+
+#[test]
+#[cfg(feature = "server")]
+fn cli_storage_is_opened_for_one_shot_commands_only() {
+    let args = |parts: &[&str]| parts.iter().map(|p| p.to_string()).collect::<Vec<_>>();
+    assert!(cli_command_uses_storage(&args(&["agent", "list"])));
+    assert!(cli_command_uses_storage(&args(&["cron", "list"])));
+    assert!(cli_command_uses_storage(&args(&[
+        "--model",
+        "x",
+        "approvals",
+        "list"
+    ])));
+    assert!(!cli_command_uses_storage(&args(&["serve"])));
+    assert!(!cli_command_uses_storage(&args(&[
+        "--provider=a",
+        "-m",
+        "b",
+        "run"
+    ])));
+    assert!(!cli_command_uses_storage(&args(&[])));
+    assert!(!cli_command_uses_storage(&args(&["--help"])));
+    assert!(!cli_command_uses_storage(&args(&["cron", "--help"])));
+    assert!(!cli_command_uses_storage(&args(&["cron", "list", "-h"])));
+    assert!(!cli_command_uses_storage(&args(&["cron"])));
+    assert!(!cli_command_uses_storage(&args(&[
+        "--config", "p", "--help"
+    ])));
+}
