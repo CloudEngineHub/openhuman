@@ -154,6 +154,20 @@ describe('onReload — regenerating an assistant reply', () => {
     expect(cachedIds(store)).toEqual(messages.slice(0, 7).map(m => m.id));
   });
 
+  it('drops the last agent reply when the reload carries no ids at all', async () => {
+    const store = buildStore();
+    const { result } = mountAdapter(store);
+    const onReload = result.current.onReload as (
+      parentId: string | null,
+      config?: { sourceId?: string | null }
+    ) => Promise<void>;
+
+    await onReload(null, {});
+
+    expect(hoisted.regenerate).toHaveBeenCalledWith({ threadId: THREAD_ID, messageId: undefined });
+    expect(cachedIds(store)).toEqual(messages.slice(0, 7).map(m => m.id));
+  });
+
   it('refuses an unresolvable earlier reply without calling the RPC', async () => {
     const store = buildStore();
     const { result } = mountAdapter(store);
