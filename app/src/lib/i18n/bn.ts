@@ -507,6 +507,9 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.dailySummaryFlow':
     'এমন একটি ফ্লো তৈরি করো যা আমাকে প্রতিদিন সারসংক্ষেপ ইমেল করে।',
   'chat.typeMessage': 'একটি বার্তা পাঠান...',
+  'chat.regenerate.unavailable':
+    'এই উত্তরটি পুনরায় তৈরি করা যাবে না। এর পরিবর্তে সর্বশেষ উত্তরটি পুনরায় তৈরি করে দেখুন।',
+  'chat.regenerate.failed': 'উত্তরটি পুনরায় তৈরি করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
   'chat.send': 'বার্তা পাঠান',
   'chat.stopGeneration': 'জেনারেশন বন্ধ করুন',
   'chat.followupHint':

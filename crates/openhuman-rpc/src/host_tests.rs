@@ -33,6 +33,7 @@ fn desktop_builder_carries_bearer_listener_and_services() {
     assert_eq!(summary.domains, Some(DomainSet::full()));
     let mut expected = ServiceSet::desktop();
     expected.socketio = false;
+    expected.update_scheduler = false;
     assert_eq!(summary.services, Some(expected));
     assert!(summary.fixed_token);
     assert_eq!(summary.listen_host.as_deref(), Some("127.0.0.1"));
@@ -54,7 +55,29 @@ fn desktop_defaults_leave_listener_and_token_to_the_environment() {
     assert!(!summary.fixed_token);
     assert_eq!(summary.listen_host, None);
     assert_eq!(summary.listen_port, None);
-    assert_eq!(summary.services, Some(ServiceSet::desktop()));
+    let mut expected = ServiceSet::desktop();
+    expected.update_scheduler = false;
+    assert_eq!(summary.services, Some(expected));
+}
+
+/// Sentry TAURI-RUST-122R/122S/13B8/13B9: the shell updates through the
+/// Tauri updater and releases publish core archives for Linux only, so an
+/// in-process core polling for its own archive reported a missing asset
+/// every hour on macOS and Windows. The standalone CLI keeps the poller.
+#[cfg(feature = "server")]
+#[test]
+fn only_the_standalone_cli_runs_the_core_update_poller() {
+    let desktop = desktop_builder(&DesktopOptions::default())
+        .into_embed()
+        .summary();
+    assert!(
+        !desktop
+            .services
+            .expect("desktop sets services")
+            .update_scheduler
+    );
+    let cli = cli_builder().into_embed().summary();
+    assert!(cli.services.expect("cli sets services").update_scheduler);
 }
 
 #[cfg(feature = "server")]

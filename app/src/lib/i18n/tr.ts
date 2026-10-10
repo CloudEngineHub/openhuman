@@ -333,6 +333,9 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.dailySummaryFlow':
     'Bana her gün özet e-postası gönderen bir akış oluştur.',
   'chat.typeMessage': 'Bir mesaj gönderin...',
+  'chat.regenerate.unavailable':
+    'Bu yanıt yeniden oluşturulamıyor. Bunun yerine en son yanıtı yeniden oluşturmayı deneyin.',
+  'chat.regenerate.failed': 'Yanıt yeniden oluşturulamadı. Lütfen tekrar deneyin.',
   'chat.send': 'Mesajı gönder',
   'chat.stopGeneration': 'Oluşturmayı durdur',
   'chat.followupHint':

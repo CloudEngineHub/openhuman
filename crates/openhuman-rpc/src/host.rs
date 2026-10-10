@@ -204,12 +204,17 @@ impl std::fmt::Debug for DesktopOptions {
 }
 
 /// The desktop host's builder: the `desktop` preset with every background
-/// service (Socket.IO per `options`), the in-memory bearer and listener, this
+/// service except the core update poller (Socket.IO per `options`), the
+/// in-memory bearer and listener, this
 /// crate's server launcher and the `http_host.*` controllers.
 #[cfg(feature = "server")]
 pub fn desktop_builder(options: &DesktopOptions) -> RuntimeBuilder {
     let mut services = ServiceSet::desktop();
     services.socketio = options.socketio;
+    // The shell updates through the Tauri updater; releases publish core
+    // archives for Linux only, so the core's own poller could only report a
+    // missing asset here (Sentry TAURI-RUST-122R/122S/13B8/13B9).
+    services.update_scheduler = false;
     let mut builder = RuntimeBuilder::desktop()
         .services(services)
         .server_launcher(crate::server::cli::launch)

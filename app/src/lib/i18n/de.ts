@@ -531,6 +531,10 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.dailySummaryFlow':
     'Erstelle einen Flow, der mir täglich eine Zusammenfassung per E-Mail schickt.',
   'chat.typeMessage': 'Nachricht senden...',
+  'chat.regenerate.unavailable':
+    'Diese Antwort kann nicht neu generiert werden. Generiere stattdessen die neueste Antwort neu.',
+  'chat.regenerate.failed':
+    'Die Antwort konnte nicht neu generiert werden. Bitte versuche es erneut.',
   'chat.send': 'Nachricht senden',
   'chat.stopGeneration': 'Generierung stoppen',
   'chat.followupHint':

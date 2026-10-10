@@ -463,6 +463,8 @@ const messages: TranslationMap = {
   'chat.welcomeSuggestion.connectIntegration': '连接一个新的集成。',
   'chat.welcomeSuggestion.dailySummaryFlow': '创建一个每天给我发送摘要邮件的流程。',
   'chat.typeMessage': '发送消息...',
+  'chat.regenerate.unavailable': '无法重新生成此回复。请改为重新生成最新的回复。',
+  'chat.regenerate.failed': '无法重新生成回复，请重试。',
   'chat.send': '发送',
   'chat.stopGeneration': '停止生成',
   'chat.followupHint': '将后续消息加入队列：将在本次回复后发送 · ⌘/Ctrl+Enter 开启并行分支',
