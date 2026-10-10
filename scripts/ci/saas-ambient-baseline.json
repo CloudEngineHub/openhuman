@@ -540,15 +540,15 @@
   },
   {
     "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/flows/bus/trigger.rs",
-    "line": 119,
+    "path": "crates/openhuman-core/src/flows/bus/owner.rs",
+    "line": 105,
     "text": "let acting = crate::core::runtime::CoreContext::current()",
     "occurrence": 1
   },
   {
     "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/flows/bus/trigger.rs",
-    "line": 120,
+    "path": "crates/openhuman-core/src/flows/bus/owner.rs",
+    "line": 106,
     "text": ".is_some_and(|context| context.session_agent().is_some());",
     "occurrence": 1
   },
@@ -947,14 +947,14 @@
   {
     "rule": "ambient-context",
     "path": "crates/openhuman-core/src/security/devices/bus.rs",
-    "line": 389,
+    "line": 396,
     "text": "crate::core::runtime::CoreContext::current()",
     "occurrence": 1
   },
   {
     "rule": "ambient-context",
     "path": "crates/openhuman-core/src/security/devices/bus.rs",
-    "line": 390,
+    "line": 397,
     "text": ".and_then(|context| context.session_agent().map(str::to_string)),",
     "occurrence": 1
   },
@@ -1108,15 +1108,8 @@
   {
     "rule": "ambient-context",
     "path": "crates/openhuman-core/src/storage/agents.rs",
-    "line": 139,
-    "text": "contexts_in(backend, CoreContext::current().as_ref())",
-    "occurrence": 1
-  },
-  {
-    "rule": "ambient-context",
-    "path": "crates/openhuman-core/src/storage/agents.rs",
-    "line": 171,
-    "text": "CoreContext::current().map(|current| current.for_agent(agent))",
+    "line": 179,
+    "text": "let acting = CoreContext::current().is_some_and(|context| context.session_agent().is_some());",
     "occurrence": 1
   },
   {
