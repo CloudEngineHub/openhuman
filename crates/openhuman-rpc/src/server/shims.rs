@@ -1,21 +1,20 @@
-//! Server entry points kept for the hosts that predate the shared host boot
-//! ([`crate::host`]).
+//! Standalone server entry points, and the build-and-serve step the shared
+//! host boot ([`crate::host`]) runs.
 //!
-//! Each `run_server*` function is a thin shim: it starts from the embed host
-//! preset that matches the caller ([`RuntimeBuilder::desktop`] for the
-//! embedded desktop core, [`RuntimeBuilder::cli`] for a standalone server),
-//! applies the caller's services, bearer and listener, then builds the
-//! runtime and [`serve`](super::serve::serve)s it.
-//!
-//! The presets carry exactly what these shims used to hand `CoreBuilder` by
-//! hand: every domain family, the `embedded_core` → `HostKind` mapping
-//! (embedded == Tauri shell; standalone splits CLI / Docker via
+//! `run_server` and `run_server_headless` are thin shims over the
+//! [`RuntimeBuilder::cli`] preset: each applies the caller's services and
+//! listener, then builds the runtime and [`serve`](super::serve::serve)s it.
+//! `run_server_saas` is separate: it loads a `SaasConfig` and boots through
+//! `core::runtime::saas::build` (a SaaS `CoreBuilder`, not the preset). The
+//! preset carries every
+//! domain family, the standalone `HostKind` (CLI or Docker, via
 //! `HostKind::detect_standalone`), the `OPENHUMAN_E2E` tool-group switch, and
 //! no supplied config (the core discovers the operator's install).
 //!
-//! None of these connect the TinyHumans backend: the hosts calling them
-//! install it themselves (`openhuman_tinyhumans::install`). [`crate::host`]
-//! is the entry that connects it.
+//! None of these connect the TinyHumans backend: [`crate::host`] is the entry
+//! that does (`desktop_builder` / `serve_desktop` for the embedded desktop
+//! core, `cli` for `openhuman-core`). A caller of a bare `run_server*` installs
+//! the transport itself (`openhuman_tinyhumans::install`).
 
 use std::sync::Arc;
 
@@ -49,13 +48,13 @@ pub async fn run_server(
     port: Option<u16>,
     socketio_enabled: bool,
 ) -> anyhow::Result<()> {
-    run_server_inner(host, port, socketio_enabled, false, None, None, None).await
+    run_server_inner(host, port, socketio_enabled).await
 }
 
 /// Runs the request/response-only HTTP API without detached background jobs.
 pub async fn run_server_headless(host: Option<&str>, port: Option<u16>) -> anyhow::Result<()> {
     let services = ServiceSet::headless_api();
-    run_server_with_services(host, port, services, false, None, None, None).await
+    run_server_with_services(host, port, services).await
 }
 
 /// Runs a SaaS core: many users behind a trusted gateway, booted from the
@@ -76,93 +75,24 @@ pub async fn run_server_saas(
     super::serve::serve(&runtime, None, None).await
 }
 
-/// Like [`run_server`] but marks the instance as embedded.
-pub async fn run_server_embedded(
-    host: Option<&str>,
-    port: Option<u16>,
-    socketio_enabled: bool,
-    shutdown_token: CancellationToken,
-) -> anyhow::Result<()> {
-    run_server_inner(
-        host,
-        port,
-        socketio_enabled,
-        true,
-        Some(shutdown_token),
-        None,
-        None,
-    )
-    .await
-}
-
-/// Embedded entrypoint with an explicit readiness callback.
-///
-/// When the caller already holds the per-launch RPC bearer in memory (the
-/// Tauri shell now that the core runs in-process — PR #1061), it should
-/// pass `Some(token)` so the embedded server can seed its auth subsystem
-/// via `openhuman::core::auth::init_rpc_token_with_value` without ever
-/// reading `OPENHUMAN_CORE_TOKEN` from the process environment.  Passing
-/// `None` preserves the env-as-config fallback (CLI / docker / cloud).
-pub async fn run_server_embedded_with_ready(
-    host: Option<&str>,
-    port: Option<u16>,
-    socketio_enabled: bool,
-    shutdown_token: CancellationToken,
-    ready_tx: tokio::sync::oneshot::Sender<EmbeddedReadySignal>,
-    rpc_token: Option<Arc<String>>,
-) -> anyhow::Result<()> {
-    run_server_inner(
-        host,
-        port,
-        socketio_enabled,
-        true,
-        Some(shutdown_token),
-        Some(ready_tx),
-        rpc_token,
-    )
-    .await
-}
-
 /// Internal server entrypoint.
 async fn run_server_inner(
     host: Option<&str>,
     port: Option<u16>,
     socketio_enabled: bool,
-    embedded_core: bool,
-    shutdown_token: Option<CancellationToken>,
-    ready_tx: Option<tokio::sync::oneshot::Sender<EmbeddedReadySignal>>,
-    rpc_token: Option<Arc<String>>,
 ) -> anyhow::Result<()> {
     let mut services = ServiceSet::desktop();
     services.socketio = socketio_enabled;
-    run_server_with_services(
-        host,
-        port,
-        services,
-        embedded_core,
-        shutdown_token,
-        ready_tx,
-        rpc_token,
-    )
-    .await
+    run_server_with_services(host, port, services).await
 }
 
 async fn run_server_with_services(
     host: Option<&str>,
     port: Option<u16>,
     services: ServiceSet,
-    embedded_core: bool,
-    shutdown_token: Option<CancellationToken>,
-    ready_tx: Option<tokio::sync::oneshot::Sender<EmbeddedReadySignal>>,
-    rpc_token: Option<Arc<String>>,
 ) -> anyhow::Result<()> {
-    let preset = if embedded_core {
-        RuntimeBuilder::desktop()
-    } else {
-        RuntimeBuilder::cli()
-    };
-    let builder = server_builder(preset, services, host, port, rpc_token);
-    build_and_serve(builder, ready_tx, shutdown_token).await
+    let builder = server_builder(RuntimeBuilder::cli(), services, host, port, None);
+    build_and_serve(builder, None, None).await
 }
 
 /// Apply a server's services, bearer and listener to a host preset.
@@ -170,7 +100,9 @@ async fn run_server_with_services(
 /// `rpc_token` is the in-memory bearer handoff ([`TokenSource::Fixed`]);
 /// `None` keeps the preset's env-or-file token. An unset host or port is left
 /// to [`serve`](super::serve::serve), which falls back to
-/// `OPENHUMAN_CORE_HOST` / `OPENHUMAN_CORE_PORT` and then the defaults.
+/// `OPENHUMAN_CORE_HOST` / `OPENHUMAN_CORE_PORT` and then the defaults. The
+/// `OPENHUMAN_E2E` tool-group switch lives in the host presets, so a builder a
+/// host narrowed itself keeps its tool groups.
 pub(crate) fn server_builder(
     preset: RuntimeBuilder,
     services: ServiceSet,
@@ -179,13 +111,6 @@ pub(crate) fn server_builder(
     rpc_token: Option<Arc<String>>,
 ) -> RuntimeBuilder {
     let mut builder = preset.services(services);
-    // The browser E2E harness scripts direct tool calls through its mock
-    // model. Keep production's fail-closed packed default, while making those
-    // calls visible in the deterministic test core.
-    if std::env::var_os("OPENHUMAN_E2E").is_some() {
-        log::debug!("[rpc:server] OPENHUMAN_E2E set; advertising every tool group");
-        builder = builder.tool_groups(openhuman_tinyhumans::embed::ToolGroups::advertised());
-    }
     if let Some(token) = rpc_token {
         builder = builder.token(TokenSource::Fixed(token));
     }
@@ -225,8 +150,14 @@ pub(crate) async fn build_and_serve(
 
     // The desktop app and the CLI keep conversations in the classic on-disk
     // layout unless a storage URL is configured; the core itself carries no
-    // storage. Installed before boot so its recovery sweep runs.
-    crate::session_store::install_for_host().await?;
+    // storage. Installed before boot so its recovery sweep runs. A builder
+    // that brings its own session store skips this: its provider is installed
+    // by `build()`, and an unrelated host storage URL must not block it.
+    if summary.has_session_store {
+        log::debug!("[rpc:server] builder carries a session store; host store setup skipped");
+    } else {
+        crate::session_store::install_for_host().await?;
+    }
     let runtime = builder.build().await.map_err(|error| {
         log::warn!("[rpc:server] runtime build failed: {error}");
         anyhow::Error::new(error)

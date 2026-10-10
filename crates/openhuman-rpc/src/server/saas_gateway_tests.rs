@@ -80,7 +80,7 @@ mod decision {
                 move |req: Request, next: Next| async move {
                     match decide(&req, secret, NOW, resolve) {
                         Ok(_) => next.run(req).await,
-                        Err(response) => response,
+                        Err(refusal) => refusal_response(refusal),
                     }
                 },
             ))
