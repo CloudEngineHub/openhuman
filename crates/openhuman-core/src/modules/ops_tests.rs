@@ -427,3 +427,16 @@ fn bundled_dir_skips_a_missing_candidate_for_a_valid_later_one() {
         Some(exe_dir.join("bundled-modules"))
     );
 }
+
+/// A module-bus startup failure is cached like any loader error, so it must
+/// carry the terminal marker the observability classifier demotes on.
+#[test]
+fn a_marked_bus_startup_failure_is_classified_as_module_unavailable() {
+    let marked = mark_terminal("the module bus could not start: no runtime".to_string());
+    assert!(marked.ends_with("restart the app to try again"), "{marked}");
+    assert!(crate::core::observability::is_module_unavailable_message(
+        &marked
+    ));
+    // Idempotent: an already-marked error is not annotated twice.
+    assert_eq!(mark_terminal(marked.clone()), marked);
+}
