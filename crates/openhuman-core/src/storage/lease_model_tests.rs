@@ -8,11 +8,12 @@
 //!   expires, and the taker sees `previous_unclean`;
 //! - a renew (or release) after the record moved on is always `Lost`.
 
+use super::*;
+
 use std::time::Duration;
 
 use proptest::prelude::*;
 
-use super::*;
 use crate::storage::MemoryStorage;
 
 const KEY: &str = "profile-1";
