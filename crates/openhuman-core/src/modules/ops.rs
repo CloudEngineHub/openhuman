@@ -204,6 +204,10 @@ async fn start_resolution(
                 Resolution::Ready
             }
             Err(reason) => {
+                // Every resolution failure is terminal for the process (the
+                // outcome is cached), whichever path produced it; marking here
+                // makes later re-reports classify as `ModuleUnavailable`.
+                let reason = mark_terminal(reason);
                 report_resolution_failure(id, &reason);
                 Resolution::Failed(reason)
             }
