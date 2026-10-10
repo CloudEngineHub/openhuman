@@ -65,6 +65,7 @@ thread_local! {
 }
 
 /// The session list over one scoped document handle.
+#[derive(Clone)]
 pub(super) struct Docs(Repo);
 
 impl Docs {

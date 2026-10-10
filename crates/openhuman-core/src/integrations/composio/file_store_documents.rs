@@ -67,6 +67,7 @@ fn id_of(path: &Path) -> Result<String> {
 }
 
 /// The composio state over one scoped document handle.
+#[derive(Clone)]
 pub(super) struct Docs(Repo);
 
 impl Docs {

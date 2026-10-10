@@ -43,7 +43,32 @@ fn collections() -> Vec<CollectionSpec> {
 
 /// The repo for this call, when the host configured a backend.
 pub(super) fn current() -> AnyResult<Option<Repo>> {
+    #[cfg(test)]
+    if let Some(repo) = TEST_OVERRIDE.with(|slot| slot.borrow().clone()) {
+        return Ok(Some(repo));
+    }
     Repo::current(DOMAIN, collections)
+}
+
+/// Whether a test pinned a document store for this thread.
+#[cfg(test)]
+pub(super) fn overridden() -> bool {
+    TEST_OVERRIDE.with(|slot| slot.borrow().is_some())
+}
+
+/// Runs `f` with `repo` standing in for the installed backend, on this thread
+/// only, so tests exercise the dispatch without the process-wide slot.
+#[cfg(test)]
+pub(super) fn with_override<T>(repo: Repo, f: impl FnOnce() -> T) -> T {
+    TEST_OVERRIDE.with(|slot| *slot.borrow_mut() = Some(repo));
+    let out = f();
+    TEST_OVERRIDE.with(|slot| *slot.borrow_mut() = None);
+    out
+}
+
+#[cfg(test)]
+thread_local! {
+    static TEST_OVERRIDE: std::cell::RefCell<Option<Repo>> = const { std::cell::RefCell::new(None) };
 }
 
 /// A [`TaskStore`] that keeps every task as a document.

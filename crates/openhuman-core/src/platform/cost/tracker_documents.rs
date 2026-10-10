@@ -62,6 +62,7 @@ thread_local! {
 }
 
 /// The cost ledger over one scoped document handle.
+#[derive(Clone)]
 pub(super) struct CostDocs(Repo);
 
 impl CostDocs {

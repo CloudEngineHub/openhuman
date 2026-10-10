@@ -70,7 +70,11 @@ fn task_stores() -> &'static TaskStoreRegistry<LedgerKey> {
 /// The cache key for this call: the storage scope joins it when a backend is
 /// installed, so two agents on one workspace never share a ledger.
 fn ledger_key(workspace_dir: &Path) -> Option<LedgerKey> {
-    if crate::storage::installed().is_none() {
+    #[cfg(test)]
+    let pinned = super::task_ledger_documents::overridden();
+    #[cfg(not(test))]
+    let pinned = false;
+    if crate::storage::installed().is_none() && !pinned {
         return Some((workspace_dir.to_path_buf(), None));
     }
     match crate::storage::current_scope() {
