@@ -165,13 +165,17 @@ impl LeaseStore for LocalLeases {
                 return Err(io_error("lock", &path, &error).into());
             }
             // Locked elsewhere: an unreadable record reads as an unknown owner.
-            let record = self.read_record(key).ok().flatten().unwrap_or_else(|| LeaseRecord {
-                owner: "unknown".to_string(),
-                endpoint: None,
-                epoch: 0,
-                expires_at_ms: u64::MAX,
-                released: false,
-            });
+            let record = self
+                .read_record(key)
+                .ok()
+                .flatten()
+                .unwrap_or_else(|| LeaseRecord {
+                    owner: "unknown".to_string(),
+                    endpoint: None,
+                    epoch: 0,
+                    expires_at_ms: u64::MAX,
+                    released: false,
+                });
             tracing::debug!(
                 target: "openhuman::storage::lease",
                 key,

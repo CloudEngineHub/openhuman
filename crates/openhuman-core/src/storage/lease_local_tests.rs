@@ -67,3 +67,17 @@ async fn keys_are_validated_and_nothing_is_held_by_default() {
     assert!(a.holder("free").await.unwrap().is_none());
     assert!(!dir.path().join("..").join("x").join(".lease").exists());
 }
+
+#[tokio::test]
+async fn a_malformed_record_is_an_error_not_a_fresh_start() {
+    let dir = tempfile::tempdir().unwrap();
+    let a = LocalLeases::new(dir.path(), "a");
+    let key_dir = local_dir(dir.path(), "k");
+    fs::create_dir_all(&key_dir).unwrap();
+    fs::write(key_dir.join(RECORD_FILE), b"{not json").unwrap();
+    assert!(matches!(
+        a.acquire("k", 0).await,
+        Err(LeaseError::Storage(_))
+    ));
+    assert!(matches!(a.holder("k").await, Err(LeaseError::Storage(_))));
+}
