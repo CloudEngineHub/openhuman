@@ -1964,6 +1964,8 @@ const en: TranslationMap = {
   'bootCheck.connectedOk': "Connected. You're good to go.",
   'bootCheck.authFailed': "That token didn't work. Double-check it and try again.",
   'bootCheck.unreachablePrefix': "Couldn't reach it:",
+  'bootCheck.socketDisabled':
+    'Connected, but realtime is off on this core. It was started with --jsonrpc-only; restart it without that flag so chat and live updates work.',
   'bootCheck.checkingCore': 'Starting OpenHuman…',
   'bootCheck.cannotReach': "Can't reach it",
   'bootCheck.cannotReachDesc': "We couldn't connect. Want to try somewhere else?",

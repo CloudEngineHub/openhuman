@@ -1721,6 +1721,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'Terhubung. Anda siap melanjutkan.',
   'bootCheck.authFailed': 'Token tersebut tidak berfungsi. Periksa kembali dan coba lagi.',
   'bootCheck.unreachablePrefix': 'Tidak dapat mencapainya:',
+  'bootCheck.socketDisabled':
+    'Terhubung, tetapi realtime nonaktif pada core ini. Core dijalankan dengan --jsonrpc-only; jalankan ulang tanpa flag itu agar chat dan pembaruan langsung berfungsi.',
   'bootCheck.checkingCore': 'Memulai OpenHuman…',
   'bootCheck.cannotReach': 'Tidak dapat terhubung',
   'bootCheck.cannotReachDesc': 'Kami tidak dapat terhubung. Ingin mencoba di tempat lain?',
