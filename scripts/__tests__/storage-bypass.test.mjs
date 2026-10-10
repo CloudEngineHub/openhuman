@@ -141,7 +141,7 @@ test("the storage module, tests and allowlisted fallbacks are not flagged", () =
       [`${SRC}/storage/driver.rs`]: "fn f() { let c = Connection::open(p); }\n",
       [`${SRC}/foo/store_tests.rs`]: "fn f() { std::fs::write(p, b); }\n",
       [`${SRC}/foo/tests/common.rs`]: "fn f() { File::create(p); }\n",
-      [`${SRC}/cron/policy.rs`]: "fn f() { let c = Connection::open(p); }\n",
+      [`${SRC}/cron/policy.rs`]: "fn f() {\n    let conn = Connection::open(&path)\n}\n",
     },
     [],
   );
