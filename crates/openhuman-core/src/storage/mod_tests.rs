@@ -66,18 +66,41 @@ fn agent_scopes_match_the_session_store() {
 #[test]
 fn the_scope_follows_the_acting_agent_and_fails_closed_in_saas() {
     assert_eq!(
-        scope_from(Some("agent-7"), false).unwrap().as_str(),
+        scope_from(None, Some("agent-7"), false).unwrap().as_str(),
         "agent-7"
     );
-    assert_eq!(
-        scope_from(Some("agent-7"), true).unwrap().as_str(),
-        "agent-7"
-    );
-    assert!(scope_from(None, false).unwrap().is_local());
     assert!(
-        scope_from(None, true).is_err(),
+        scope_from(None, Some("agent-7"), true).is_err(),
+        "SaaS hands out profile scopes only"
+    );
+    assert!(scope_from(None, None, false).unwrap().is_local());
+    assert!(
+        scope_from(None, None, true).is_err(),
         "SaaS never falls back to a shared scope"
     );
+}
+
+#[test]
+fn a_profile_scopes_storage_over_its_agents() {
+    for saas in [false, true] {
+        assert_eq!(
+            scope_from(Some("u-alice"), Some("u-alice"), saas)
+                .unwrap()
+                .as_str(),
+            "profile:u-alice"
+        );
+        assert_eq!(
+            scope_from(Some("u-alice"), None, saas).unwrap().as_str(),
+            "profile:u-alice"
+        );
+    }
+    assert_ne!(scope_for_profile("a"), scope_for_profile("b"));
+    let odd = scope_for_profile("has a space");
+    assert!(odd.as_str().starts_with("profile-sha256:"), "{odd}");
+    assert_ne!(odd, scope_for_profile("has  a space"));
+    assert!(scope_for_profile(&"x".repeat(400))
+        .as_str()
+        .starts_with("profile-sha256:"));
 }
 
 #[test]

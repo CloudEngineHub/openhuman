@@ -41,6 +41,10 @@ mod worktree_schemas;
 #[cfg(test)]
 mod ops_tests;
 
+#[cfg(test)]
+#[path = "background_completions_tenant_tests.rs"]
+mod background_completions_tenant_tests;
+
 pub use agent_teams::{all_agent_team_controller_schemas, all_agent_team_registered_controllers};
 pub use command_center::{
     all_command_center_controller_schemas, all_command_center_registered_controllers,
