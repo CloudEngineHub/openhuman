@@ -105,5 +105,8 @@ fn the_store_dispatches_to_documents_when_a_backend_is_pinned() {
         assert_eq!(store.load().unwrap().len(), 1);
     });
     assert_eq!(docs.load().unwrap().len(), 1);
-    assert!(!dir.path().join(".openhuman/subagent_sessions.json").exists());
+    assert!(!dir
+        .path()
+        .join(".openhuman/subagent_sessions.json")
+        .exists());
 }

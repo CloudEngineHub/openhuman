@@ -54,7 +54,6 @@ async fn the_file_store_dispatches_to_documents_when_a_backend_is_pinned() {
     let file = dir.path().join("composio_identities.json");
     let mut value = BTreeMap::new();
     value.insert("gmail".to_string(), 7u32);
-    with_override(docs.clone(), || ());
     // Pin on this thread for the awaits below (a current-thread runtime).
     super::TEST_OVERRIDE.with(|slot| *slot.borrow_mut() = Some(docs.clone()));
     super::super::file_store::save(&file, &value).await.unwrap();

@@ -113,9 +113,14 @@ fn a_malformed_document_is_skipped_on_open() {
     let storage = MemoryStorage::new();
     let repo = repo_in(&storage, "local");
     repo.run(|docs| async move {
-        docs.put(TASKS, "bad", serde_json::json!({ "record": 1 }), Precondition::None)
-            .await
-            .map(|_| ())
+        docs.put(
+            TASKS,
+            "bad",
+            serde_json::json!({ "record": 1 }),
+            Precondition::None,
+        )
+        .await
+        .map(|_| ())
     })
     .unwrap();
     let store = DocumentTaskStore::open(repo.clone()).unwrap();

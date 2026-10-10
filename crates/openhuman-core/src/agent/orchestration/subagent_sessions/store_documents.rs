@@ -43,12 +43,6 @@ pub(super) fn current() -> Result<Option<Docs>> {
     Ok(Repo::current(DOMAIN, collections)?.map(Docs))
 }
 
-/// Whether a test pinned a document store for this thread.
-#[cfg(test)]
-pub(super) fn overridden() -> bool {
-    TEST_OVERRIDE.with(|slot| slot.borrow().is_some())
-}
-
 /// Runs `f` with `docs` standing in for the installed backend, on this thread
 /// only, so tests exercise the dispatch without the process-wide slot.
 #[cfg(test)]
