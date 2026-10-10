@@ -158,10 +158,14 @@ pub fn seed_tenant_tracker(
                 config.workspace_dir.display()
             );
         }
-        Err(err) => log::warn!(
-            "[cost] could not seed the tenant tracker at {}: {err}",
-            config.workspace_dir.display()
-        ),
+        Err(err) => {
+            // Never keep a tracker over a previous workspace.
+            *ctx.agent_state().slot::<TenantTracker>().0.write() = None;
+            log::warn!(
+                "[cost] could not seed the tenant tracker at {}: {err}",
+                config.workspace_dir.display()
+            );
+        }
     }
 }
 
