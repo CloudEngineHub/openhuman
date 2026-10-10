@@ -70,3 +70,27 @@ async fn replies_are_recorded_and_seed_the_next_turn() {
     assert_eq!(limited.len(), 1);
     assert_eq!(limited[0].content, "hi\n\nthere", "the most recent rows");
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn concurrent_retries_of_one_message_record_it_once() {
+    let tmp = tempfile::tempdir().unwrap();
+    let p = params("race", "hello");
+    let thread = p.thread_id();
+    let mut tasks = Vec::new();
+    for _ in 0..8 {
+        let dir = tmp.path().to_path_buf();
+        let (p, thread) = (p.clone(), thread.clone());
+        tasks.push(tokio::spawn(async move {
+            record_inbound(&dir, &p, &thread).await
+        }));
+    }
+    let mut new = 0;
+    for task in tasks {
+        if task.await.unwrap() == Ok(Recorded::New) {
+            new += 1;
+        }
+    }
+    assert_eq!(new, 1, "exactly one concurrent retry is the new message");
+    let messages = crate::threads::store::get_messages(tmp.path().to_path_buf(), &thread).unwrap();
+    assert_eq!(messages.len(), 1);
+}
