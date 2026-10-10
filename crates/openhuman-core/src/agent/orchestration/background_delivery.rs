@@ -141,10 +141,10 @@ impl EventHandler<DomainEvent> for BackgroundDeliveryHandler {
 
 /// One drain an event asks for: the thread, how soon, and the context of the
 /// profile that owns it (`None` on the desktop, where nothing is per profile).
-struct Drain {
-    owner: Option<Arc<CoreContext>>,
-    thread_id: String,
-    delay: Duration,
+pub(super) struct Drain {
+    pub(super) owner: Option<Arc<CoreContext>>,
+    pub(super) thread_id: String,
+    pub(super) delay: Duration,
 }
 
 /// Which thread to drain, and after how long, for an event, outside any
@@ -152,7 +152,9 @@ struct Drain {
 /// to deliver into.
 #[cfg(test)]
 fn drain_schedule(event: &DomainEvent) -> Option<(String, Duration)> {
-    let drain = drain_schedule_in(false, event, |_| None).into_iter().next()?;
+    let drain = drain_schedule_in(false, event, |_| None)
+        .into_iter()
+        .next()?;
     Some((drain.thread_id, drain.delay))
 }
 
@@ -162,7 +164,7 @@ fn drain_schedule(event: &DomainEvent) -> Option<(String, Duration)> {
 /// [`completion_owners`] and each is resolved through `resolve` and drained in
 /// its own scope, where it reaches only its own tables. In SaaS (`saas`) an id
 /// with no owner is dropped; elsewhere it drains unscoped, as on the desktop.
-fn drain_schedule_in(
+pub(super) fn drain_schedule_in(
     saas: bool,
     event: &DomainEvent,
     resolve: impl Fn(&str) -> Option<Arc<CoreContext>>,
@@ -201,7 +203,9 @@ fn drain_schedule_in(
     };
     // A task id is core-minted and unique, so it names its one owner; a
     // session id can be shared by profiles, so it may name several.
-    let mut profiles = task.map(|t| completion_owners::profiles_of(t)).unwrap_or_default();
+    let mut profiles = task
+        .map(|t| completion_owners::profiles_of(t))
+        .unwrap_or_default();
     if profiles.is_empty() {
         profiles = completion_owners::profiles_of(session);
     }
@@ -215,7 +219,11 @@ fn drain_schedule_in(
         if thread_id.is_none() {
             log::trace!("[background_delivery] session has no delivery thread; not scheduling");
         }
-        thread_id.map(|thread_id| Drain { owner, thread_id, delay })
+        thread_id.map(|thread_id| Drain {
+            owner,
+            thread_id,
+            delay,
+        })
     };
     if profiles.is_empty() {
         if saas {

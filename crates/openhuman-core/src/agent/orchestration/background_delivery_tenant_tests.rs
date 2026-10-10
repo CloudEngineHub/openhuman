@@ -69,7 +69,14 @@ async fn an_off_task_completion_drains_only_its_owners_thread() {
     for (ctx, ws, task) in [(&alice, &ws_a, &task_a), (&bob, &ws_b, &task_b)] {
         CoreContext::scope(
             Arc::clone(ctx),
-            record_completion(ws.path(), &session, task.as_str(), "r", "done", Some(thread.into())),
+            record_completion(
+                ws.path(),
+                &session,
+                task.as_str(),
+                "r",
+                "done",
+                Some(thread.into()),
+            ),
         )
         .await;
     }
@@ -86,7 +93,11 @@ async fn an_off_task_completion_drains_only_its_owners_thread() {
     let (owner, drained_thread, pending) = seen_by(&drains[0]);
     assert_eq!(owner.as_deref(), Some(alice_id.as_str()));
     assert_eq!(drained_thread, thread);
-    assert_eq!(pending, [task_a.clone()], "alice's drain reaches only her result");
+    assert_eq!(
+        pending,
+        [task_a.clone()],
+        "alice's drain reaches only her result"
+    );
 
     // A turn ending on the shared session drains each owner in its own scope.
     let turn_done = DomainEvent::AgentTurnCompleted {
@@ -111,12 +122,8 @@ async fn an_off_task_completion_drains_only_its_owners_thread() {
     let drains = drain_schedule_in(true, &completed(&session, &unique("sub-x")), only_bob);
     assert_eq!(drains.len(), 1);
     assert_eq!(seen_by(&drains[0]).0.as_deref(), Some(bob_id.as_str()));
-    assert!(drain_schedule_in(true, &completed("s", &task_b_owner_free()), only_bob).is_empty());
-}
-
-/// A task id nothing recorded.
-fn task_b_owner_free() -> String {
-    unique("sub-nobody")
+    // A task and session nothing recorded: dropped.
+    assert!(drain_schedule_in(true, &completed("s", &unique("sub-none")), only_bob).is_empty());
 }
 
 #[test]

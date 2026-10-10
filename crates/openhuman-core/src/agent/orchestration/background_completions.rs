@@ -167,7 +167,9 @@ fn degrade_to_memory(workspace_dir: &Path, failed: &Arc<CompletionRouter>) -> Ar
         router: Arc::new(new_router(store.clone())),
         store,
     });
-    state().routers.insert(workspace_dir.to_path_buf(), entry.clone());
+    state()
+        .routers
+        .insert(workspace_dir.to_path_buf(), entry.clone());
     log::error!(
         "[background_completions] degraded to an in-memory queue workspace_dir={}",
         workspace_dir.display()
