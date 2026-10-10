@@ -1,7 +1,10 @@
 //! Operator-plane operations on profiles.
 //!
-//! Gateway user ids are taken here and turned into profile ids at once; they
-//! are never logged, stored or returned.
+//! Gateway user ids are taken here and turned into profile ids at once. The
+//! user id itself is never logged, stored or returned; under raw `profile_ids`
+//! mode a qualifying id *is* the profile id, so it is stored and returned as
+//! one (use `"hashed"` where that must not happen). Log lines and `Outcome`
+//! messages stay content-free either way.
 
 use super::credentials::{self, UserCredentialKind};
 use super::host::{self, ProfileHost};
@@ -26,9 +29,9 @@ pub(crate) fn provision_on(
     let profile_id = ProfileId::for_user(user_id, host.saas().profile_ids)?;
     let created = host.provision(&profile_id)?;
     let log = if created {
-        format!("provisioned {profile_id}")
+        "profile provisioned"
     } else {
-        format!("{profile_id} was already provisioned")
+        "profile already provisioned"
     };
     Ok(Outcome::single_log(
         ProvisionResult {
@@ -51,9 +54,9 @@ pub(crate) fn deprovision_on(
     let profile_id = ProfileId::parse(profile_id)?;
     let removed = host.deprovision(&profile_id)?;
     let log = if removed {
-        format!("archived {profile_id}")
+        "profile archived"
     } else {
-        format!("{profile_id} was not provisioned")
+        "profile was not provisioned"
     };
     Ok(Outcome::single_log(
         DeprovisionResult {
@@ -83,11 +86,8 @@ pub(crate) fn status_on(
     let profile_id = ProfileId::parse(profile_id)?;
     let summary = host
         .summary(&profile_id)?
-        .ok_or_else(|| format!("profile {profile_id} is not provisioned"))?;
-    Ok(Outcome::single_log(
-        summary,
-        format!("status of {profile_id}"),
-    ))
+        .ok_or_else(|| "profile is not provisioned".to_string())?;
+    Ok(Outcome::single_log(summary, "profile status read"))
 }
 
 /// Install the backend credential the gateway holds for profile `profile_id`.
@@ -112,13 +112,13 @@ pub(crate) fn set_credential_on(
     // work even when every profile slot is busy.
     let config = host.provisioned_config(&profile_id)?;
     credentials::store(&config, kind, token, expires_at)?;
-    log::info!("[profiles] credential installed for profile={profile_id} kind={kind:?}");
+    log::info!("[profiles] credential installed kind={kind:?}");
     Ok(Outcome::single_log(
         CredentialResult {
             profile_id: profile_id.clone(),
             has_credential: true,
         },
-        format!("credential installed for {profile_id}"),
+        "credential installed",
     ))
 }
 
@@ -134,11 +134,11 @@ pub(crate) fn clear_credential_on(
     let profile_id = ProfileId::parse(profile_id)?;
     let config = host.provisioned_config(&profile_id)?;
     let removed = credentials::clear(&config)?;
-    log::info!("[profiles] credential cleared for profile={profile_id} removed={removed}");
+    log::info!("[profiles] credential cleared removed={removed}");
     let log = if removed {
-        format!("credential cleared for {profile_id}")
+        "credential cleared"
     } else {
-        format!("{profile_id} held no credential")
+        "profile held no credential"
     };
     Ok(Outcome::single_log(
         CredentialResult {

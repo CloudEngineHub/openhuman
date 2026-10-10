@@ -15,26 +15,31 @@ core's: every transport here resolves a method through
 
 There are two ways in, and both end in `serve`. (`crate::host::cli` and
 `host::desktop` are the same two paths with the TinyHumans backend
-connected on the builder; `host::desktop` enters at `build_and_serve`.)
+connected on the builder; `host::cli` hands that builder to the core CLI and
+`host::desktop` enters at `build_and_serve`.)
 
 ```text
  openhuman-core run|serve                 desktop shell (core_process.rs)
-   install_cli_server()                     run_server_embedded_with_ready(
-     -> core::server_launcher                 host, port, socketio, cancel,
-   launch(ServeRequest)                       ready_tx, Some(bearer))
-     headless_api? run_server_headless          |
-                 : run_server                   |
+   RuntimeBuilder::run_from_args(args)      host::desktop(options, cancel, ready_tx)
+     -> core::run_core_from_args_with         desktop_builder(options)
+        (args, HostBoot(builder))             -> serve_desktop(builder, ..)
+   -> core::server_launcher                     |
+   launch(ServeRequest)                         |
+     --mode saas? run_server_saas (own boot)    |
+     else base = HostBoot builder               |
+                 or RuntimeBuilder::cli()       |
+          flagged_builder(base, flags)          |
              \                                  /
               v                                v
-          run_server_with_services(host, port, ServiceSet, ...)
-            preset: RuntimeBuilder::desktop() if embedded (HostKind::TauriShell)
-                    else RuntimeBuilder::cli() (detect_standalone())
-                    both: DomainSet::full, discovered config,
+          (desktop path: desktop_builder in host.rs)
+            preset: RuntimeBuilder::desktop() (HostKind::TauriShell)
+                    both presets: DomainSet::full, discovered config,
                     OPENHUMAN_E2E set -> ToolGroups::advertised()
-            server_builder: services, TokenSource::Fixed(bearer) if handed
-                    in (else EnvOrFile), listen host/port if given
+            services, TokenSource::Fixed(bearer) if handed in (else
+                    EnvOrFile), listen host/port if given
           build_and_serve(builder, ready_tx, shutdown_token)
-            session_store::install()            (before boot: recovery)
+            session_store::install_for_host()   (before boot: recovery; skipped when
+                                                 the builder carries its own store)
             RuntimeBuilder::build()             (claims the embed runtime slot)
               |
               v
@@ -42,10 +47,16 @@ connected on the builder; `host::desktop` enters at `build_and_serve`.)
             drop(runtime)                       (releases the slot)
 ```
 
-`run_server` and `run_server_embedded` use `ServiceSet::desktop()` with
-Socket.IO set by the caller; `run_server_headless` uses
+The CLI path boots from the builder the host handed `run_from_args`, or the
+`cli` preset when there is none. Precedence, highest first: the operator's
+explicit flags (`--host`, `--port`, `--jsonrpc-only`, `--headless-api`), the
+host's builder, the preset. `--headless-api` replaces the services with
 `ServiceSet::headless_api()` (request/response only, no detached background
-jobs). An embedder that built its own `CoreRuntime` can call `serve` directly.
+jobs); `--jsonrpc-only` only clears Socket.IO on the builder's services.
+`--mode saas` ignores the builder and boots the operator's config.
+`run_server` (a bare shim, not connected to the backend) uses
+`ServiceSet::desktop()` with Socket.IO set by the caller. An embedder that
+built its own `CoreRuntime` can call `serve` directly.
 
 `serve` then:
 
@@ -152,8 +163,8 @@ directly.
 | --- | --- |
 | [`mod.rs`](mod.rs) | Module wiring and the public re-exports. |
 | [`serve.rs`](serve.rs) | `serve` and `EmbeddedReadySignal`. |
-| [`shims.rs`](shims.rs) | `run_server`, `run_server_headless`, `run_server_embedded`, `run_server_embedded_with_ready`, plus host and port defaults. |
-| [`cli.rs`](cli.rs) | `install_cli_server` and the launcher it installs. |
+| [`shims.rs`](shims.rs) | `run_server`, `run_server_headless`, `run_server_saas`, `build_and_serve` (shared with `host`), plus host and port defaults. |
+| [`cli.rs`](cli.rs) | `launch`, the server launcher `host::cli` and `host::desktop` install, and `flagged_builder`. |
 | [`auth.rs`](auth.rs) | `rpc_auth_middleware`: public paths, query-token paths, and the `/v1` external-key check. |
 | [`classify.rs`](classify.rs) | `classify_failure` and `FailureDisposition`. Pure. |
 | [`socketio.rs`](socketio.rs) | Socket.IO handshake auth, client event handlers, the event bridge, the companion seam, and the event payload types. |
@@ -170,11 +181,9 @@ directly.
 
 ## Key entry points
 
-- `install_cli_server()` ([`cli.rs`](cli.rs)): call once before `run_core_from_args`.
-  It also registers the `http_host` controllers.
 - `serve(&CoreRuntime, Option<oneshot::Sender<EmbeddedReadySignal>>,
   Option<CancellationToken>)` (`serve.rs`).
-- `run_server_embedded_with_ready(..., rpc_token)` ([`shims.rs`](shims.rs)): pass the
+- `host::desktop(DesktopOptions { rpc_token, .. }, ..)` (`host.rs`): pass the
   bearer the shell already holds so the server never reads it from the
   environment.
 - `build_core_http_router(socketio_enabled)` and `rpc_handler`

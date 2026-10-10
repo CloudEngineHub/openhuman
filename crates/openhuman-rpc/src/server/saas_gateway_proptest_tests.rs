@@ -113,16 +113,9 @@ fn request(auth: Option<&[u8]>, users: &[Vec<u8>], sigs: &[Vec<u8>]) -> Request 
     req.body(Body::empty()).unwrap()
 }
 
-/// A refusal's status and body, for comparing two of them byte for byte.
-fn parts(response: Response) -> (StatusCode, Vec<u8>) {
-    let status = response.status();
-    let body = tokio::runtime::Builder::new_current_thread()
-        .build()
-        .unwrap()
-        .block_on(axum::body::to_bytes(response.into_body(), 1 << 16))
-        .unwrap()
-        .to_vec();
-    (status, body)
+/// A refusal's status and message, for comparing two of them exactly.
+fn parts(refusal: GatewayRefusal) -> (u16, String) {
+    (refusal.status, refusal.message)
 }
 
 fn readable_single(values: &[Vec<u8>]) -> Option<String> {
@@ -138,7 +131,7 @@ fn readable_single(values: &[Vec<u8>]) -> Option<String> {
 
 proptest! {
     /// Without the service bearer, a probe for a provisioned user and one for
-    /// an unknown user get byte-identical `401`s, and the resolver (which
+    /// an unknown user get identical `401`s, and the resolver (which
     /// knows who is provisioned) is never reached.
     #[test]
     fn unauthenticated_probes_cannot_tell_users_apart(
@@ -160,7 +153,7 @@ proptest! {
         };
         prop_assert!(known_seen.is_none() && other_seen.is_none(), "resolver reached without the bearer");
         let known = parts(known);
-        prop_assert_eq!(known.0, StatusCode::UNAUTHORIZED);
+        prop_assert_eq!(known.0, 401);
         prop_assert_eq!(known, parts(other));
     }
 
@@ -195,8 +188,8 @@ proptest! {
                 let sig = sig.expect("admitted without a signature");
                 prop_assert!(verify(SECRET, PROVISIONED, &sig, NOW).is_ok());
             }
-            Err(response) => {
-                let status = response.status().as_u16();
+            Err(refusal) => {
+                let status = refusal.status;
                 prop_assert!(matches!(status, 400 | 401 | 403), "status {}", status);
                 if user_count > 1 || sig_count > 1 {
                     prop_assert_eq!(status, 400);

@@ -1,0 +1,69 @@
+use super::*;
+
+#[tokio::test]
+async fn a_second_instance_on_one_root_is_held_out() {
+    let dir = tempfile::tempdir().unwrap();
+    let (a, b) = (
+        LocalLeases::new(dir.path(), "a"),
+        LocalLeases::new(dir.path(), "b"),
+    );
+    let grant = a.acquire("user-1", 0).await.unwrap();
+    assert_eq!((grant.epoch, grant.previous_unclean), (1, false));
+    match b.acquire("user-1", 0).await {
+        Err(LeaseError::Held(record)) => {
+            assert_eq!(record.owner, "a");
+            assert!(record.is_live(u64::MAX - 1));
+        }
+        other => panic!("expected Held, got {other:?}"),
+    }
+    assert_eq!(b.holder("user-1").await.unwrap().unwrap().owner, "a");
+    assert!(b.holder("user-1").await.unwrap().unwrap().is_live(0));
+}
+
+#[tokio::test]
+async fn release_hands_over_cleanly_and_stale_grants_are_lost() {
+    let dir = tempfile::tempdir().unwrap();
+    let (a, b) = (
+        LocalLeases::new(dir.path(), "a"),
+        LocalLeases::new(dir.path(), "b"),
+    );
+    let grant = a.acquire("k", 0).await.unwrap();
+    let renewed = a.renew(&grant, 5).await.unwrap();
+    assert!(matches!(a.renew(&grant, 6).await, Err(LeaseError::Lost)));
+    let again = a.acquire("k", 7).await.unwrap();
+    assert_eq!((again.epoch, again.previous_unclean), (1, false));
+    a.release(renewed.clone()).await.unwrap();
+    assert!(matches!(a.release(renewed).await, Err(LeaseError::Lost)));
+    assert!(b.holder("k").await.unwrap().unwrap().released);
+    let next = b.acquire("k", 8).await.unwrap();
+    assert_eq!((next.epoch, next.previous_unclean), (2, false));
+}
+
+#[tokio::test]
+async fn a_dead_holder_leaves_an_unclean_record() {
+    let dir = tempfile::tempdir().unwrap();
+    {
+        let crashed = LocalLeases::new(dir.path(), "a");
+        crashed.acquire("k", 0).await.unwrap();
+        // Dropped without releasing: the lock goes with the file handle, as
+        // it would with the process.
+    }
+    let b = LocalLeases::new(dir.path(), "b");
+    let stale = b.holder("k").await.unwrap().unwrap();
+    assert_eq!(stale.owner, "a");
+    assert!(!stale.is_live(0), "a free lock means the holder is gone");
+    let taken = b.acquire("k", 0).await.unwrap();
+    assert_eq!((taken.epoch, taken.previous_unclean), (2, true));
+}
+
+#[tokio::test]
+async fn keys_are_validated_and_nothing_is_held_by_default() {
+    let dir = tempfile::tempdir().unwrap();
+    let a = LocalLeases::new(dir.path(), "a");
+    assert!(matches!(
+        a.acquire("../x", 0).await,
+        Err(LeaseError::Storage(_))
+    ));
+    assert!(a.holder("free").await.unwrap().is_none());
+    assert!(!dir.path().join("..").join("x").join(".lease").exists());
+}
