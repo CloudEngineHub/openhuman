@@ -87,10 +87,7 @@ pub(crate) fn status_on(
     let summary = host
         .summary(&profile_id)?
         .ok_or_else(|| "profile is not provisioned".to_string())?;
-    Ok(Outcome::single_log(
-        summary,
-        "profile status read",
-    ))
+    Ok(Outcome::single_log(summary, "profile status read"))
 }
 
 /// Install the backend credential the gateway holds for profile `profile_id`.

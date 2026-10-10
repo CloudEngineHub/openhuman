@@ -167,7 +167,9 @@ fn schedule_delivery(thread_id: String, delay: Duration) {
         .lock()
         .expect("scheduled")
         .push((thread_id.clone(), delay));
-    tokio::spawn(async move {
+    // Scoped: the thread -> workspace table is keyed per profile, so the
+    // delayed task must run under the profile that scheduled it.
+    crate::core::runtime::spawn_scoped(async move {
         tokio::time::sleep(delay).await;
         try_deliver(thread_id).await;
     });
