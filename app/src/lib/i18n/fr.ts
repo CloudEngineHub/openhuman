@@ -1263,7 +1263,15 @@ const messages: TranslationMap = {
   'mcp.tab.aria.openServerPage': 'Ouvrir la page de {name}',
   'mcp.installed.emptyAddInJson': 'Ajouter dans mcp.json',
   'mcp.registry.intro':
-    'Un annuaire de serveurs MCP. Ouvrir un serveur mène à sa propre page, où se trouvent les instructions d’installation ; ajoutez-le dans l’onglet mcp.json.',
+    'Un annuaire de serveurs MCP. Les serveurs hébergés sans configuration s’ajoutent en un clic ; pour les autres, ouvrez leur page pour lire les instructions d’installation et déclarez-les dans l’onglet mcp.json.',
+  'mcp.registry.action.add': 'Ajouter',
+  'mcp.registry.action.added': 'Ajouté',
+  'mcp.registry.action.adding': 'Ajout…',
+  'mcp.registry.aria.add': 'Ajouter {name}',
+  'mcp.registry.needsSetup':
+    'Ce serveur doit être configuré avant de pouvoir être ajouté. Ouvrez sa page pour lire les instructions d’installation.',
+  'mcp.registry.addFailed': 'Impossible d’ajouter ce serveur.',
+  'mcp.registry.connectFailed': 'Ajouté, mais le serveur ne s’est pas connecté.',
   'mcp.json.loadFailedTitle': 'Impossible de lire mcp.json',
   'mcp.json.loadFailedBody':
     'Le noyau n’a pas répondu, le document n’est donc pas affiché. Un éditeur vide inviterait à enregistrer et effacer vos serveurs.',
@@ -1745,6 +1753,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'Connecté. Tu es prêt.',
   'bootCheck.authFailed': "Ce token n'a pas fonctionné. Vérifie-le et réessaie.",
   'bootCheck.unreachablePrefix': "Impossible de l'atteindre :",
+  'bootCheck.socketDisabled':
+    'Connecté, mais le temps réel est désactivé sur ce cœur. Il a été lancé avec --jsonrpc-only ; relance-le sans cette option pour que le chat et les mises à jour en direct fonctionnent.',
   'bootCheck.checkingCore': "Démarrage d'OpenHuman…",
   'bootCheck.cannotReach': 'Connexion impossible',
   'bootCheck.cannotReachDesc': "Nous n'avons pas pu nous connecter. Voulez-vous essayer ailleurs ?",
@@ -1813,6 +1823,10 @@ const messages: TranslationMap = {
   'about.update.status.error': 'Échec de la vérification des mises à jour',
   'about.update.status.default': 'Rechercher des mises à jour',
   'welcome.continueLocallyExperimental': 'Continuer en local (Expérimental)',
+  'auth.profileSwitch.title': 'Se connecter avec un profil distinct ?',
+  'auth.profileSwitch.body':
+    'La connexion au cloud basculera OpenHuman vers un profil de compte distinct. Vos conversations, votre mémoire et vos réglages de fournisseurs locaux resteront sur cet appareil dans users/{profileId}. Pour y revenir, déconnectez-vous puis choisissez la session locale sur l’écran d’accueil.',
+  'auth.profileSwitch.continue': 'Continuer la connexion',
   'welcome.localSessionStarting': 'Démarrage de la session locale...',
   'welcome.coreConfigUnreadable':
     "L'environnement d'exécution n'a pas pu lire son fichier de configuration. config.toml appartient peut-être à un autre compte utilisateur, ou reste inaccessible au processus pour une autre raison. Redémarrez l'environnement d'exécution puis, si cela ne suffit pas, corrigez les droits du répertoire de travail ou recréez son volume.",
@@ -5261,7 +5275,7 @@ const messages: TranslationMap = {
   'memoryPage.engine.badgeDown': 'Injoignable',
   'memoryPage.engine.connecting': 'Connexion…',
   'memoryPage.engine.save': 'Enregistrer',
-  'memoryPage.engine.builtin.title': 'CortexDB via TinyHumans',
+  'memoryPage.engine.builtin.title': 'CortexDB intégré à TinyHumans',
   'memoryPage.engine.builtin.signInHint':
     'Connectez-vous à votre compte TinyHumans pour utiliser CortexDB intégré.',
   'memoryPage.engine.apiKeyOption.title': 'CortexDB avec votre propre clé',
