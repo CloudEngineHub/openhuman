@@ -326,8 +326,7 @@ pub(crate) async fn record_outcome(
     }
     note_thread_workspace(&thread_id, workspace_dir);
     note_session_thread(parent_session, &thread_id);
-    // For the off-task delivery subscriber: whose profile this result is.
-    super::completion_owners::note(&[&task_id, parent_session]);
+    super::completion_owners::note(&[&task_id, parent_session]); // owner, for off-task delivery
 
     let record = CompletionRecord::new(
         task_id.clone(),
