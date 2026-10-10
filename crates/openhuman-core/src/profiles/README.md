@@ -55,9 +55,10 @@ Changing the mode may re-map users onto different profiles.
 ## Rules
 
 - **Gateway user ids become profile ids in `ops.rs` and `gateway.rs`.** The
-  user id itself is never logged or stored; under raw mode a user id that
-  fits the charset *is* the profile id, so use `"hashed"` where user ids must
-  not reach paths and logs.
+  user id itself is never logged. Under raw mode a user id that fits the
+  charset *is* the profile id, so it reaches paths, storage and the
+  provisioning response; use `"hashed"` where user ids must not. Log lines and
+  `Outcome` messages never carry the profile id.
 - **A profile's config is forced, not configured.**
   - Every path sits under the profile's directory.
   - Memory is bound to the profile (`[memory] agent_id`, `root = user:<id>`).

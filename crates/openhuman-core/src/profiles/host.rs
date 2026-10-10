@@ -150,7 +150,10 @@ impl ProfileHost {
         // not only in the profile's directory, so archiving the directory alone
         // would let a re-provisioned profile pick the old credential back up.
         if let Err(e) = super::credentials::clear(&layout::profile_config(&layout, id)) {
-            log::warn!("[profiles] clearing credentials of profile={id} before archiving: {e}");
+            log::warn!("[profiles] clearing credentials before archiving failed: {e}");
+            // Keep the profile so cleanup can be retried; archiving now would
+            // leave the secret for a re-provisioned profile to inherit.
+            return Err(format!("clearing credentials before archiving: {e}"));
         }
         let archive = layout::archive_dir(&self.saas.root);
         std::fs::create_dir_all(&archive)
