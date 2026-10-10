@@ -115,11 +115,16 @@ test("every allowlisted path carries a reason and known rules", () => {
   for (const [file, entry] of ALLOW) {
     assert.ok(file.startsWith(`${SRC}/`), file);
     assert.ok(entry.reason.length > 20, file);
-    for (const rule of entry.rules)
-      assert.ok(["sqlite-open", "json-write"].includes(rule));
+    assert.ok(["sqlite-open", "json-write"].includes(entry.rule));
+    assert.ok(entry.site.length > 5, file);
   }
-  assert.ok(allowed(`${SRC}/config/workspace/state.rs`, "sqlite-open"));
-  assert.ok(!allowed(`${SRC}/config/workspace/state.rs`, "json-write"));
+  const state = `${SRC}/config/workspace/state.rs`;
+  const [site] = scan(state, "let conn = Connection::open(db_path)?;");
+  assert.ok(allowed(state, site));
+  assert.ok(!allowed(state, { ...site, rule: "json-write" }));
+  assert.ok(
+    !allowed(state, { ...site, text: "let c = Connection::open(other)?;" }),
+  );
 });
 
 test("a new database open fails the check", () => {
@@ -141,7 +146,8 @@ test("the storage module, tests and allowlisted fallbacks are not flagged", () =
       [`${SRC}/storage/driver.rs`]: "fn f() { let c = Connection::open(p); }\n",
       [`${SRC}/foo/store_tests.rs`]: "fn f() { std::fs::write(p, b); }\n",
       [`${SRC}/foo/tests/common.rs`]: "fn f() { File::create(p); }\n",
-      [`${SRC}/cron/policy.rs`]: "fn f() {\n    let conn = Connection::open(&path)\n}\n",
+      [`${SRC}/cron/policy.rs`]:
+        "fn f() {\n    let conn = Connection::open(&path)\n}\n",
     },
     [],
   );
