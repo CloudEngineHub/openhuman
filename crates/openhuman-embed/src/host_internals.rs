@@ -38,11 +38,10 @@ pub mod core {
     pub mod observability {
         pub use openhuman_core::core::observability::{
             contains_transient_transport_phrase, expected_error_kind, is_api_key_rejected_message,
-            ExpectedErrorKind,
             is_session_expired_message, is_suppressed_usage_probe_backoff,
             is_transient_http_status_code, is_transient_message_failure, report_error_or_expected,
-            report_warning_message, API_KEY_REJECTED_PREFIX, BACKEND_UNAVAILABLE_PREFIX,
-            REPORT_ERROR_TRACING_TARGET,
+            report_warning_message, ExpectedErrorKind, API_KEY_REJECTED_PREFIX,
+            BACKEND_UNAVAILABLE_PREFIX, REPORT_ERROR_TRACING_TARGET,
         };
     }
 
@@ -81,7 +80,7 @@ pub mod core {
     }
     pub mod runtime {
         pub use openhuman_core::core::runtime::{
-            is_saas, CoreContext, CoreRuntime, Mode, SaasConfig,
+            current_tenant, is_saas, CoreContext, CoreRuntime, Mode, SaasConfig,
         };
         pub mod saas {
             pub use openhuman_core::core::runtime::saas::build;
