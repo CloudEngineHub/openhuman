@@ -6,7 +6,9 @@
 //! process-wide channel persistence subscriber is told to leave these turns
 //! alone (`threads::store::claim_channel_turn`).
 
-use std::path::Path;
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use chrono::Utc;
 use serde_json::json;
@@ -34,6 +36,21 @@ pub fn reply_message_id(message_id: &str) -> String {
     format!("assistant:{message_id}")
 }
 
+/// One async lock per `(workspace, thread)`, so the duplicate check and the
+/// append in [`record_inbound`] are atomic against a concurrent gateway retry.
+fn thread_lock(workspace_dir: &Path, thread_id: &str) -> Arc<tokio::sync::Mutex<()>> {
+    static LOCKS: OnceLock<Mutex<HashMap<(PathBuf, String), Arc<tokio::sync::Mutex<()>>>>> =
+        OnceLock::new();
+    let mut map = LOCKS
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    Arc::clone(
+        map.entry((workspace_dir.to_path_buf(), thread_id.to_string()))
+            .or_default(),
+    )
+}
+
 /// Create the thread if needed and append the inbound message, unless it is
 /// already there.
 pub async fn record_inbound(
@@ -57,6 +74,8 @@ pub async fn record_inbound(
     .await?;
 
     let id = inbound_message_id(&params.message_id);
+    let lock = thread_lock(workspace_dir, thread_id);
+    let _guard = lock.lock().await;
     let existing =
         conversations::get_messages(workspace_dir.to_path_buf(), thread_id.to_string()).await?;
     if existing.iter().any(|message| message.id == id) {
