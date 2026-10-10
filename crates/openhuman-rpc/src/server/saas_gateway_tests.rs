@@ -35,7 +35,7 @@ fn the_gateway_surfaces_stay_open() {
 
 mod decision {
     use super::*;
-    use crate::core_host::user_agents::gateway::sign;
+    use crate::core_host::profiles::gateway::sign;
     use axum::body::Body;
     use axum::routing::get;
     use axum::Router;
@@ -44,7 +44,7 @@ mod decision {
     const SECRET: &str = "service-token";
     const NOW: u64 = 1_700_000_000;
 
-    /// Stands in for `resolve_scope`, which reads the process's agent host: a
+    /// Stands in for `resolve_scope`, which reads the process's profile host: a
     /// user needs a valid signature, and only `alice` is provisioned.
     fn resolve(
         user: Option<&str>,
@@ -60,10 +60,10 @@ mod decision {
             return Ok(GatewayScope::Operator);
         };
         let sig = sig.ok_or_else(|| refuse(401, "missing signature"))?;
-        crate::core_host::user_agents::gateway::verify(secret, user, sig, now)
+        crate::core_host::profiles::gateway::verify(secret, user, sig, now)
             .map_err(|e| refuse(401, &e))?;
         if user == "alice" {
-            // The real resolver returns the user's agent state, which needs a
+            // The real resolver returns the user's profile, which needs a
             // booted host; the operator scope stands in for "accepted".
             Ok(GatewayScope::Operator)
         } else {

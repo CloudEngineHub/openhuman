@@ -21,7 +21,7 @@
 //! Without a backend [`for_each_agent`] visits nothing: the SQLite stores
 //! these loops read do not split by agent. In SaaS mode the process has no
 //! `local` scope and per-user background work is driven by
-//! `user_agents::background`, so agent ids are not recorded and
+//! `profiles::background`, so agent ids are not recorded and
 //! [`for_each_scope`] skips `local`.
 
 use std::collections::{BTreeMap, HashSet};

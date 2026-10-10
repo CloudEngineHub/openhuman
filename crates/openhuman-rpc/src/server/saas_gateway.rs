@@ -10,16 +10,16 @@
 //! 2. with no `X-OpenHuman-User`, runs it on the operator plane (the bearer
 //!    check downstream still applies);
 //! 3. with one, checks the service bearer **first** — so an unauthenticated
-//!    caller learns nothing about which users exist and cannot open agents —
-//!    then the signature, then runs the request under that user's agent.
+//!    caller learns nothing about which users exist and cannot open profiles —
+//!    then the signature, then runs the request under that user's profile.
 //!
-//! The decision itself lives in `crate::core_host::user_agents::gateway`.
+//! The decision itself lives in `crate::core_host::profiles::gateway`.
 
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::core_host::core::runtime::CoreContext;
-use crate::core_host::user_agents::gateway::{
+use crate::core_host::profiles::gateway::{
     resolve_scope, GatewayRefusal, GatewayScope, USER_HEADER, USER_SIG_HEADER,
 };
 use axum::extract::Request;
@@ -87,12 +87,12 @@ pub(crate) async fn saas_gateway(operator: Arc<CoreContext>, req: Request, next:
     let secret = crate::core_host::core::auth::get_rpc_token();
     match decide(&req, secret, now, resolve_scope) {
         Err(refusal) => refusal_response(refusal),
-        Ok(GatewayScope::User(agent)) => {
-            let ctx = Arc::clone(agent.context());
-            // Holding the state for the request keeps the agent from being
+        Ok(GatewayScope::User(profile)) => {
+            let ctx = Arc::clone(profile.context());
+            // Holding the state for the request keeps the profile from being
             // evicted under it.
             let response = CoreContext::scope(ctx, next.run(req)).await;
-            drop(agent);
+            drop(profile);
             response
         }
         Ok(GatewayScope::Operator) => CoreContext::scope(operator, next.run(req)).await,

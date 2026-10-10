@@ -2,12 +2,12 @@ use super::*;
 
 #[test]
 fn every_controller_has_a_schema_and_a_handler() {
-    let schemas = all_user_agents_controller_schemas();
-    let controllers = all_user_agents_registered_controllers();
+    let schemas = all_profiles_controller_schemas();
+    let controllers = all_profiles_registered_controllers();
     assert_eq!(schemas.len(), FUNCTIONS.len());
     assert_eq!(controllers.len(), FUNCTIONS.len());
     for (schema, controller) in schemas.iter().zip(&controllers) {
-        assert_eq!(schema.namespace, "user_agents");
+        assert_eq!(schema.namespace, "profiles");
         assert_eq!(schema.function, controller.schema.function);
         assert_ne!(schema.function, "unknown");
     }
@@ -34,7 +34,7 @@ fn the_operator_plane_is_its_own_domain_family() {
 
 #[tokio::test]
 async fn outside_saas_the_controllers_refuse() {
-    let controllers = all_user_agents_registered_controllers();
+    let controllers = all_profiles_registered_controllers();
     let list = controllers
         .iter()
         .find(|c| c.schema.function == "list")
