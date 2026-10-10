@@ -5273,7 +5273,7 @@ const messages: TranslationMap = {
   'memoryPage.engine.badgeDown': 'Injoignable',
   'memoryPage.engine.connecting': 'Connexion…',
   'memoryPage.engine.save': 'Enregistrer',
-  'memoryPage.engine.builtin.title': 'CortexDB via TinyHumans',
+  'memoryPage.engine.builtin.title': 'CortexDB intégré à TinyHumans',
   'memoryPage.engine.builtin.signInHint':
     'Connectez-vous à votre compte TinyHumans pour utiliser CortexDB intégré.',
   'memoryPage.engine.apiKeyOption.title': 'CortexDB avec votre propre clé',
