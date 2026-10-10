@@ -219,7 +219,7 @@ async fn claude_code_cli_provider_lists_no_models_without_a_request() {
     assert_eq!(outcome.value["models"], serde_json::json!([]));
 }
 
-/// Any endpoint whose scheme is not http(s) cannot host a `/models` listing;
+/// A `cli://` placeholder endpoint cannot host a `/models` listing;
 /// it degrades to an empty catalog instead of a reqwest builder error.
 #[tokio::test]
 async fn non_http_endpoint_lists_no_models_without_a_request() {
@@ -231,4 +231,21 @@ async fn non_http_endpoint_lists_no_models_without_a_request() {
         .await
         .expect("non-http endpoint must list an empty catalog, not fail");
     assert_eq!(outcome.value["models"], serde_json::json!([]));
+}
+
+/// Only the `cli://` placeholder is exempt: any other non-http scheme is a
+/// misconfigured provider and must surface as an error, not an empty catalog.
+#[tokio::test]
+async fn unsupported_scheme_endpoint_still_surfaces_an_error() {
+    use crate::config::schema::cloud_providers::AuthStyle;
+    let tmp = tempfile::tempdir().expect("tempdir");
+    let config = workspace_with_provider(
+        &tmp,
+        "custom-ftp",
+        "ftp://provider.example",
+        AuthStyle::None,
+    );
+
+    let result = super::list_configured_models_from_config("custom-ftp", &config).await;
+    assert!(result.is_err(), "ftp:// must not read as an empty catalog");
 }
