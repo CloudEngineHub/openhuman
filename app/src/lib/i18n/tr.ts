@@ -1769,6 +1769,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'Bağlandı. Her şey hazır.',
   'bootCheck.authFailed': 'Bu token çalışmadı. Kontrol edip yeniden deneyin.',
   'bootCheck.unreachablePrefix': 'Ulaşılamadı:',
+  'bootCheck.socketDisabled':
+    'Bağlandı, ancak bu çekirdekte gerçek zamanlı özellik kapalı. --jsonrpc-only ile başlatılmış; sohbet ve canlı güncellemelerin çalışması için bu bayrak olmadan yeniden başlat.',
   'bootCheck.checkingCore': 'OpenHuman başlatılıyor…',
   'bootCheck.cannotReach': 'Ulaşılamıyor',
   'bootCheck.cannotReachDesc': 'Bağlantı kurulamadı. Başka bir yerde denemek ister misiniz?',

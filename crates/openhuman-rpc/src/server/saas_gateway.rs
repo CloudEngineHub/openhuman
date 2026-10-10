@@ -52,9 +52,20 @@ pub(crate) fn is_closed_in_saas(path: &str) -> bool {
     })
 }
 
-fn refuse(status: u16, message: &str) -> Response {
-    let status = StatusCode::from_u16(status).unwrap_or(StatusCode::FORBIDDEN);
-    (status, axum::Json(serde_json::json!({ "error": message }))).into_response()
+fn refuse(status: u16, message: &str) -> GatewayRefusal {
+    GatewayRefusal {
+        status,
+        message: message.to_string(),
+    }
+}
+
+fn refusal_response(refusal: GatewayRefusal) -> Response {
+    let status = StatusCode::from_u16(refusal.status).unwrap_or(StatusCode::FORBIDDEN);
+    (
+        status,
+        axum::Json(serde_json::json!({ "error": refusal.message })),
+    )
+        .into_response()
 }
 
 fn header_str<'a>(req: &'a Request, name: &str) -> Option<&'a str> {
@@ -75,7 +86,7 @@ pub(crate) async fn saas_gateway(operator: Arc<CoreContext>, req: Request, next:
         .unwrap_or_default();
     let secret = crate::core_host::core::auth::get_rpc_token();
     match decide(&req, secret, now, resolve_scope) {
-        Err(response) => response,
+        Err(refusal) => refusal_response(refusal),
         Ok(GatewayScope::User(agent)) => {
             let ctx = Arc::clone(agent.context());
             // Holding the state for the request keeps the agent from being
@@ -103,7 +114,7 @@ pub(crate) fn decide(
     secret: Option<&str>,
     now: u64,
     resolve: impl FnOnce(Option<&str>, Option<&str>, &str, u64) -> Result<GatewayScope, GatewayRefusal>,
-) -> Result<GatewayScope, Response> {
+) -> Result<GatewayScope, GatewayRefusal> {
     let path = req.uri().path();
     if is_closed_in_saas(path) {
         log::debug!("[rpc:saas] {path} is not served in SaaS mode");
@@ -148,7 +159,6 @@ pub(crate) fn decide(
     }
     let signature = signature.and_then(|value| value.to_str().ok());
     resolve(Some(user), signature, secret, now)
-        .map_err(|refusal| refuse(refusal.status, &refusal.message))
 }
 
 #[cfg(test)]
