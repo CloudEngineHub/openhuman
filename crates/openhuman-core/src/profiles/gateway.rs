@@ -114,13 +114,13 @@ pub fn resolve_scope(
         let signature = signature
             .ok_or_else(|| GatewayRefusal::new(401, format!("missing {USER_SIG_HEADER}")))?;
         verify(secret, user_id, signature, now).map_err(|e| {
-            log::warn!("[profiles][gateway] refused profile={profile}: {e}");
+            log::warn!("[profiles][gateway] refused a scoped request: {e}");
             GatewayRefusal::new(401, e)
         })?;
     }
     match host.open(&profile) {
         Ok(state) => {
-            log::debug!("[profiles][gateway] scoped request to profile={profile}");
+            log::debug!("[profiles][gateway] scoped request to an open profile");
             Ok(GatewayScope::User(state))
         }
         Err(e) if e.contains("not provisioned") => Err(GatewayRefusal::new(403, e)),

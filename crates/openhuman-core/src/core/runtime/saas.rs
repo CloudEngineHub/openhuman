@@ -49,12 +49,12 @@ pub struct SaasConfig {
     #[serde(default)]
     pub rpc_allowlist_extra: Vec<String>,
     /// Most profiles kept open at once.
-    #[serde(default = "default_max_profiles_open")]
+    #[serde(default = "default_max_profiles_open", alias = "max_agents_open")]
     pub max_profiles_open: usize,
     /// How a gateway user id becomes a profile id: `"raw"` (the default) keeps
     /// an id that already fits `^[a-z0-9][a-z0-9_-]{0,63}$` and is not
     /// reserved, hashing anything else; `"hashed"` hashes every id
-    /// (`profiles::ProfileIdMode`). Changing it re-maps users to new profiles.
+    /// (`profiles::ProfileIdMode`). Changing it may re-map users onto different profiles.
     #[serde(default)]
     pub profile_ids: crate::profiles::ProfileIdMode,
     /// Seconds an idle profile stays open.

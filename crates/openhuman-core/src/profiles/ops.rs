@@ -112,7 +112,7 @@ pub(crate) fn set_credential_on(
     // work even when every profile slot is busy.
     let config = host.provisioned_config(&profile_id)?;
     credentials::store(&config, kind, token, expires_at)?;
-    log::info!("[profiles] credential installed for profile={profile_id} kind={kind:?}");
+    log::info!("[profiles] credential installed kind={kind:?}");
     Ok(Outcome::single_log(
         CredentialResult {
             profile_id: profile_id.clone(),
@@ -134,7 +134,7 @@ pub(crate) fn clear_credential_on(
     let profile_id = ProfileId::parse(profile_id)?;
     let config = host.provisioned_config(&profile_id)?;
     let removed = credentials::clear(&config)?;
-    log::info!("[profiles] credential cleared for profile={profile_id} removed={removed}");
+    log::info!("[profiles] credential cleared removed={removed}");
     let log = if removed {
         format!("credential cleared for {profile_id}")
     } else {

@@ -26,7 +26,7 @@ not migrated.
 
 ## Profile ids
 
-`[saas] profile_ids` picks how a gateway user id becomes a `ProfileId`:
+The top-level `profile_ids` setting (`profile_ids = "hashed"`, not under a table) picks how a gateway user id becomes a `ProfileId`:
 
 - `"raw"` (the default): a user id matching `^[a-z0-9][a-z0-9_-]{0,63}$` is
   used unchanged, so the desktop's 24-hex backend ids pass through. `local`,
@@ -35,7 +35,7 @@ not migrated.
   characters of `sha256(user_id)`.
 
 Both forms fit the agent-id charset and can never contain a path separator.
-Changing the mode re-maps users onto different profiles.
+Changing the mode may re-map users onto different profiles.
 
 ## Files
 
