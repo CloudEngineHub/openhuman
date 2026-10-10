@@ -1674,6 +1674,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'متصل. أنت جاهز للانطلاق.',
   'bootCheck.authFailed': 'الرمز لم ينجح. تحقق منه وحاول مرة أخرى.',
   'bootCheck.unreachablePrefix': 'تعذّر الوصول إليه:',
+  'bootCheck.socketDisabled':
+    'تم الاتصال، لكن الوقت الفعلي معطّل في هذا النواة. بدأ تشغيلها بالخيار --jsonrpc-only؛ أعد تشغيلها بدونه لتعمل المحادثة والتحديثات الفورية.',
   'bootCheck.checkingCore': 'جارٍ تشغيل OpenHuman…',
   'bootCheck.cannotReach': 'تعذّر الوصول إليه',
   'bootCheck.cannotReachDesc': 'تعذّر الاتصال. هل تريد المحاولة في مكان آخر؟',

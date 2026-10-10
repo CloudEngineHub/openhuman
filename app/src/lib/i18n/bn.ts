@@ -1705,6 +1705,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': 'সংযুক্ত। সব ঠিকঠাক।',
   'bootCheck.authFailed': 'টোকেনটি কাজ করেনি। আবার পরীক্ষা করুন।',
   'bootCheck.unreachablePrefix': 'পৌঁছানো যায়নি:',
+  'bootCheck.socketDisabled':
+    'সংযুক্ত হয়েছে, কিন্তু এই কোরে রিয়েলটাইম বন্ধ আছে। এটি --jsonrpc-only দিয়ে চালু হয়েছে; চ্যাট ও লাইভ আপডেট কাজ করাতে ওই ফ্ল্যাগ ছাড়া আবার চালু করুন।',
   'bootCheck.checkingCore': 'OpenHuman চালু হচ্ছে…',
   'bootCheck.cannotReach': 'পৌঁছানো যাচ্ছে না',
   'bootCheck.cannotReachDesc': 'আমরা সংযোগ করতে পারিনি। অন্য কোথাও চেষ্টা করতে চান?',

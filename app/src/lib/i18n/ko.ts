@@ -1694,6 +1694,8 @@ const messages: TranslationMap = {
   'bootCheck.connectedOk': '연결되었습니다. 사용할 준비가 되었습니다.',
   'bootCheck.authFailed': '해당 토큰이 작동하지 않았습니다. 다시 확인하고 시도하세요.',
   'bootCheck.unreachablePrefix': '연결할 수 없습니다:',
+  'bootCheck.socketDisabled':
+    '연결되었지만 이 코어에서는 실시간 기능이 꺼져 있습니다. --jsonrpc-only로 시작되었습니다. 채팅과 실시간 업데이트를 쓰려면 이 플래그 없이 다시 시작하세요.',
   'bootCheck.checkingCore': 'OpenHuman을 시작하는 중…',
   'bootCheck.cannotReach': '연결할 수 없습니다',
   'bootCheck.cannotReachDesc': '연결하지 못했습니다. 다른 곳에서 시도해 볼까요?',
