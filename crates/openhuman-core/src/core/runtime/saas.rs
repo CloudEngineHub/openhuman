@@ -297,6 +297,14 @@ pub async fn build(
     // Whoever initialised first won; refuse to serve users from a registry
     // that holds anything but the built-ins.
     verify_builtin_definitions(crate::agent::harness::AgentDefinitionRegistry::global())?;
+    // A relayed platform message (`channel_relay_inbound`) runs through the
+    // channel dispatch pipeline, which asks the native bus for an
+    // `agent.run_turn`. The `Agent` family stays off in SaaS (no agent RPCs
+    // on any surface), so its subscriber plan never registers that handler;
+    // register it alone. The request carries the caller's own turn parts, and
+    // the handler runs in the caller's (profile's) scope.
+    crate::agent::bus::register_agent_handlers();
+    log::debug!("[saas] registered the native agent.run_turn handler for relayed channel turns");
     let host = Arc::new(crate::profiles::ProfileHost::new(
         config,
         runtime.context().clone(),

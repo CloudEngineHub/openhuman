@@ -82,6 +82,10 @@ fn every_listed_method_is_registered() {
             .map(|c| c.rpc_method_name())
             .collect();
     for method in USER_METHODS {
+        // The relay lives in the `channels` domain, compiled out without it.
+        if !cfg!(feature = "channels") && *method == "openhuman.channel_relay_inbound" {
+            continue;
+        }
         assert!(
             registered.contains(*method),
             "{method} is not a registered method"
@@ -120,8 +124,26 @@ fn a_saas_task_without_scope_sees_nothing() {
 }
 
 #[test]
-fn delete_and_purge_stay_closed_to_users() {
-    for method in ["openhuman.threads_delete", "openhuman.threads_purge"] {
-        assert!(!visible_in(true, Scope::User, method, false), "{method}");
+fn delete_purge_and_the_channel_relay_are_open_to_users() {
+    for method in [
+        "openhuman.threads_delete",
+        "openhuman.threads_purge",
+        "openhuman.channel_relay_inbound",
+    ] {
+        assert!(visible_in(true, Scope::User, method, false), "{method}");
+        assert!(
+            !visible_in(true, Scope::Operator, method, false),
+            "{method} is not on the operator plane"
+        );
     }
+}
+
+#[cfg(feature = "channels")]
+#[test]
+fn users_still_cannot_mint_channel_threads() {
+    // The relay derives `channel:` ids itself; a user choosing one is refused.
+    let relayed =
+        crate::channels::bus::derive_inbound_thread_id("telegram", Some("1"), Some("2"), None);
+    assert!(relayed.starts_with("channel:"), "{relayed}");
+    assert!(validate_user_thread_id(&relayed).is_err());
 }

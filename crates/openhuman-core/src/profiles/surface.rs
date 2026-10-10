@@ -17,13 +17,18 @@ use crate::core::runtime::is_saas;
 /// isolation lands; a method is listed only once nothing it touches is
 /// shared between users.
 ///
-/// `threads_delete` and `threads_purge` stay off: their cleanup cancels
-/// detached work by bare thread id (and, for purge, process-wide), which would
-/// reach other users' work until it is scoped per agent.
+/// `threads_delete` and `threads_purge` delete only the caller's own threads
+/// (their store is the caller's workspace). Their cleanup of detached work is
+/// confined to the caller too: running sub-agents are cancelled only in the
+/// caller's workspace (`running_subagents::caller_workspace`), background
+/// completions are keyed per profile (`tenant::profile_key`) and web-channel
+/// sessions per tenant.
 pub const USER_METHODS: &[&str] = &[
     // Conversation threads: all state lives under the agent's workspace.
     "openhuman.threads_list",
     "openhuman.threads_upsert",
+    "openhuman.threads_delete",
+    "openhuman.threads_purge",
     "openhuman.threads_create_new",
     "openhuman.threads_messages_list",
     "openhuman.threads_message_append",
@@ -50,6 +55,9 @@ pub const USER_METHODS: &[&str] = &[
     "openhuman.channel_web_queue_status",
     "openhuman.channel_web_queue_clear",
     "openhuman.channel_web_queue_remove",
+    // Hosted chat platforms: a gateway relays each message in as its user,
+    // onto that user's `channel:` thread; replies reach only their `/events`.
+    "openhuman.channel_relay_inbound",
     // Memory: reads and writes confined to the user's own tree
     // (`memory::user_scope`). Engine and policy changes, sources, imports and
     // backfills stay closed: they reach the host or change where memory lives.

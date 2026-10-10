@@ -921,3 +921,171 @@ fn a_duplicate_or_unreadable_user_header_is_refused() {
     assert_eq!(status, 400);
     drop(server);
 }
+
+/// Start a SaaS core whose backend is a closed port, so every turn fails fast
+/// and its failure is itself the reply, without any real inference.
+fn start_offline(d: &Deployment) -> (Server, String, reqwest::blocking::Client) {
+    let port = free_port();
+    let child = core_command(d, &["--port", &port.to_string()])
+        .env("BACKEND_URL", "http://127.0.0.1:9")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("spawn openhuman-core");
+    let server = Server(child);
+    let base = format!("http://127.0.0.1:{port}");
+    let client = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .build()
+        .unwrap();
+    let deadline = Instant::now() + Duration::from_secs(120);
+    while !client
+        .get(format!("{base}/health"))
+        .send()
+        .is_ok_and(|r| r.status().is_success())
+    {
+        assert!(Instant::now() < deadline, "SaaS core never became healthy");
+        std::thread::sleep(Duration::from_millis(250));
+    }
+    (server, base, client)
+}
+
+#[test]
+fn a_profile_holds_web_and_relayed_channel_threads() {
+    let d = deployment(true);
+    let (server, base, client) = start_offline(&d);
+    provision(&client, &base, "alice");
+    provision(&client, &base, "bob");
+    let call = |user: &str, method: &str, params: Value| {
+        user_rpc_with(&client, &base, BEARER, user, None, method, params)
+    };
+
+    // The gateway listens on each user's stream under one client id.
+    let alice_events = user_events(&base, "alice", "channel-relay");
+    let bob_events = user_events(&base, "bob", "channel-relay");
+    for (who, rx) in [("alice", &alice_events), ("bob", &bob_events)] {
+        let first = rx.recv_timeout(Duration::from_secs(10)).unwrap();
+        assert_eq!(first, "status:200", "{who}'s stream opens");
+    }
+
+    // Alice chats on the web...
+    let (_, body) = call(
+        "alice",
+        "openhuman.threads_upsert",
+        json!({ "id": "web-1", "title": "web", "created_at": "2026-10-09T00:00:00Z" }),
+    );
+    assert!(body.get("result").is_some(), "{body}");
+    let (status, body) = call(
+        "alice",
+        "openhuman.channel_web_chat",
+        json!({ "client_id": "c1", "thread_id": "web-1", "message": "hello on the web" }),
+    );
+    assert_eq!(status, 200, "{body}");
+
+    // ...and the gateway relays a Telegram message of hers.
+    let relayed = json!({
+        "channel": "telegram",
+        "chat_id": "777",
+        "sender_id": "555",
+        "sender_name": "Alice",
+        "message_id": "tg-1",
+        "text": "hello from telegram",
+    });
+    let (status, body) = call("alice", "openhuman.channel_relay_inbound", relayed.clone());
+    assert_eq!(status, 200, "{body}");
+    let text = body.to_string();
+    assert!(text.contains("\"accepted\":true"), "{body}");
+    let channel_thread = "channel:telegram/555/777";
+    assert!(text.contains(channel_thread), "{body}");
+
+    // The reply (here the offline backend's error) reaches alice's stream as
+    // `channel_outbound`, for the gateway to deliver.
+    let mut outbound = None;
+    let until = Instant::now() + Duration::from_secs(90);
+    while Instant::now() < until && outbound.is_none() {
+        match alice_events.recv_timeout(Duration::from_millis(500)) {
+            Ok(data) if data.contains("channel_outbound") => outbound = Some(data),
+            Ok(_) | Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
+            Err(e) => panic!("alice's stream closed: {e}"),
+        }
+    }
+    let outbound = outbound.expect("alice receives channel_outbound");
+    let event: Value = serde_json::from_str(&outbound).expect("event json");
+    assert_eq!(event["thread_id"], channel_thread, "{event}");
+    assert_eq!(event["structured"]["channel"], "telegram", "{event}");
+    assert_eq!(event["structured"]["chat_id"], "777", "{event}");
+    assert!(
+        event["full_response"]
+            .as_str()
+            .is_some_and(|t| !t.is_empty()),
+        "{event}"
+    );
+    assert!(event.get("agent").is_none(), "no routing stamp on the wire");
+    // The turn reached the agent: the offline backend's error, never the
+    // dispatch failing to find an `agent.run_turn` handler.
+    assert!(
+        !event["full_response"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("no native handler"),
+        "relayed turn must reach the agent: {event}"
+    );
+
+    // A gateway retry of the same message runs nothing twice.
+    let (_, body) = call("alice", "openhuman.channel_relay_inbound", relayed);
+    assert!(body.to_string().contains("\"duplicate\":true"), "{body}");
+
+    // A relay cannot forge a thread id through its fields.
+    let (_, body) = call(
+        "alice",
+        "openhuman.channel_relay_inbound",
+        json!({ "channel": "telegram", "chat_id": "1/2", "sender_id": "3",
+                "message_id": "x", "text": "hi" }),
+    );
+    assert!(body.get("error").is_some(), "{body}");
+
+    // Alice's profile holds both threads; bob's holds neither.
+    let (_, alice_list) = call("alice", "openhuman.threads_list", json!({}));
+    let alice_ids = thread_ids(&alice_list);
+    assert!(alice_ids.contains(&"web-1".to_string()), "{alice_list}");
+    assert!(
+        alice_ids.contains(&channel_thread.to_string()),
+        "{alice_list}"
+    );
+    let (_, bob_list) = call("bob", "openhuman.threads_list", json!({}));
+    let bob_ids = thread_ids(&bob_list);
+    assert!(
+        !bob_ids.contains(&"web-1".to_string()) && !bob_ids.contains(&channel_thread.to_string()),
+        "{bob_list}"
+    );
+
+    // The relayed exchange is on alice's channel thread.
+    let (_, messages) = call(
+        "alice",
+        "openhuman.threads_messages_list",
+        json!({ "thread_id": channel_thread }),
+    );
+    assert!(
+        messages.to_string().contains("hello from telegram"),
+        "{messages}"
+    );
+
+    // Bob's stream carried none of alice's events.
+    std::thread::sleep(Duration::from_secs(1));
+    let leaked: Vec<String> = bob_events.try_iter().collect();
+    assert!(
+        leaked.is_empty(),
+        "bob must see none of alice's events: {leaked:?}"
+    );
+
+    // No relayed turn lands in the operator workspace.
+    let operator_index = d
+        .root
+        .join("operator/workspace/memory/conversations/threads.jsonl");
+    let operator_threads = std::fs::read_to_string(&operator_index).unwrap_or_default();
+    assert!(
+        !operator_threads.contains("telegram"),
+        "no relayed thread in the operator workspace: {operator_threads}"
+    );
+    drop(server);
+}
