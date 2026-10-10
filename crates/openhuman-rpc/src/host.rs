@@ -3,8 +3,8 @@
 //!
 //! | Entry | Replaces | Builder |
 //! |---|---|---|
-//! | [`cli`] | `tinyhumans::install` → `server::install_cli_server` → `run_core_from_args` | [`cli_builder`]: the `cli` preset, connected, with the server launcher and the `http_host` controllers |
-//! | [`desktop`] | `tinyhumans::install` + `server::run_server_embedded_with_ready` | [`desktop_builder`]: the `desktop` preset, connected, with the bearer, listener, services, server launcher and `http_host` controllers |
+//! | [`cli`] | `tinyhumans::install` → the server launcher → `run_core_from_args` | [`cli_builder`]: the `cli` preset, connected, with the server launcher and the `http_host` controllers |
+//! | [`desktop`] | `tinyhumans::install` + the embedded server entry | [`desktop_builder`]: the `desktop` preset, connected, with the bearer, listener, services, server launcher and `http_host` controllers |
 //! | [`tui`] | `tinyhumans::install` + `session_store::install_for_host` + `CoreBuilder(full, none)` | [`tui_builder`]: the `tui` preset, connected, with the on-disk session store ([`tui`] swaps in the configured storage URL's store) |
 //!
 //! Each `*_builder` returns a [`tinyhumans::RuntimeBuilder`] so a host can
@@ -69,7 +69,59 @@ pub fn cli(args: &[String]) -> anyhow::Result<()> {
         args.first().map(String::as_str).unwrap_or("<none>"),
         args.len()
     );
-    cli_builder().run_from_args(args)
+    let mut builder = cli_builder();
+    if cli_command_uses_storage(args) {
+        // The preflight reads the URL before the dispatcher loads `.env`
+        // itself, so a URL supplied through the dotenv file must be loaded now.
+        if let Err(error) = crate::core_host::core::cli::load_dotenv_for_cli() {
+            log::debug!("[rpc:host] cli: early dotenv load failed: {error}");
+        }
+        // A one-shot command reads the same backend the server would: the
+        // configured storage URL, opened on the core's storage runtime so the
+        // backend outlives this call. No URL leaves the classic layout alone.
+        let provider = crate::core_host::storage::block_on_anyhow(
+            crate::session_store::provider_if_configured(),
+        )?;
+        if let Some(provider) = provider {
+            log::debug!("[rpc:host] cli: storage-backed session store installed");
+            builder = builder.session_store(provider);
+        }
+    }
+    builder.run_from_args(args)
+}
+
+/// Whether the CLI subcommand in `args` should open the configured storage
+/// backend itself. `run` / `serve` open it in their own server boot, and help,
+/// the moved TUI names and `sentry-test` never touch stored state.
+#[cfg(feature = "server")]
+fn cli_command_uses_storage(args: &[String]) -> bool {
+    let is_help = |arg: &str| matches!(arg, "-h" | "--help" | "help");
+    // Help is answered before any command runs, wherever it appears.
+    if args.iter().any(|arg| is_help(arg)) {
+        return false;
+    }
+    let mut rest = args.iter().map(String::as_str);
+    let mut positional = Vec::new();
+    while let Some(arg) = rest.next() {
+        match arg {
+            // Launch-wide flags with a separate value.
+            "--model" | "--model-id" | "-m" | "--provider" | "--provider-id" | "-p" => {
+                rest.next();
+            }
+            _ if arg.starts_with("--model=")
+                || arg.starts_with("--model-id=")
+                || arg.starts_with("--provider=")
+                || arg.starts_with("--provider-id=") => {}
+            _ if arg.starts_with('-') => {}
+            _ => positional.push(arg),
+        }
+    }
+    match positional.as_slice() {
+        [] | ["run" | "serve" | "tui" | "chat" | "sentry-test", ..] => false,
+        // A bare namespace prints its help instead of running a function.
+        [namespace] => matches!(*namespace, "mcp" | "mcp-server"),
+        _ => true,
+    }
 }
 
 /// What the embedded desktop server binds and how it authenticates.
