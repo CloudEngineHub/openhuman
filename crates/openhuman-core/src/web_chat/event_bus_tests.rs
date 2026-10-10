@@ -589,7 +589,8 @@ async fn published_events_carry_the_publishing_agent() {
             DomainSet::full(),
             Default::default(),
         )
-        .session_agent("u-alice"),
+        .session_agent("u-alice")
+        .profile("p-alice"),
     );
     CoreContext::scope(ctx, async {
         publish_web_channel_event(WebChannelEvent {
@@ -615,9 +616,11 @@ async fn published_events_carry_the_publishing_agent() {
     let scoped = seen.iter().find(|e| e.thread_id == marker).unwrap();
     assert!(scoped.belongs_to("u-alice"));
     assert!(!scoped.belongs_to("u-bob"));
+    assert!(scoped.belongs_to_profile("p-alice"));
+    assert!(!scoped.belongs_to_profile("p-bob"));
     let unscoped = seen.iter().find(|e| e.thread_id != marker).unwrap();
     assert!(
-        !unscoped.belongs_to("u-alice"),
+        !unscoped.belongs_to("u-alice") && !unscoped.belongs_to_profile("p-alice"),
         "unstamped events belong to no user"
     );
     assert!(

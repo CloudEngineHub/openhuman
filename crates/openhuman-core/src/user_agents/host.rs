@@ -139,7 +139,7 @@ impl AgentHost {
     pub fn deprovision(&self, id: &UserAgentId) -> Result<bool, String> {
         let mut open = self.lock();
         if let Some(slot) = open.get(id) {
-            if Arc::strong_count(&slot.state) > 1 {
+            if in_use(slot) {
                 return Err(format!("agent {id} is in use; try again shortly"));
             }
         }
@@ -218,8 +218,11 @@ impl AgentHost {
         let context = self.operator.derive_with(
             ContextOverlay::new(config.clone(), user_domains(), ToolGroups::none())
                 .without_user_skill_roots()
-                .session_agent(id.as_str()),
+                .session_agent(id.as_str())
+                .profile(id.as_str())
+                .agent_policy(profile_policy(&config)),
         );
+        crate::platform::cost::seed_tenant_tracker(&context, &config);
         let state = Arc::new(UserAgentState {
             id: id.clone(),
             layout,
@@ -306,8 +309,7 @@ impl AgentHost {
     fn sweep_idle_locked(&self, open: &mut HashMap<UserAgentId, Slot>, now: Instant) {
         let idle_limit = Duration::from_secs(self.saas.idle_evict_secs);
         open.retain(|id, slot| {
-            let keep = Arc::strong_count(&slot.state) > 1
-                || now.duration_since(slot.last_used) < idle_limit;
+            let keep = in_use(slot) || now.duration_since(slot.last_used) < idle_limit;
             if !keep {
                 log::debug!("[user_agents] evicted idle agent={id}");
             }
@@ -316,7 +318,6 @@ impl AgentHost {
     }
 
     fn evict_locked(&self, open: &mut HashMap<UserAgentId, Slot>, now: Instant) {
-        let in_use = |slot: &Slot| Arc::strong_count(&slot.state) > 1;
         self.sweep_idle_locked(open, now);
         // Still full: make room by closing the least recently used idle one.
         if open.len() >= self.saas.max_agents_open.max(1) {
@@ -335,6 +336,26 @@ impl AgentHost {
     fn lock(&self) -> std::sync::MutexGuard<'_, HashMap<UserAgentId, Slot>> {
         self.open.lock().unwrap_or_else(PoisonError::into_inner)
     }
+}
+
+/// Whether anything still uses an open agent: a request holding its state,
+/// or a turn still running on its context (a detached turn outlives the
+/// request that started it).
+fn in_use(slot: &Slot) -> bool {
+    Arc::strong_count(&slot.state) > 1 || slot.state.context.tenant_in_use()
+}
+
+/// The security policy agent work is gated by: its own forced autonomy over
+/// its workspace and sandbox, never the operator's live policy.
+fn profile_policy(config: &Config) -> Arc<crate::security::SecurityPolicy> {
+    Arc::new(
+        crate::security::SecurityPolicy::from_config(
+            &config.autonomy,
+            &config.workspace_dir,
+            &config.action_dir,
+        )
+        .with_privacy_mode(config.privacy.mode),
+    )
 }
 
 /// Settle what a previous process left in agent `id`'s workspace: turns that
@@ -375,8 +396,8 @@ pub fn host() -> Option<Arc<AgentHost>> {
 
 /// The user agent the current work runs for, if any.
 pub fn current() -> Option<Arc<UserAgentState>> {
-    let agent = CoreContext::current()?.session_agent()?.to_owned();
-    let id = UserAgentId::parse(&agent).ok()?;
+    let profile = crate::core::runtime::current_tenant().ok()?.profile?;
+    let id = UserAgentId::parse(&profile).ok()?;
     host()?.get(&id)
 }
 

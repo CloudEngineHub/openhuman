@@ -11,7 +11,7 @@
 //!
 //! The operator plane and single-user processes are unaffected.
 
-use crate::core::runtime::{is_saas, CoreContext};
+use crate::core::runtime::is_saas;
 
 /// Every RPC method a user may dispatch. Grows as each family's per-user
 /// isolation lands; a method is listed only once nothing it touches is
@@ -79,14 +79,9 @@ pub enum Scope {
 /// The current task's scope. In SaaS only the task-local scope counts; a task
 /// that lost it is [`Scope::None`], never the operator's default context.
 pub fn current_scope() -> Scope {
-    let ctx = if is_saas() {
-        CoreContext::scoped()
-    } else {
-        CoreContext::current()
-    };
-    match ctx {
+    match crate::core::runtime::tenant::context_in(is_saas()) {
         None => Scope::None,
-        Some(ctx) if ctx.session_agent().is_some() => Scope::User,
+        Some(ctx) if ctx.profile().is_some() => Scope::User,
         Some(_) => Scope::Operator,
     }
 }
