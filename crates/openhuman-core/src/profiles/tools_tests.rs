@@ -85,14 +85,14 @@ fn root() -> PathBuf {
     PathBuf::from("/srv/oh")
 }
 
-const AGENT: &str = "u-0123456789abcdef0123456789abcdef";
+const AGENT: &str = "h-0123456789abcdef0123456789abcdef";
 
 /// A SaaS root on disk with one agent's `sandbox/` and `workspace/`.
 fn on_disk() -> (tempfile::TempDir, PathBuf) {
     let tmp = tempfile::tempdir().unwrap();
     let root = tmp.path().join("oh");
     for dir in ["sandbox", "workspace"] {
-        std::fs::create_dir_all(root.join("agents").join(AGENT).join(dir)).unwrap();
+        std::fs::create_dir_all(root.join("users").join(AGENT).join(dir)).unwrap();
     }
     (tmp, root)
 }
@@ -100,8 +100,8 @@ fn on_disk() -> (tempfile::TempDir, PathBuf) {
 #[test]
 fn the_sandbox_policy_is_a_locked_down_container() {
     let (_tmp, root) = on_disk();
-    let action = root.join("agents").join(AGENT).join("sandbox");
-    let state = root.join("agents").join(AGENT).join("workspace");
+    let action = root.join("users").join(AGENT).join("sandbox");
+    let state = root.join("users").join(AGENT).join("workspace");
     let policy =
         sandbox_policy_with(&root, &SaasSandboxConfig::default(), &action, &state).unwrap();
     assert_eq!(policy.backend, SandboxBackendKind::Docker);
@@ -121,7 +121,7 @@ fn a_named_network_allows_egress() {
         ..SaasSandboxConfig::default()
     };
     let (_tmp, root) = on_disk();
-    let action = root.join("agents").join(AGENT).join("sandbox");
+    let action = root.join("users").join(AGENT).join("sandbox");
     let policy = sandbox_policy_with(&root, &config, &action, &action).unwrap();
     assert!(policy.allow_network);
 }
@@ -130,13 +130,15 @@ fn a_named_network_allows_egress() {
 fn the_sandbox_refuses_anything_but_a_user_sandbox() {
     let config = SaasSandboxConfig::default();
     for dir in [
-        "/srv/oh/agents/u-0123456789abcdef0123456789abcdef/workspace",
+        "/srv/oh/users/h-0123456789abcdef0123456789abcdef/workspace",
         "/srv/oh/operator/sandbox",
-        "/srv/oh/agents/sandbox",
+        "/srv/oh/users/sandbox",
         "/tmp/sandbox",
-        "/srv/oh/agents/u-0123456789abcdef0123456789abcdef/sandbox/nested",
-        "/srv/oh/agents/../sandbox",
-        "/srv/oh/agents/not-an-agent/sandbox",
+        "/srv/oh/users/h-0123456789abcdef0123456789abcdef/sandbox/nested",
+        "/srv/oh/users/../sandbox",
+        "/srv/oh/users/Not-A-Profile/sandbox",
+        "/srv/oh/users/local/sandbox",
+        "/srv/oh/agents/h-0123456789abcdef0123456789abcdef/sandbox",
     ] {
         let dir = PathBuf::from(dir);
         assert!(
@@ -150,7 +152,7 @@ fn the_sandbox_refuses_anything_but_a_user_sandbox() {
 #[test]
 fn the_host_network_is_refused_in_any_case() {
     let (_tmp, root) = on_disk();
-    let action = root.join("agents").join(AGENT).join("sandbox");
+    let action = root.join("users").join(AGENT).join("sandbox");
     for network in ["host", "HOST", " Host "] {
         let config = SaasSandboxConfig {
             network: network.into(),
@@ -169,7 +171,7 @@ fn a_symlinked_sandbox_is_refused() {
     let (tmp, root) = on_disk();
     let elsewhere = tmp.path().join("elsewhere");
     std::fs::create_dir_all(&elsewhere).unwrap();
-    let sandbox = root.join("agents").join(AGENT).join("sandbox");
+    let sandbox = root.join("users").join(AGENT).join("sandbox");
     std::fs::remove_dir(&sandbox).unwrap();
     std::os::unix::fs::symlink(&elsewhere, &sandbox).unwrap();
     let refused =
@@ -179,6 +181,6 @@ fn a_symlinked_sandbox_is_refused() {
 
 #[test]
 fn a_missing_sandbox_is_refused() {
-    let action = root().join("agents").join(AGENT).join("sandbox");
+    let action = root().join("users").join(AGENT).join("sandbox");
     assert!(sandbox_policy_with(&root(), &SaasSandboxConfig::default(), &action, &action).is_err());
 }

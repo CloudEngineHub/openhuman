@@ -15,7 +15,7 @@ fn single_user_processes_are_not_narrowed() {
 
 #[test]
 fn the_saas_planes_never_overlap() {
-    let provision = "openhuman.user_agents_provision";
+    let provision = "openhuman.profiles_provision";
     let threads = "openhuman.threads_list";
     assert!(
         visible_in(true, Scope::Operator, provision, true),
@@ -111,7 +111,7 @@ fn user_thread_ids() {
 #[test]
 fn a_saas_task_without_scope_sees_nothing() {
     for (method, operator) in [
-        ("openhuman.user_agents_provision", true),
+        ("openhuman.profiles_provision", true),
         ("openhuman.threads_list", false),
     ] {
         assert!(!visible_in(true, Scope::None, method, operator), "{method}");

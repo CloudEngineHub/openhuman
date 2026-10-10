@@ -1,6 +1,6 @@
 //! What a user may call in SaaS mode.
 //!
-//! A user agent's context enables a few domain families
+//! A profile's context enables a few domain families
 //! ([`host::user_domains`](super::host::user_domains)), but a family is too
 //! coarse to open whole: `threads` also holds operations that start model
 //! turns or reach the host. So in a user's scope every RPC method must also

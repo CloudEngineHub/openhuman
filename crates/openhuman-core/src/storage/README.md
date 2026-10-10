@@ -121,7 +121,7 @@ reference model.
 ## Background work and agent scopes
 
 Work done inside an agent's turn runs under that agent's `CoreContext`
-(`session_agent`, set for embed agents and SaaS user agents), so with a
+(`session_agent`, set for embed agents and SaaS profiles), so with a
 backend installed its records land in that agent's scope. Background work
 runs under the process default context and on its own would only see
 `local`. `storage::agents` closes the gap:
@@ -151,7 +151,7 @@ before. The cron scheduler visits live agents only
 (`cron::scheduler::tick_live_agents`): an agent's jobs need its live
 context (host tools, prompt) to run, so a recorded agent's jobs wait until
 it is live again; with a backend it no longer needs the agent's `jobs.db`. In SaaS mode agent ids are not recorded and `local` is skipped;
-per-user background work there is `user_agents::background`.
+per-user background work there is `profiles::background`.
 
 ## Boundaries
 

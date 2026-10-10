@@ -287,9 +287,9 @@ pub mod storage {
     };
 }
 
-pub mod user_agents {
+pub mod profiles {
     pub mod gateway {
-        pub use openhuman_core::user_agents::gateway::{
+        pub use openhuman_core::profiles::gateway::{
             resolve_scope, sign, verify, GatewayRefusal, GatewayScope, USER_HEADER, USER_SIG_HEADER,
         };
     }

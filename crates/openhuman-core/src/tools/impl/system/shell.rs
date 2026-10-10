@@ -367,7 +367,7 @@ impl ShellTool {
         let saas_action_dir = self.effective_action_dir_for_context(context);
         if let Some(resolved) =
             super::shell_saas::saas_sandbox_with(crate::core::runtime::is_saas(), || {
-                crate::user_agents::tools::sandbox_policy(
+                crate::profiles::tools::sandbox_policy(
                     &saas_action_dir,
                     &self.security.workspace_dir,
                 )
