@@ -66,7 +66,7 @@ None. No `store.rs`: staged binaries are written to the filesystem (current-exe 
 
 ## Used by
 - `crates/openhuman-core/src/core/all.rs`: registers `all_update_registered_controllers()` / `all_update_controller_schemas()` into the controller registry.
-- `crates/openhuman-core/src/core/runtime/services.rs`: spawns `update::scheduler::run(config.update)` as a background service at core start when `ServiceSet::update_scheduler` is set (off in the `desktop()` preset; the desktop shell updates through the Tauri updater).
+- `crates/openhuman-core/src/core/runtime/services.rs`: spawns `update::scheduler::run(config.update)` as a background service at core start when `ServiceSet::update_scheduler` is set (the desktop shell turns it off in `host::desktop_builder` because it updates through the Tauri updater; `ServiceSet::desktop()` itself leaves it on).
 - `crates/openhuman-core/src/tools/impl/system/update_check.rs` and `update_apply.rs`: agent tools wrapping the RPC layer.
 
 ## Notes / gotchas
