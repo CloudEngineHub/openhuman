@@ -648,6 +648,15 @@ export function useOpenHumanExternalStore(
         if (parentIndex >= 0) discardFrom = parentIndex + 1;
       } else if (sourceId) {
         discardFrom = messages.findIndex(m => m.id === sourceId);
+      } else {
+        // No ids at all: the core regenerates the thread's last turn, so the
+        // last agent reply is what the new one replaces.
+        for (let i = messages.length - 1; i >= 0; i -= 1) {
+          if (messages[i].sender === 'agent') {
+            discardFrom = i;
+            break;
+          }
+        }
       }
       const discardedIds = discardFrom >= 0 ? messages.slice(discardFrom).map(m => m.id) : [];
       try {
