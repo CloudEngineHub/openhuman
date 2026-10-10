@@ -127,6 +127,7 @@ async fn check_available_reports_no_update_for_an_older_tag() {
 /// so on those platforms every scheduled check found "no core asset" and
 /// reported an error. A newer release without a core asset for this triple is
 /// an available update with nothing to download, not a failure.
+#[cfg(not(target_os = "linux"))]
 #[test]
 fn check_available_reports_an_update_without_a_download_when_no_platform_asset_is_published() {
     // The release a macOS/Windows host sees: desktop installers plus a core
@@ -494,4 +495,29 @@ fn raw_core_binary_stages_separately_from_running_executable() {
 
     assert_eq!(staged, dir.path().join(staged_binary_staging_name()));
     assert_ne!(staged, dir.path().join(staged_binary_name()));
+}
+
+/// Linux releases publish a core archive, so a newer release without one for
+/// this triple is a broken release and must stay an update-check failure.
+#[cfg(target_os = "linux")]
+#[test]
+fn check_available_fails_on_linux_when_the_core_asset_is_missing() {
+    let body = r#"{
+        "tag_name": "v99.0.0",
+        "body": "notes",
+        "published_at": "2026-09-29T00:00:00Z",
+        "assets": [
+            {"name": "OpenHuman_99.0.0_aarch64.dmg", "browser_download_url": "https://example.invalid/dmg", "size": 1}
+        ]
+    }"#;
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("runtime");
+    let result = runtime.block_on(async {
+        let server = releases_mock(200, body).await;
+        check_available_with_base_url(&server.uri()).await
+    });
+    let error = result.expect_err("a missing Linux core asset must fail the check");
+    assert!(error.contains("no core asset was found"), "{error}");
 }

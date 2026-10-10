@@ -65,13 +65,12 @@ pub fn is_module_unavailable_message(msg: &str) -> bool {
 /// The demoted report for [`super::ExpectedErrorKind::ModuleUnavailable`]: warn, so
 /// the breadcrumb survives and a sustained spike still shows in logs, but no
 /// Sentry error event — the one event was sent at resolution.
-pub(super) fn log_module_unavailable(domain: &str, operation: &str, message: &str) {
+pub(super) fn log_module_unavailable(domain: &str, operation: &str, _message: &str) {
     tracing::warn!(
         domain = domain,
         operation = operation,
         kind = "module_unavailable",
-        error = %message,
         "[observability] {domain}.{operation} skipped expected module-unavailable error \
-         (reported once at resolution): {message}"
+         (reported once at resolution)"
     );
 }

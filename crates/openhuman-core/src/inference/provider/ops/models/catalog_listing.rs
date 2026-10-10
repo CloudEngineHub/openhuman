@@ -35,8 +35,9 @@ pub(super) fn resolve_local_runtime_key(
 
 /// Whether a provider entry can be probed at `{endpoint}/models`.
 ///
-/// Claude Code is a local CLI provider, and an endpoint with an explicit
-/// non-http(s) scheme (`cli://…`) is a placeholder rather than an API base.
+/// Claude Code is a local CLI provider, and a `cli://…` endpoint is a
+/// placeholder rather than an API base. Any other scheme (`ftp://…`) is a
+/// misconfiguration and is left to the request path to surface as an error.
 /// An endpoint that does not parse as `scheme://host` at all is left to the
 /// request path so a genuine misconfiguration still surfaces as an error.
 fn endpoint_hosts_models_listing(slug: &str, endpoint: &str) -> bool {
@@ -44,7 +45,7 @@ fn endpoint_hosts_models_listing(slug: &str, endpoint: &str) -> bool {
         return false;
     }
     match reqwest::Url::parse(endpoint.trim()) {
-        Ok(url) if url.has_host() => matches!(url.scheme(), "http" | "https"),
+        Ok(url) if url.has_host() => url.scheme() != "cli",
         _ => true,
     }
 }
