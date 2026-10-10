@@ -643,22 +643,34 @@ export function useOpenHumanExternalStore(
       // before the RPC resolves, and trimming by position afterwards would drop
       // it too.
       let discardFrom = -1;
+      let discardedIds: string[] = [];
       if (parentId) {
         const parentIndex = messages.findIndex(m => m.id === parentId);
         if (parentIndex >= 0) discardFrom = parentIndex + 1;
       } else if (sourceId) {
         discardFrom = messages.findIndex(m => m.id === sourceId);
       } else {
-        // No ids at all: the core regenerates the thread's last turn, so the
-        // last agent reply is what the new one replaces.
-        for (let i = messages.length - 1; i >= 0; i -= 1) {
-          if (messages[i].sender === 'agent') {
-            discardFrom = i;
-            break;
-          }
-        }
+        // No ids at all: the core regenerates the thread's last turn. Discard
+        // every cached row of the final assistant bubble (it can span several).
+        const lastAssistant = [...runtimeMessages]
+          .reverse()
+          .find(message => message.role === 'assistant');
+        const custom = lastAssistant?.metadata?.custom as
+          | { extraMetadata?: Record<string, unknown> }
+          | undefined;
+        const rowIds = custom?.extraMetadata?.[FEEDBACK_ROW_IDS_METADATA_KEY];
+        const turnRowIds =
+          Array.isArray(rowIds) && rowIds.length > 0
+            ? rowIds.filter((id): id is string => typeof id === 'string')
+            : lastAssistant?.id
+              ? [lastAssistant.id]
+              : [];
+        const turnRowIdSet = new Set(turnRowIds);
+        discardedIds = messages.filter(m => turnRowIdSet.has(m.id)).map(m => m.id);
       }
-      const discardedIds = discardFrom >= 0 ? messages.slice(discardFrom).map(m => m.id) : [];
+      if (discardFrom >= 0) {
+        discardedIds = messages.slice(discardFrom).map(m => m.id);
+      }
       try {
         await regenerateMessage({ threadId, messageId: target.messageId });
       } catch (err) {
