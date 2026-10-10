@@ -331,7 +331,7 @@ where
 {
     host::runtime()
         .await
-        .map_err(|error| format!("the module bus could not start: {error}"))?
+        .map_err(|error| mark_terminal(format!("the module bus could not start: {error}")))?
         .blocking(work)
         .await
         .map_err(mark_terminal)
