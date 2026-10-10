@@ -19,9 +19,9 @@ openhuman-core -> openhuman-embed -> openhuman-tinyhumans -> openhuman-rpc -> ap
 
 Its only openhuman dependency is `openhuman-tinyhumans`. Core internals the
 server needs come through embed's doc-hidden `__host` list (aliased
-crate-privately as `core_host` in `src/lib.rs`); nothing here re-exports the
-core. Hosts get `openhuman_rpc::tinyhumans` and `openhuman_rpc::embed` (the
-same crate as `tinyhumans::embed`) as their curated facade, and this crate is
+as a private binding, `core_host`, in `src/lib.rs`); nothing here re-exports the
+core. Hosts get `openhuman_rpc::tinyhumans` and `openhuman_rpc::embed` (curated
+`pub use` lists, not the crates) as their facade, and this crate is
 the only OpenHuman crate they depend on (`scripts/ci/check-crate-chain.mjs`).
 
 ## How it works
